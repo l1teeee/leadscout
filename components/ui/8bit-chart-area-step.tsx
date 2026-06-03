@@ -2,17 +2,17 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { EmptyInsight } from "@/components/ui/empty-insight";
 
 export interface StepChartPoint {
   label: string;
   value: number;
 }
 
-interface ChartAreaStepProps {
+interface ChartAreaStepProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   eyebrow?: string;
   data: StepChartPoint[];
-  className?: string;
 }
 
 const WIDTH = 720;
@@ -69,6 +69,7 @@ export function ChartAreaStep({
   eyebrow = "Leads detectados",
   data,
   className,
+  ...props
 }: ChartAreaStepProps) {
   const patternId = React.useId();
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -77,12 +78,18 @@ export function ChartAreaStep({
   const activePoint = active
     ? point(activeIndex, active.value, data.length, maxValue)
     : { x: PADDING.left, y: PADDING.top };
+  const tooltipX = Math.min(activePoint.x + 14, WIDTH - 150);
+  const tooltipY = Math.max(activePoint.y - 56, 18);
   const chartPath = data.length ? stepPath(data, maxValue) : "";
   const fillPath = data.length ? areaPath(data, maxValue) : "";
   const yTicks = [0, maxValue / 2, maxValue].map(Math.round);
+  const hasData = data.some((item) => item.value > 0);
+  const setActiveDay = React.useCallback((index: number) => {
+    setActiveIndex((current) => (current === index ? current : index));
+  }, []);
 
   return (
-    <div className={cn("pixel-card-sm bg-white p-5", className)}>
+    <div className={cn("pixel-card-sm flex flex-col bg-white p-5", className)} {...props}>
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
@@ -108,9 +115,20 @@ export function ChartAreaStep({
         )}
       </div>
 
+      {!hasData && (
+        <EmptyInsight
+          title="Aun falta explorar una zona"
+          description="Cuando ejecutes tu primera busqueda, aqui veras los leads detectados por dia."
+          action="Explora una zona para activar la actividad semanal"
+          className="flex-1"
+        />
+      )}
+
+      {hasData && (
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="h-auto w-full overflow-visible"
+        className="min-h-[260px] w-full flex-1 overflow-visible"
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={`${title}: ${eyebrow}`}
       >
@@ -179,13 +197,12 @@ export function ChartAreaStep({
 
         {data.map((item, index) => {
           const p = point(index, item.value, data.length, maxValue);
-          const isActive = index === activeIndex;
 
           return (
             <g
               key={item.label}
-              onMouseEnter={() => setActiveIndex(index)}
-              onFocus={() => setActiveIndex(index)}
+              onMouseEnter={() => setActiveDay(index)}
+              onFocus={() => setActiveDay(index)}
               tabIndex={0}
               className="cursor-pointer outline-none"
             >
@@ -202,13 +219,30 @@ export function ChartAreaStep({
                 y={p.y - 6}
                 width="12"
                 height="12"
-                fill={isActive ? "var(--text)" : "var(--surface)"}
+                fill="var(--surface)"
                 stroke="var(--border)"
                 strokeWidth="3"
+                style={{ transition: "fill 140ms var(--ease-out)" }}
               />
             </g>
           );
         })}
+
+        {active && (
+          <rect
+            x="-7"
+            y="-7"
+            width="14"
+            height="14"
+            fill="var(--text)"
+            stroke="var(--border)"
+            strokeWidth="3"
+            style={{
+              transform: `translate(${activePoint.x}px, ${activePoint.y}px)`,
+              transition: "transform 180ms var(--ease-out)",
+            }}
+          />
+        )}
 
         {data.map((item, index) => {
           const tick = point(index, 0, data.length, maxValue);
@@ -228,10 +262,10 @@ export function ChartAreaStep({
 
         {active && (
           <g
-            transform={`translate(${Math.min(
-              activePoint.x + 14,
-              WIDTH - 150
-            )} ${Math.max(activePoint.y - 56, 18)})`}
+            style={{
+              transform: `translate(${tooltipX}px, ${tooltipY}px)`,
+              transition: "transform 180ms var(--ease-out), opacity 140ms var(--ease-out)",
+            }}
           >
             <rect
               width="136"
@@ -249,6 +283,7 @@ export function ChartAreaStep({
           </g>
         )}
       </svg>
+      )}
     </div>
   );
 }

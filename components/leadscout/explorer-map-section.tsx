@@ -21,7 +21,7 @@ export function ExplorerMapSection({
   isLocating,
 }: ExplorerMapSectionProps) {
   return (
-    <section className="pixel-card-sm flex h-full min-h-0 flex-col overflow-hidden bg-white">
+    <section data-tour="explorer-map" className="pixel-card-sm flex h-full min-h-0 flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between border-b-2 border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
@@ -50,6 +50,7 @@ export function ExplorerMapSection({
             size="sm"
             className="h-7 px-2"
             onClick={onToggleEditArea}
+            data-tour="explorer-edit-zone"
           >
             <Move size={12} />
             {isEditingSearchArea ? "Listo" : "Editar zona"}
@@ -58,6 +59,16 @@ export function ExplorerMapSection({
       </div>
 
       <div className="relative min-h-0 flex-1 overflow-hidden">
+        {isEditingSearchArea && (
+          <div
+            className="absolute top-2 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 pixel-card-sm bg-white"
+            style={{ border: "2px solid var(--border)", boxShadow: "2px 2px 0 0 var(--pixel-shadow)" }}
+          >
+            <p className="retro pixel-text-xs uppercase text-center" style={{ color: "var(--text-2)" }}>
+              Arrastra el circulo para mover la zona
+            </p>
+          </div>
+        )}
         <Map center={activeSearchArea.center} zoom={11.4}>
           <UndiscoveredPointsLayer points={UNDISCOVERED_POINTS} />
           <SearchAreaLayer

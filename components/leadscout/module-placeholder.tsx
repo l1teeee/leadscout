@@ -53,8 +53,8 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
   const copy = MODULE_COPY[view];
 
   return (
-    <div className="p-8 max-w-[1200px] w-full animate-fade-up">
-      <section className="pixel-card max-w-3xl overflow-hidden">
+    <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
+      <section className="pixel-card w-full overflow-hidden">
         <div className="flex items-center justify-between border-b-[4px] border-[var(--border)] bg-[var(--surface-2)] px-5 py-3">
           <p className="retro pixel-text-xs font-bold uppercase" style={{ color: "var(--text-2)" }}>
             {copy.eyebrow}
@@ -75,7 +75,7 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
               {copy.title}
             </h2>
             <p
-              className="retro pixel-text-sm mt-3 max-w-xl"
+              className="retro pixel-text-sm mt-3"
               style={{ color: "var(--text-2)" }}
             >
               {copy.description}

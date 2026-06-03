@@ -82,8 +82,10 @@ input:focus, select:focus, button:focus-visible {
   outline-offset: 2px;
 }
 
-@keyframes fadeUp  { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes slideIn { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeUp   { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideIn  { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes scaleIn  { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes exitAnim { from { transform: scale(1); opacity: 1; } to { transform: scale(0.97); opacity: 0; } }
 @keyframes pixelSpin { to { transform: rotate(360deg); } }
 @keyframes pixelPulse {
   0%, 100% { opacity: 0.38; transform: scale(0.92); }
@@ -92,6 +94,20 @@ input:focus, select:focus, button:focus-visible {
 
 .animate-fade-up  { animation: fadeUp var(--motion-medium) var(--ease-out) both; }
 .animate-slide-in { animation: slideIn var(--motion-medium) var(--ease-out) both; }
+.animate-scale-in { animation: scaleIn var(--motion-medium) var(--ease-out) both; }
+.animate-exit     { animation: exitAnim 160ms var(--ease-out) both forwards; }
+
+/* Stagger — children of [data-stagger] enter sequentially */
+[data-stagger] > * {
+  opacity: 0;
+  animation: fadeUp var(--motion-medium) var(--ease-out) both;
+}
+[data-stagger] > *:nth-child(1) { animation-delay: 0ms; }
+[data-stagger] > *:nth-child(2) { animation-delay: 60ms; }
+[data-stagger] > *:nth-child(3) { animation-delay: 120ms; }
+[data-stagger] > *:nth-child(4) { animation-delay: 180ms; }
+[data-stagger] > *:nth-child(5) { animation-delay: 240ms; }
+[data-stagger] > *:nth-child(6) { animation-delay: 300ms; }
 
 .motion-retro-control {
   transition-property: transform, box-shadow, background-color, color, border-color, opacity;
@@ -162,6 +178,36 @@ input:focus, select:focus, button:focus-visible {
   line-height: 1.7;
 }
 
+.leadscout-driver-popover {
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 var(--pixel-shadow) !important;
+  color: var(--text) !important;
+  font-family: var(--font-body), system-ui, sans-serif !important;
+}
+
+.leadscout-driver-popover .driver-popover-title {
+  font-family: var(--font-body), system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.leadscout-driver-popover .driver-popover-description {
+  color: var(--text-2) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+}
+
+.leadscout-driver-popover .driver-popover-footer button {
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 var(--pixel-shadow) !important;
+  font-family: var(--font-body), system-ui, sans-serif !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html:focus-within { scroll-behavior: auto; }
 
@@ -173,9 +219,16 @@ input:focus, select:focus, button:focus-visible {
 
   .animate-fade-up,
   .animate-slide-in,
+  .animate-scale-in,
+  .animate-exit,
   .pixel-spinner-spin,
   .pixel-spinner-pulse {
     animation: none !important;
+  }
+
+  [data-stagger] > * {
+    animation: none !important;
+    opacity: 1 !important;
   }
 
   .motion-retro-control,

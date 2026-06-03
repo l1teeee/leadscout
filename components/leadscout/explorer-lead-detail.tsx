@@ -2,6 +2,7 @@ import { X, Phone, Globe } from "lucide-react";
 import { StatusBadge, PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { Button } from "@/components/ui/button";
+import { EmptyInsight } from "@/components/ui/empty-insight";
 import { SCRAPING_ZONES } from "@/lib/explorer-data";
 import type { ExplorerLeadDetailProps } from "@/types/explorer";
 
@@ -12,6 +13,9 @@ const pixelButtonClass =
   "retro rounded-none border-2 border-[var(--border)] pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px active:shadow-none";
 
 export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
+  const hasIssues = lead.issues.length > 0;
+  const hasContact = Boolean(lead.phone || lead.website);
+
   return (
     <div
       className="w-[384px] shrink-0 overflow-y-auto animate-slide-in p-5 pl-0"
@@ -74,11 +78,19 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               Brechas detectadas
             </p>
             <div className="flex flex-wrap gap-2">
-              {lead.issues.map((issue) => (
-                <Tag key={issue} className={pixelBadgeClass}>
-                  {issue}
-                </Tag>
-              ))}
+              {hasIssues ? (
+                lead.issues.map((issue) => (
+                  <Tag key={issue} className={pixelBadgeClass}>
+                    {issue}
+                  </Tag>
+                ))
+              ) : (
+                <EmptyInsight
+                  title="Aun estamos leyendo senales"
+                  description="Cuando detectemos brechas digitales claras, apareceran aqui para priorizar este negocio."
+                  compact
+                />
+              )}
             </div>
           </div>
 
@@ -89,6 +101,13 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
             >
               Contacto
             </p>
+            {!hasContact && (
+              <EmptyInsight
+                title="Contacto por confirmar"
+                description="Seguiremos explorando fuentes para encontrar telefono, sitio web o canales confiables."
+                compact
+              />
+            )}
             {lead.phone && (
               <div className="pixel-inset mb-2 flex items-center gap-2 px-3 py-2">
                 <Phone size={12} style={{ color: "var(--text)" }} />

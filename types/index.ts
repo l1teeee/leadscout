@@ -26,28 +26,17 @@ export interface SidebarSection {
   items: SidebarItem[];
 }
 
-export interface SidebarProps {
-  active: View;
-  onChange: (v: View) => void;
-}
-
 export interface SidebarNavItemProps {
   item: SidebarItem;
   isActive: boolean;
   isExpanded: boolean;
-  onClick: () => void;
+  href: string;
 }
 
 export interface SidebarMenuSectionProps {
   section: SidebarSection;
-  active: View;
+  pathname: string;
   isExpanded: boolean;
-  onChange: (v: View) => void;
-}
-
-// Topbar
-export interface TopbarProps {
-  view: View;
 }
 
 // Dashboard

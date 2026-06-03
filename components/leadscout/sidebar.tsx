@@ -1,23 +1,11 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart3,
-  Building2,
-  Cable,
-  LayoutDashboard,
-  Search,
-  Send,
-  Target,
-  Settings,
-  Zap,
+  BarChart3, Building2, Cable, LayoutDashboard, Search, Send, Target, Settings, Zap,
 } from "lucide-react";
-import type {
-  SidebarProps,
-  SidebarSection,
-  SidebarNavItemProps,
-  SidebarMenuSectionProps,
-} from "@/types";
+import type { SidebarNavItemProps, SidebarMenuSectionProps, SidebarSection } from "@/types";
 
 const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
@@ -42,42 +30,30 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
   },
 ];
 
-function SidebarNavItem({ item, isActive, isExpanded, onClick }: SidebarNavItemProps) {
+const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
+
+function SidebarNavItem({ item, isActive, isExpanded, href }: SidebarNavItemProps) {
+  const router = useRouter();
   const Icon = item.icon;
 
   return (
     <button
-      onClick={onClick}
+      onClick={() => router.push(href)}
       title={item.label}
       aria-label={item.label}
+      data-tour={`sidebar-${item.id}`}
       className={cn(
-        "w-full flex items-center rounded-none pixel-text-xs transition-colors duration-150 text-left",
-        isExpanded ? "gap-2 px-2 py-2" : "justify-center px-0 py-2",
+        "w-full flex items-center rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer",
+        isExpanded ? "gap-2.5 px-2.5 py-2" : "justify-center px-0 py-2",
         isActive ? "text-[#17110D]" : "text-[#D4D4D8] hover:text-[#FFFFFF]"
       )}
       style={
         isActive
-          ? {
-              background: "var(--pixel-highlight)",
-              border: "2px solid #1C1917",
-              boxShadow: "2px 2px 0 0 #000",
-            }
-          : { border: "2px solid transparent" }
+          ? { ...bodyFont, background: "var(--pixel-highlight)", border: "2px solid #1C1917", boxShadow: "2px 2px 0 0 #000" }
+          : { ...bodyFont, border: "2px solid transparent" }
       }
-      onMouseEnter={
-        isActive
-          ? undefined
-          : (e) => {
-              (e.currentTarget as HTMLElement).style.background = "#2A1B12";
-            }
-      }
-      onMouseLeave={
-        isActive
-          ? undefined
-          : (e) => {
-              (e.currentTarget as HTMLElement).style.background = "";
-            }
-      }
+      onMouseEnter={isActive ? undefined : (e) => { (e.currentTarget as HTMLElement).style.background = "#2A1B12"; }}
+      onMouseLeave={isActive ? undefined : (e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
     >
       <Icon size={15} strokeWidth={isActive ? 2.5 : 2} />
       {isExpanded && <span className="truncate">{item.label}</span>}
@@ -85,16 +61,14 @@ function SidebarNavItem({ item, isActive, isExpanded, onClick }: SidebarNavItemP
   );
 }
 
-function SidebarMenuSection({
-  section,
-  active,
-  isExpanded,
-  onChange,
-}: SidebarMenuSectionProps) {
+function SidebarMenuSection({ section, pathname, isExpanded }: SidebarMenuSectionProps) {
   return (
     <div>
       {isExpanded && (
-        <p className="px-2 mb-2 mt-1 uppercase pixel-text-xs" style={{ color: "#A1A1AA" }}>
+        <p
+          className="mb-2 mt-1 px-2.5 text-[11px] font-bold uppercase leading-4 tracking-[0.08em]"
+          style={{ ...bodyFont, color: "#A1A1AA" }}
+        >
           {section.label}
         </p>
       )}
@@ -103,9 +77,9 @@ function SidebarMenuSection({
           <SidebarNavItem
             key={item.id}
             item={item}
-            isActive={active === item.id}
+            isActive={pathname === `/${item.id}`}
             isExpanded={isExpanded}
-            onClick={() => onChange(item.id)}
+            href={`/${item.id}`}
           />
         ))}
       </div>
@@ -113,8 +87,10 @@ function SidebarMenuSection({
   );
 }
 
-export function Sidebar({ active, onChange }: SidebarProps) {
+export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <aside
@@ -122,83 +98,68 @@ export function Sidebar({ active, onChange }: SidebarProps) {
         "shrink-0 flex flex-col h-full overflow-hidden transition-[width] duration-200 ease-out",
         isExpanded ? "w-[232px]" : "w-[58px]"
       )}
-      style={{
-        background: "var(--sidebar)",
-        borderRight: "2px solid var(--border)",
-      }}
+      style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
     >
       <div
-        className={cn(
-          "h-[58px] flex items-center shrink-0",
-          isExpanded ? "px-4 gap-2.5" : "justify-center px-0"
-        )}
+        className={cn("h-[58px] flex items-center shrink-0", isExpanded ? "px-4 gap-2.5" : "justify-center px-0")}
         style={{ borderBottom: "2px solid #000" }}
       >
         <div
           className="w-8 h-8 rounded-none flex items-center justify-center shrink-0"
-          style={{
-            background: "var(--pixel-highlight)",
-            border: "2px solid #000",
-            boxShadow: "2px 2px 0 0 #000",
-          }}
+          style={{ background: "var(--pixel-highlight)", border: "2px solid #000", boxShadow: "2px 2px 0 0 #000" }}
         >
           <Zap size={15} color="#17110D" strokeWidth={2.5} />
         </div>
         {isExpanded && (
-          <span className="pixel-text-sm text-[#FFFFFF] truncate">LeadScout</span>
+          <span
+            className="truncate text-sm font-extrabold tracking-normal text-[#FFFFFF]"
+            style={bodyFont}
+          >
+            LeadScout
+          </span>
         )}
       </div>
 
-      <nav
-        className={cn(
-          "flex-1 px-2 py-2 flex flex-col overflow-y-auto",
-          isExpanded ? "gap-5" : "gap-3"
-        )}
-      >
+      <nav className={cn("flex-1 px-2 py-2 flex flex-col overflow-y-auto", isExpanded ? "gap-5" : "gap-3")}>
         {SIDEBAR_SECTIONS.map((section) => (
           <SidebarMenuSection
             key={section.label}
             section={section}
-            active={active}
+            pathname={pathname}
             isExpanded={isExpanded}
-            onChange={onChange}
           />
         ))}
       </nav>
 
       <div className="px-2 pb-3 pt-3" style={{ borderTop: "2px solid #000" }}>
         <button
-          onClick={() => onChange("configuracion")}
+          onClick={() => router.push("/configuracion")}
+          data-tour="sidebar-configuracion"
           title="Configuración"
           aria-label="Configuración"
           className={cn(
-            "w-full flex items-center py-2 rounded-none pixel-text-xs transition-colors duration-150 text-left",
-            isExpanded ? "gap-2 px-2" : "justify-center px-0"
+            "w-full flex items-center py-2 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer",
+            isExpanded ? "gap-2.5 px-2.5" : "justify-center px-0"
           )}
           style={
-            active === "configuracion"
-              ? {
-                  background: "var(--pixel-highlight)",
-                  border: "2px solid #1C1917",
-                  boxShadow: "2px 2px 0 0 #000",
-                  color: "#17110D",
-                }
-              : { color: "#D4D4D8", border: "2px solid transparent" }
+            pathname === "/configuracion"
+              ? { ...bodyFont, background: "var(--pixel-highlight)", border: "2px solid #1C1917", boxShadow: "2px 2px 0 0 #000", color: "#17110D" }
+              : { ...bodyFont, color: "#D4D4D8", border: "2px solid transparent" }
           }
           onMouseEnter={(e) => {
-            if (active === "configuracion") return;
+            if (pathname === "/configuracion") return;
             (e.currentTarget as HTMLElement).style.background = "#2A1B12";
             (e.currentTarget as HTMLElement).style.color = "#FFFFFF";
           }}
           onMouseLeave={(e) => {
-            if (active === "configuracion") return;
+            if (pathname === "/configuracion") return;
             (e.currentTarget as HTMLElement).style.background = "";
             (e.currentTarget as HTMLElement).style.color = "#D4D4D8";
           }}
         >
-          <Settings size={15} strokeWidth={active === "configuracion" ? 2.5 : 2} />
+          <Settings size={15} strokeWidth={pathname === "/configuracion" ? 2.5 : 2} />
           {isExpanded && <span className="truncate">Configuración</span>}
         </button>
       </div>

@@ -1,27 +1,30 @@
-import { LEADS } from "@/lib/data";
+import { getLeads } from "@/lib/api/leads";
 import { PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
+import { EmptyInsight } from "@/components/ui/empty-insight";
+import type { LeadStatus } from "@/lib/data";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
-const COLUMNS = [
+const COLUMNS: { id: LeadStatus; label: string }[] = [
   { id: "nuevo",      label: "Nuevos" },
   { id: "contactado", label: "Contactados" },
   { id: "calificado", label: "Calificados" },
   { id: "perdido",    label: "Perdidos" },
-] as const;
+];
 
-export function Oportunidades() {
+export async function Oportunidades() {
+  const leads = await getLeads().catch(() => []);
+
   return (
-    <div className="w-full max-w-[1320px] animate-fade-up p-4 sm:p-6 lg:p-8">
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
+      <div data-stagger className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNS.map((col) => {
-          const leads = LEADS.filter((l) => l.status === col.id);
+          const colLeads = leads.filter((l) => l.status === col.id);
           return (
             <div key={col.id} className="pixel-card-sm bg-[#FAFAF9] p-3">
-              {/* Column header */}
               <div
                 className="mb-3 flex items-center justify-between bg-white px-3 py-2"
                 style={{ border: "2px solid var(--pixel-border, #18181B)" }}
@@ -42,14 +45,13 @@ export function Oportunidades() {
                       boxShadow: "1px 1px 0 #18181B",
                     }}
                   >
-                    {leads.length}
+                    {colLeads.length}
                   </span>
                 </div>
               </div>
 
-              {/* Cards */}
               <div className="flex flex-col gap-3">
-                {leads.map((lead) => (
+                {colLeads.map((lead) => (
                   <div
                     key={lead.id}
                     className="group cursor-pointer bg-white p-4 transition-transform hover:-translate-y-0.5 hover:bg-[#F4F4F5]"
@@ -80,11 +82,17 @@ export function Oportunidades() {
                     </div>
 
                     <div className="mb-3 flex flex-wrap gap-1">
-                      {lead.issues.slice(0, 2).map((issue) => (
-                        <Tag key={issue} className="rounded-none border border-[#18181B] text-[10px]">
-                          {issue}
-                        </Tag>
-                      ))}
+                      {lead.issues.length > 0 ? (
+                        lead.issues.slice(0, 2).map((issue) => (
+                          <Tag key={issue} className="rounded-none border border-[#18181B] text-[10px]">
+                            {issue}
+                          </Tag>
+                        ))
+                      ) : (
+                        <p className="text-[11px] font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                          Brechas por confirmar.
+                        </p>
+                      )}
                       {lead.issues.length > 2 && (
                         <Tag className="rounded-none border border-[#18181B] text-[10px]">
                           +{lead.issues.length - 2}
@@ -103,7 +111,7 @@ export function Oportunidades() {
                   </div>
                 ))}
 
-                {leads.length === 0 && (
+                {colLeads.length === 0 && (
                   <div
                     className="bg-white p-4 text-center"
                     style={{
@@ -111,9 +119,11 @@ export function Oportunidades() {
                       color: "var(--text-3)",
                     }}
                   >
-                    <p className="text-xs font-medium" style={bodyTextStyle}>
-                      Sin leads en esta etapa
-                    </p>
+                    <EmptyInsight
+                      title="Esta etapa esta lista"
+                      description="Cuando clasifiques leads, apareceran aqui para mantener claro el avance comercial."
+                      compact
+                    />
                   </div>
                 )}
               </div>

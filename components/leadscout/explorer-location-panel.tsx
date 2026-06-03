@@ -6,10 +6,6 @@ import type { ExplorerLocationPanelProps } from "@/types/explorer";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
-function formatCoord(value: number) {
-  return value.toFixed(5);
-}
-
 function formatKm(value: number) {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
 }
@@ -28,7 +24,6 @@ export function ExplorerLocationPanel({
   searchRadius,
   onSearchRadiusChange,
   activeSearchArea,
-  searchBounds,
   onBrowserLocation,
 }: ExplorerLocationPanelProps) {
   return (
@@ -55,6 +50,7 @@ export function ExplorerLocationPanel({
           <button
             type="button"
             onClick={onCategoryOpen}
+            data-tour="explorer-category"
             className="motion-retro-control flex min-h-12 w-full items-center justify-between rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-left shadow-[2px_2px_0_0_var(--pixel-shadow)] hover:bg-[var(--surface-2)]"
           >
             <div>
@@ -69,7 +65,9 @@ export function ExplorerLocationPanel({
           </button>
           <div className="mt-2 pixel-inset bg-[var(--surface-2)] px-3 py-2">
             <p className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-              {visiblePointsCount} marcador{visiblePointsCount !== 1 ? "es" : ""} para esta categoria.
+              {visiblePointsCount > 0
+                ? `${visiblePointsCount} marcador${visiblePointsCount !== 1 ? "es" : ""} para esta categoria.`
+                : "Aun no hay marcadores para esta categoria en la zona actual. Prueba otra categoria o mueve el radio."}
             </p>
           </div>
         </div>
@@ -79,6 +77,7 @@ export function ExplorerLocationPanel({
             Zona donde se va a buscar
           </span>
           <input
+            data-tour="explorer-location"
             value={locationQuery}
             onChange={(e) => onLocationQueryChange(e.target.value)}
             placeholder="San Salvador, El Salvador"
@@ -97,10 +96,15 @@ export function ExplorerLocationPanel({
                 {place.label}
               </button>
             ))}
+            {placeSuggestions.length === 0 && (
+              <div className="px-3 py-3 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                Escribe una zona como San Salvador, Santa Tecla o Antiguo Cuscatlan para preparar la busqueda.
+              </div>
+            )}
           </div>
         </label>
 
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div data-tour="explorer-actions" className="grid grid-cols-2 gap-2 pt-1">
           <Button variant="primary" size="sm" className="justify-center">
             <Play size={13} />
             Ejecutar
@@ -129,7 +133,7 @@ export function ExplorerLocationPanel({
           )}
         </div>
 
-        <div className="border-t border-[var(--border)] pt-3">
+        <div data-tour="explorer-radius" className="border-t border-[var(--border)] pt-3">
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
             Rango para tomar datos
           </p>
@@ -154,25 +158,6 @@ export function ExplorerLocationPanel({
           <p className="mt-2 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
             Limite operativo: 2 km para evitar saturar el scraping con demasiados datos.
           </p>
-          <div className="mt-3 pixel-inset bg-[var(--surface-2)] p-3">
-            <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-              Coordenadas de captura
-            </p>
-            <div className="mt-2 space-y-1 text-[11px] font-semibold leading-relaxed">
-              <p style={{ color: "var(--text-2)" }}>
-                Centro: {formatCoord(searchBounds.center.lat)},{" "}
-                {formatCoord(searchBounds.center.lng)}
-              </p>
-              <p style={{ color: "var(--text-2)" }}>
-                Desde: {formatCoord(searchBounds.southwest.lat)},{" "}
-                {formatCoord(searchBounds.southwest.lng)}
-              </p>
-              <p style={{ color: "var(--text-2)" }}>
-                Hasta: {formatCoord(searchBounds.northeast.lat)},{" "}
-                {formatCoord(searchBounds.northeast.lng)}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>

@@ -1,12 +1,24 @@
-import { LEADS, STATS, CHART_DATA } from "@/lib/data";
+import { getLeads } from "@/lib/api/leads";
+import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
 import { StatusBadge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { ChartAreaStep } from "@/components/ui/8bit-chart-area-step";
+import { OnboardingTour } from "@/components/leadscout/onboarding-tour";
+import { EmptyInsight } from "@/components/ui/empty-insight";
 import type { KpiCardProps } from "@/types";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
+
+const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+function toChartData(activity: { date: string; leads: number }[]) {
+  return activity.map((d) => ({
+    label: DAYS[new Date(d.date + "T12:00:00").getDay()],
+    value: d.leads,
+  }));
+}
 
 function KpiCard({ label, value, sub }: KpiCardProps) {
   return (
@@ -35,20 +47,28 @@ function KpiCard({ label, value, sub }: KpiCardProps) {
   );
 }
 
-export function Dashboard() {
-  const recent = LEADS.slice(0, 5);
+export async function Dashboard() {
+  const [leads, summary] = await Promise.all([
+    getLeads().catch(() => []),
+    getReportSummary().catch(() => EMPTY_SUMMARY),
+  ]);
+
+  const recent = leads.slice(0, 5);
+  const chartData = toChartData(summary.weekly_activity);
 
   return (
-    <div className="w-full max-w-[1200px] animate-fade-up p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Total leads" value={STATS.totalLeads} sub="en base de datos" />
-        <KpiCard label="Esta semana" value={STATS.newThisWeek} sub="detectados" />
-        <KpiCard label="Contactados" value={STATS.contacted} sub="en seguimiento" />
-        <KpiCard label="Score promedio" value={STATS.avgScore} sub="sobre 100" />
+    <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
+      <OnboardingTour />
+
+      <div data-tour="dashboard-kpis" data-stagger className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Total leads" value={summary.total_leads} sub="en base de datos" />
+        <KpiCard label="Esta semana" value={summary.new_this_week} sub="detectados" />
+        <KpiCard label="Contactados" value={summary.contacted} sub="en seguimiento" />
+        <KpiCard label="Score promedio" value={summary.avg_score} sub="sobre 100" />
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]">
-        <div className="pixel-card-sm overflow-hidden bg-white">
+      <div data-stagger className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(520px,0.9fr)]">
+        <div data-tour="dashboard-leads" className="pixel-card-sm overflow-hidden bg-white">
           <div
             className="bg-[#F4F4F5] px-5 py-3.5"
             style={{ borderBottom: "2px solid var(--pixel-border, #18181B)" }}
@@ -112,6 +132,18 @@ export function Dashboard() {
                     </td>
                   </tr>
                 ))}
+                {recent.length === 0 && (
+                  <tr>
+                    <td colSpan={4}>
+                      <EmptyInsight
+                        title="Aun no hay leads recientes"
+                        description="Haz tu primera exploracion y pronto encontraremos oportunidades para tu pipeline."
+                        action="Empieza en Explorer para llenar esta tabla"
+                        compact
+                      />
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -120,7 +152,9 @@ export function Dashboard() {
         <ChartAreaStep
           title="Actividad semanal"
           eyebrow="Leads detectados por día"
-          data={CHART_DATA}
+          data={chartData}
+          className="min-h-[420px]"
+          data-tour="dashboard-chart"
         />
       </div>
     </div>

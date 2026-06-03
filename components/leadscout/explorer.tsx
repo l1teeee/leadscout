@@ -5,6 +5,7 @@ import { ExplorerMapSection } from "./explorer-map-section";
 import { ExplorerResultsTable } from "./explorer-results-table";
 import { ExplorerLeadDetail } from "./explorer-lead-detail";
 import { ExplorerCategoryModal } from "./explorer-category-modal";
+import { ExplorerOnboardingTour } from "./explorer-onboarding-tour";
 import type { ExplorerTab } from "@/types";
 
 const TABS: { id: ExplorerTab; label: string }[] = [
@@ -22,7 +23,7 @@ export function Explorer() {
     query, setQuery, filterStatus, setFilterStatus,
     selected,
     placeSuggestions, visibleScrapingPoints,
-    activeSelectedPoint, activeSearchArea, searchBounds, filtered,
+    activeSelectedPoint, activeSearchArea, filtered,
     selectScrapingPoint, selectPlace, selectCategory,
     handleBrowserLocation, moveSearchArea,
     handleLocationQueryChange, toggleEditArea,
@@ -31,16 +32,19 @@ export function Explorer() {
 
   return (
     <div className="flex h-full min-h-0 max-h-full overflow-hidden bg-transparent animate-fade-up">
+      <ExplorerOnboardingTour setActiveTab={setActiveTab} />
+
       <div
         className="flex h-full min-h-0 flex-col overflow-hidden p-5 gap-4"
         style={{ width: selected ? "calc(100% - 384px)" : "100%" }}
       >
-        <div className="pixel-card-sm flex shrink-0 items-center gap-2 bg-white p-2">
+        <div data-tour="explorer-tabs" className="pixel-card-sm flex shrink-0 items-center gap-2 bg-white p-2">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                data-tour={`explorer-tab-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 className="retro h-8 border-2 px-3 pixel-text-xs uppercase transition-colors"
                 style={
@@ -71,7 +75,6 @@ export function Explorer() {
               searchRadius={searchRadius}
               onSearchRadiusChange={setSearchRadius}
               activeSearchArea={activeSearchArea}
-              searchBounds={searchBounds}
               onBrowserLocation={handleBrowserLocation}
             />
             <ExplorerMapSection

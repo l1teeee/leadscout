@@ -22,7 +22,6 @@ export interface ExplorerLocationPanelProps {
   searchRadius: number;
   onSearchRadiusChange: (r: number) => void;
   activeSearchArea: SearchArea;
-  searchBounds: SearchBounds;
   onBrowserLocation: () => void;
 }
 

@@ -2,6 +2,7 @@ import { Search, SlidersHorizontal } from "lucide-react";
 import { StatusBadge, PriorityBadge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { Button } from "@/components/ui/button";
+import { EmptyInsight } from "@/components/ui/empty-insight";
 import { SCRAPING_ZONES, STATUS_FILTERS } from "@/lib/explorer-data";
 import type { ExplorerResultsTableProps } from "@/types/explorer";
 
@@ -32,13 +33,13 @@ export function ExplorerResultsTable({
             Tabla de negocios encontrados
           </h2>
         </div>
-        <span className="retro pixel-text-xs" style={{ color: "var(--text-2)" }}>
+        <span data-tour="explorer-results-summary" className="retro pixel-text-xs" style={{ color: "var(--text-2)" }}>
           {filtered.length} visibles / {visibleCount} en mapa
         </span>
       </div>
 
       <div className="shrink-0 p-3 flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
+        <div data-tour="explorer-results-search" className="relative flex-1 max-w-sm">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2"
@@ -54,7 +55,7 @@ export function ExplorerResultsTable({
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div data-tour="explorer-results-filters" className="flex items-center gap-2">
           {STATUS_FILTERS.map((s) => (
             <button
               key={s.value}
@@ -97,7 +98,7 @@ export function ExplorerResultsTable({
         </span>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto">
+      <div data-tour="explorer-results-list" className="min-h-0 flex-1 overflow-auto">
         <table className="pixel-table w-full text-sm" style={bodyTextStyle}>
           <thead className="sticky top-0 z-10">
             <tr style={{ background: "var(--surface-2)" }}>
@@ -113,6 +114,18 @@ export function ExplorerResultsTable({
             </tr>
           </thead>
           <tbody>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-5 py-12 text-center">
+                  <EmptyInsight
+                    title="Primero exploremos una zona"
+                    description="Los negocios detectados apareceran aqui listos para revisar. Si ya buscaste, prueba limpiar filtros o cambiar el estado."
+                    action="Vuelve a Ubicacion y ejecuta una busqueda"
+                    compact
+                  />
+                </td>
+              </tr>
+            )}
             {filtered.map((lead) => (
               <tr
                 key={lead.id}

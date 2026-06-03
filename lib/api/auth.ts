@@ -1,0 +1,88 @@
+import { apiFetch } from "./client";
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  full_name?: string;
+  role: string;
+  onboarded: boolean;
+  workspace_name?: string;
+  industry?: string;
+  city?: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: AuthUser;
+}
+
+export interface OnboardingData {
+  full_name?: string;
+  role?: string;
+  workspace_name?: string;
+  industry?: string;
+  country?: string;
+  city?: string;
+  phone?: string;
+  website?: string;
+}
+
+export async function login(email: string, password: string): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function register(
+  email: string,
+  password: string,
+  full_name?: string
+): Promise<void> {
+  await apiFetch("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ email, password, full_name }),
+  });
+}
+
+export async function logout(token: string): Promise<void> {
+  await apiFetch("/api/auth/logout", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => {}); // Best-effort
+}
+
+export async function getMe(token: string): Promise<AuthUser> {
+  return apiFetch<AuthUser>("/api/auth/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  await apiFetch("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(
+  access_token: string,
+  new_password: string
+): Promise<void> {
+  await apiFetch("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ access_token, new_password }),
+  });
+}
+
+export async function completeOnboarding(
+  token: string,
+  data: OnboardingData
+): Promise<AuthUser> {
+  return apiFetch<AuthUser>("/api/auth/onboarding", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+}
