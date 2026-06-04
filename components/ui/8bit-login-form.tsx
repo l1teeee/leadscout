@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Zap, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { login } from "@/lib/api/auth";
-import { setToken } from "@/lib/auth";
+import { clearToken, setToken } from "@/lib/auth";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const inputCls =
@@ -24,13 +24,25 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showError = (msg: string) => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setErrorMsg(msg);
+    errorTimerRef.current = setTimeout(() => setErrorMsg(null), 2500);
+  };
 
   const isDisabled = !email || !password || isLoading;
 
+  useEffect(() => {
+    clearToken();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     setErrorMsg(null);
+    setIsLoading(true);
 
     try {
       const result = await login(email, password);
@@ -46,7 +58,7 @@ export default function LoginForm() {
       router.refresh();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
-      setErrorMsg(msg.includes("401") ? "Email o contrasena incorrectos." : "Error al iniciar sesion.");
+      showError(msg.includes("401") ? "Email o contraseña incorrectos." : "Error al iniciar sesión. Intentá de nuevo.");
       setIsLoading(false);
     }
   };
@@ -55,41 +67,39 @@ export default function LoginForm() {
     <div className="animate-scale-in w-full">
       <div className="pixel-card overflow-hidden">
         <div
-          className="flex items-center gap-3 px-5 py-4"
+          className="flex items-center justify-between px-5 py-3"
           style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}
         >
-          <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center"
-            style={{ background: "var(--pixel-highlight)", border: "2px solid #000", boxShadow: "2px 2px 0 0 #000" }}
-          >
-            <Zap size={15} color="#17110D" strokeWidth={2.5} />
-          </div>
-          <div>
-            <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Panel de operaciones</p>
+          <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Acceso</p>
+          <div className="flex gap-1.5" aria-hidden="true">
+            <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
+            <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
+            <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#3FAE2A" }} />
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-5">
           <div className="animate-fade-up" style={{ animationDelay: "60ms" }}>
             <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Ingresar</h2>
-            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Accede a tu cuenta para continuar</p>
+            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Accedé a tu cuenta para continuar</p>
           </div>
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "120ms" }}>
             <label htmlFor="login-email" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Email</label>
-            <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            <input id="login-email" type="email" value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="m@example.com" required autoComplete="email" className={inputCls} style={body} />
           </div>
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "180ms" }}>
             <div className="flex items-center justify-between">
-              <label htmlFor="login-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Contrasena</label>
-              <Link href="/forgot-password" className="retro pixel-text-xs underline-offset-2 hover:underline" style={{ color: "var(--text-3)" }}>Olvidaste?</Link>
+              <label htmlFor="login-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Contraseña</label>
+              <Link href="/forgot-password" className="retro pixel-text-xs underline-offset-2 hover:underline" style={{ color: "var(--text-3)" }}>¿Olvidaste?</Link>
             </div>
             <div className="relative">
               <input id="login-password" type={showPassword ? "text" : "password"} value={password}
-                onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••" required
                 autoComplete="current-password" className={`${inputCls} pr-10`} style={body} />
               <button type="button" tabIndex={-1} onClick={() => setShowPassword((v) => !v)}
                 className="absolute inset-y-0 right-0 flex w-10 items-center justify-center" style={{ color: "var(--text-3)" }}>
@@ -104,11 +114,18 @@ export default function LoginForm() {
               style={{ background: rememberMe ? "var(--border)" : "var(--surface)", boxShadow: "1px 1px 0 var(--pixel-shadow)" }}>
               {rememberMe && <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="var(--pixel-highlight)" strokeWidth="1.5" strokeLinecap="square" /></svg>}
             </button>
-            <span className="retro pixel-text-xs uppercase cursor-pointer select-none" style={{ color: "var(--text-2)" }} onClick={() => setRememberMe((v) => !v)}>Recuerdame</span>
+            <span className="retro pixel-text-xs uppercase cursor-pointer select-none" style={{ color: "var(--text-2)" }} onClick={() => setRememberMe((v) => !v)}>Recordame</span>
           </div>
 
           {errorMsg && (
-            <p className="retro pixel-text-xs border-2 border-[var(--c-hi)] px-3 py-2" style={{ color: "var(--c-hi)", background: "rgba(230,57,70,0.06)" }}>{errorMsg}</p>
+            <div
+              role="alert"
+              className="animate-scale-in retro pixel-text-xs border-2 border-[var(--c-hi)] px-3 py-2.5 flex items-start gap-2"
+              style={{ color: "var(--c-hi)", background: "rgba(230,57,70,0.08)" }}
+            >
+              <span aria-hidden="true" className="shrink-0 mt-px">✕</span>
+              <span>{errorMsg}</span>
+            </div>
           )}
 
           <div className="animate-fade-up" style={{ animationDelay: "240ms" }}>
@@ -121,7 +138,7 @@ export default function LoginForm() {
           </div>
 
           <p className="animate-fade-up text-center text-xs mt-6" style={{ ...body, color: "var(--text-3)" }}>
-            No tienes cuenta?{" "}
+            ¿No tenés cuenta?{" "}
             <Link href="/register" className="font-semibold underline underline-offset-2 hover:text-[var(--text)]" style={{ color: "var(--text-2)" }}>Registrarse</Link>
           </p>
         </form>

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { BarChart3, CheckCircle2, CircleDot, Clock3, TrendingUp } from "lucide-react";
 import { getLeads } from "@/lib/api/leads";
 import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
@@ -97,8 +98,8 @@ function CompactList({ title, rows }: { title: string; rows: { label: string; va
       <div className="mt-4 space-y-3">
         {!hasValues && (
           <EmptyInsight
-            title="Aun no hay datos suficientes"
-            description="Cuando explores una zona, este reporte empezara a mostrar patrones utiles."
+            title="Aún no hay datos suficientes"
+            description="Cuando explores una zona, este reporte empezará a mostrar patrones útiles."
             compact
           />
         )}
@@ -125,9 +126,10 @@ function CompactList({ title, rows }: { title: string; rows: { label: string; va
 }
 
 export async function Reportes() {
+  const token = (await cookies()).get("ls_token")?.value;
   const [leads, summary] = await Promise.all([
-    getLeads().catch(() => []),
-    getReportSummary().catch(() => EMPTY_SUMMARY),
+    getLeads({}, token).catch(() => []),
+    getReportSummary(token).catch(() => EMPTY_SUMMARY),
   ]);
 
   const sampleTotal = leads.length;
@@ -161,13 +163,13 @@ export async function Reportes() {
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ReportMetric label="Total leads" value={summary.total_leads} sub="Base estimada del workspace" icon={BarChart3} />
         <ReportMetric label="Contactados" value={summary.contacted} sub="En seguimiento comercial" icon={Clock3} />
-        <ReportMetric label="Conversion" value={`${conversion}%`} sub="Calificados en la muestra" icon={TrendingUp} />
-        <ReportMetric label="Criticos" value={highRisk} sub="Score igual o menor a 20" icon={CircleDot} />
+        <ReportMetric label="Conversión" value={`${conversion}%`} sub="Calificados en la muestra" icon={TrendingUp} />
+        <ReportMetric label="Críticos" value={highRisk} sub="Score igual o menor a 20" icon={CircleDot} />
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
-          <ChartAreaStep title="Actividad semanal" eyebrow="Leads detectados por dia" data={chartData} />
+          <ChartAreaStep title="Actividad semanal" eyebrow="Leads detectados por día" data={chartData} />
 
           <section className="pixel-card-sm bg-white p-5">
             <div className="flex items-start justify-between gap-4">
@@ -176,7 +178,7 @@ export async function Reportes() {
                   Pipeline
                 </p>
                 <h2 className="retro pixel-text-sm mt-2 uppercase" style={{ color: "var(--text)" }}>
-                  Conversion por etapa
+                  Conversión por etapa
                 </h2>
               </div>
               <div className="pixel-inset bg-[var(--surface-2)] px-3 py-2 text-right">
@@ -190,9 +192,9 @@ export async function Reportes() {
             </div>
             {sampleTotal === 0 ? (
               <EmptyInsight
-                title="El pipeline se activara pronto"
-                description="Ejecuta una primera exploracion y aqui veremos como avanzan los leads por etapa."
-                action="Explora una zona para iniciar el reporte"
+                title="El pipeline se activará pronto"
+                description="Ejecutá una primera exploración y acá veremos cómo avanzan los leads por etapa."
+                action="Explorá una zona para iniciar el reporte"
                 compact
                 className="mt-5"
               />
@@ -214,7 +216,7 @@ export async function Reportes() {
               </div>
               <div>
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  Lectura rapida
+                  Lectura rápida
                 </p>
                 <h2 className="retro pixel-text-sm mt-1 uppercase" style={{ color: "var(--text)" }}>
                   Salud comercial
@@ -224,9 +226,9 @@ export async function Reportes() {
             <div className="mt-4 grid gap-3">
               {sampleTotal === 0 ? (
                 <EmptyInsight
-                  title="Todavia no hay actividad comercial"
-                  description="En cuanto explores una zona, aqui resumiremos prioridades, avances y oportunidades listas para seguimiento."
-                  action="Empieza con una busqueda en Explorer"
+                  title="Todavía no hay actividad comercial"
+                  description="En cuanto explores una zona, acá resumiremos prioridades, avances y oportunidades listas para seguimiento."
+                  action="Empezá con una búsqueda en Explorer"
                   compact
                 />
               ) : (
@@ -236,12 +238,12 @@ export async function Reportes() {
                       {contacted} leads ya tienen avance comercial.
                     </p>
                     <p className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                      Prioriza los negocios criticos sin contacto para subir velocidad del pipeline.
+                      Priorizá los negocios críticos sin contacto para subir velocidad del pipeline.
                     </p>
                   </div>
                   <div className="pixel-inset bg-[var(--surface-2)] p-3">
                     <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                      {qualified} oportunidades estan calificadas.
+                      {qualified} oportunidades están calificadas.
                     </p>
                     <p className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
                       Usalas como base para propuestas y siguientes reportes de cierre.
@@ -253,7 +255,7 @@ export async function Reportes() {
           </section>
 
           <CompactList title="Prioridad" rows={priorityRows} />
-          <CompactList title="Categorias" rows={categoryRows} />
+          <CompactList title="Categorías" rows={categoryRows} />
         </div>
       </div>
     </div>

@@ -1,4 +1,6 @@
-import { MapPin, LocateFixed, Play, SlidersHorizontal } from "lucide-react";
+"use client";
+import { useState } from "react";
+import { Info, MapPin, LocateFixed, Play, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/8bit-slider";
 import { MIN_SEARCH_RADIUS_KM, MAX_SEARCH_RADIUS_KM } from "@/lib/explorer-data";
@@ -8,6 +10,41 @@ const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
 function formatKm(value: number) {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex items-center">
+      <button
+        type="button"
+        aria-label="Más información"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        className="flex size-4 items-center justify-center"
+        style={{ color: "var(--text-3)" }}
+      >
+        <Info size={11} />
+      </button>
+      {open && (
+        <span
+          role="tooltip"
+          className="absolute bottom-full left-1/2 z-50 mb-1.5 w-52 -translate-x-1/2 px-2.5 py-2 text-xs font-medium leading-relaxed animate-scale-in"
+          style={{
+            background: "var(--sidebar)",
+            border: "2px solid var(--border)",
+            boxShadow: "3px 3px 0 0 var(--pixel-shadow)",
+            color: "var(--pixel-highlight)",
+            fontFamily: "var(--font-body), system-ui, sans-serif",
+          }}
+        >
+          {text}
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function ExplorerLocationPanel({
@@ -25,6 +62,9 @@ export function ExplorerLocationPanel({
   onSearchRadiusChange,
   activeSearchArea,
   onBrowserLocation,
+  onSearch,
+  isSearching,
+  searchError,
 }: ExplorerLocationPanelProps) {
   return (
     <section className="pixel-card-sm min-h-0 overflow-auto bg-white p-4 xl:h-fit xl:max-h-full">
@@ -34,7 +74,7 @@ export function ExplorerLocationPanel({
         </div>
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-            Ubicacion
+            Ubicación
           </p>
           <h2 className="text-sm font-bold" style={{ color: "var(--text)" }}>
             Configurar scraping
@@ -45,7 +85,7 @@ export function ExplorerLocationPanel({
       <div className="space-y-3">
         <div>
           <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-            Categoria de busqueda
+            Categoría de búsqueda
           </span>
           <button
             type="button"
@@ -55,7 +95,7 @@ export function ExplorerLocationPanel({
           >
             <div>
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                Categoria seleccionada
+                Categoría seleccionada
               </p>
               <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                 {selectedCategoryInfo?.label ?? "Todas"}
@@ -64,23 +104,30 @@ export function ExplorerLocationPanel({
             <SlidersHorizontal size={15} style={{ color: "var(--text)" }} />
           </button>
           <div className="mt-2 pixel-inset bg-[var(--surface-2)] px-3 py-2">
-            <p className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>
+            <div className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--text-2)" }}>
               {visiblePointsCount > 0
-                ? `${visiblePointsCount} marcador${visiblePointsCount !== 1 ? "es" : ""} para esta categoria.`
-                : "Aun no hay marcadores para esta categoria en la zona actual. Prueba otra categoria o mueve el radio."}
-            </p>
+                ? `${visiblePointsCount} marcador${visiblePointsCount !== 1 ? "es" : ""} para esta categoría.`
+                : <>
+                    Sin marcadores en esta zona
+                    <InfoTooltip text="Ejecutá una búsqueda en esta zona o probá otra categoría para ver negocios en el mapa." />
+                  </>
+              }
+            </div>
           </div>
         </div>
 
         <label className="block">
-          <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-            Zona donde se va a buscar
+          <span className="mb-1 flex items-center gap-1.5">
+            <span className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>
+              Zona donde se va a buscar
+            </span>
+            <InfoTooltip text="La zona queda bloqueada para seleccionar comercios. Usá 'Editar zona' en el mapa solo cuando necesites mover el área de búsqueda." />
           </span>
           <input
             data-tour="explorer-location"
             value={locationQuery}
             onChange={(e) => onLocationQueryChange(e.target.value)}
-            placeholder="San Salvador, El Salvador"
+            placeholder="Ej: Palermo, CABA"
             className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)]"
             style={bodyTextStyle}
           />
@@ -96,18 +143,24 @@ export function ExplorerLocationPanel({
                 {place.label}
               </button>
             ))}
-            {placeSuggestions.length === 0 && (
-              <div className="px-3 py-3 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                Escribe una zona como San Salvador, Santa Tecla o Antiguo Cuscatlan para preparar la busqueda.
+            {placeSuggestions.length === 0 && locationQuery.trim().length > 2 && (
+              <div className="px-3 py-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                Pronto encontraremos opciones para &quot;{locationQuery}&quot;. Prueba otra zona cercana.
               </div>
             )}
           </div>
         </label>
 
         <div data-tour="explorer-actions" className="grid grid-cols-2 gap-2 pt-1">
-          <Button variant="primary" size="sm" className="justify-center">
+          <Button
+            variant="primary"
+            size="sm"
+            className="justify-center"
+            disabled={isSearching}
+            onClick={onSearch}
+          >
             <Play size={13} />
-            Ejecutar
+            {isSearching ? "Buscando" : "Ejecutar"}
           </Button>
           <Button
             variant="secondary"
@@ -117,25 +170,29 @@ export function ExplorerLocationPanel({
             onClick={onBrowserLocation}
           >
             <LocateFixed size={13} />
-            {isLocating ? "Ubicando" : "Mi ubicacion"}
+            {isLocating ? "Ubicando" : "Mi ubicación"}
           </Button>
         </div>
 
-        <div className="pixel-inset bg-[var(--surface-2)] p-3">
-          <p className="text-xs font-medium" style={{ color: "var(--text-2)" }}>
-            Prueba local en El Salvador. La zona queda bloqueada para poder seleccionar comercios;
-            editala solo cuando necesites mover el area.
+        {locationError && (
+          <p className="text-xs font-semibold" style={{ color: "var(--c-hi)" }}>
+            {locationError}
           </p>
-          {locationError && (
-            <p className="mt-2 text-xs font-semibold" style={{ color: "#B91C1C" }}>
-              {locationError}
-            </p>
-          )}
-        </div>
+        )}
+
+        {searchError && (
+          <div
+            className="border-2 border-[var(--c-hi)] bg-[rgba(230,57,70,0.08)] px-3 py-2 text-xs font-semibold"
+            style={{ ...bodyTextStyle, color: "var(--c-hi)" }}
+          >
+            {searchError}
+          </div>
+        )}
 
         <div data-tour="explorer-radius" className="border-t border-[var(--border)] pt-3">
-          <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
+          <p className="retro pixel-text-xs uppercase flex items-center gap-1" style={{ color: "var(--text-3)" }}>
             Rango para tomar datos
+            <InfoTooltip text="Un radio menor da resultados más precisos. Aumentalo si querés cubrir más negocios en la zona." />
           </p>
           <div className="mt-3">
             <Slider
@@ -143,7 +200,7 @@ export function ExplorerLocationPanel({
               min={MIN_SEARCH_RADIUS_KM}
               max={MAX_SEARCH_RADIUS_KM}
               step={0.5}
-              aria-label="Rango de busqueda en kilometros"
+              aria-label="Rango de búsqueda en kilómetros"
               onValueChange={(value) => onSearchRadiusChange(value[0] ?? MAX_SEARCH_RADIUS_KM)}
             />
           </div>
@@ -155,9 +212,6 @@ export function ExplorerLocationPanel({
             </span>
             <span style={{ color: "var(--text-3)" }}>{formatKm(MAX_SEARCH_RADIUS_KM)} km</span>
           </div>
-          <p className="mt-2 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
-            Limite operativo: 2 km para evitar saturar el scraping con demasiados datos.
-          </p>
         </div>
       </div>
     </section>

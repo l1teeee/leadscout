@@ -3,7 +3,7 @@ export interface PlaceSuggestion {
   label: string;
   municipality: string;
   department: string;
-  center: [number, number];
+  center: [number, number]; // [longitude, latitude]
 }
 
 export interface BusinessCategory {
@@ -28,69 +28,193 @@ export const BUSINESS_CATEGORIES: BusinessCategory[] = [
   { id: "sports", label: "Deportes", match: ["Deportes"] },
 ];
 
-export const EL_SALVADOR_PLACES: PlaceSuggestion[] = [
+export const ARGENTINA_PLACES: PlaceSuggestion[] = [
+  // CABA — barrios
   {
-    id: "san-salvador",
-    label: "San Salvador, El Salvador",
-    municipality: "San Salvador",
-    department: "San Salvador",
-    center: [-89.2182, 13.6929],
+    id: "palermo",
+    label: "Palermo, CABA",
+    municipality: "Palermo",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4228, -34.5886],
   },
   {
-    id: "santa-tecla",
-    label: "Santa Tecla, La Libertad",
-    municipality: "Santa Tecla",
-    department: "La Libertad",
-    center: [-89.2894, 13.6769],
+    id: "recoleta",
+    label: "Recoleta, CABA",
+    municipality: "Recoleta",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.3940, -34.5874],
   },
   {
-    id: "antiguo-cuscatlan",
-    label: "Antiguo Cuscatlán, La Libertad",
-    municipality: "Antiguo Cuscatlán",
-    department: "La Libertad",
-    center: [-89.2476, 13.7016],
+    id: "san-telmo",
+    label: "San Telmo, CABA",
+    municipality: "San Telmo",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.3731, -34.6212],
   },
   {
-    id: "soyapango",
-    label: "Soyapango, San Salvador",
-    municipality: "Soyapango",
-    department: "San Salvador",
-    center: [-89.1513, 13.7101],
+    id: "villa-crespo",
+    label: "Villa Crespo, CABA",
+    municipality: "Villa Crespo",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4392, -34.5978],
   },
   {
-    id: "mejicanos",
-    label: "Mejicanos, San Salvador",
-    municipality: "Mejicanos",
-    department: "San Salvador",
-    center: [-89.2137, 13.7403],
+    id: "belgrano",
+    label: "Belgrano, CABA",
+    municipality: "Belgrano",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4555, -34.5566],
   },
   {
-    id: "san-miguel",
-    label: "San Miguel, El Salvador",
-    municipality: "San Miguel",
-    department: "San Miguel",
-    center: [-88.1779, 13.4833],
+    id: "almagro",
+    label: "Almagro, CABA",
+    municipality: "Almagro",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4165, -34.6098],
   },
   {
-    id: "santa-ana",
-    label: "Santa Ana, El Salvador",
-    municipality: "Santa Ana",
-    department: "Santa Ana",
-    center: [-89.5597, 13.9942],
+    id: "caballito",
+    label: "Caballito, CABA",
+    municipality: "Caballito",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4412, -34.6188],
   },
   {
-    id: "sonsonate",
-    label: "Sonsonate, El Salvador",
-    municipality: "Sonsonate",
-    department: "Sonsonate",
-    center: [-89.7242, 13.7189],
+    id: "flores",
+    label: "Flores, CABA",
+    municipality: "Flores",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4620, -34.6353],
+  },
+  {
+    id: "boedo",
+    label: "Boedo, CABA",
+    municipality: "Boedo",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4180, -34.6276],
+  },
+  {
+    id: "nunez",
+    label: "Núñez, CABA",
+    municipality: "Núñez",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4614, -34.5431],
+  },
+  {
+    id: "villa-urquiza",
+    label: "Villa Urquiza, CABA",
+    municipality: "Villa Urquiza",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4891, -34.5721],
+  },
+  {
+    id: "chacarita",
+    label: "Chacarita, CABA",
+    municipality: "Chacarita",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4530, -34.5841],
+  },
+  {
+    id: "montserrat",
+    label: "Montserrat, CABA",
+    municipality: "Montserrat",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.3800, -34.6158],
+  },
+  {
+    id: "balvanera",
+    label: "Balvanera, CABA",
+    municipality: "Balvanera",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4080, -34.6107],
+  },
+  {
+    id: "villa-del-parque",
+    label: "Villa del Parque, CABA",
+    municipality: "Villa del Parque",
+    department: "Ciudad de Buenos Aires",
+    center: [-58.4972, -34.6031],
+  },
+  // GBA y ciudades del interior
+  {
+    id: "la-plata",
+    label: "La Plata, Buenos Aires",
+    municipality: "La Plata",
+    department: "Buenos Aires",
+    center: [-57.9536, -34.9205],
+  },
+  {
+    id: "mar-del-plata",
+    label: "Mar del Plata, Buenos Aires",
+    municipality: "Mar del Plata",
+    department: "Buenos Aires",
+    center: [-57.5575, -38.0023],
+  },
+  {
+    id: "rosario",
+    label: "Rosario, Santa Fe",
+    municipality: "Rosario",
+    department: "Santa Fe",
+    center: [-60.6505, -32.9442],
+  },
+  {
+    id: "cordoba",
+    label: "Córdoba, Córdoba",
+    municipality: "Córdoba",
+    department: "Córdoba",
+    center: [-64.1888, -31.4201],
+  },
+  {
+    id: "mendoza",
+    label: "Mendoza, Mendoza",
+    municipality: "Mendoza",
+    department: "Mendoza",
+    center: [-68.8272, -32.8908],
+  },
+  {
+    id: "tucuman",
+    label: "San Miguel de Tucumán, Tucumán",
+    municipality: "San Miguel de Tucumán",
+    department: "Tucumán",
+    center: [-65.2176, -26.8083],
+  },
+  {
+    id: "salta",
+    label: "Salta, Salta",
+    municipality: "Salta",
+    department: "Salta",
+    center: [-65.4117, -24.7829],
+  },
+  {
+    id: "santa-fe",
+    label: "Santa Fe, Santa Fe",
+    municipality: "Santa Fe",
+    department: "Santa Fe",
+    center: [-60.7000, -31.6333],
+  },
+  {
+    id: "bahia-blanca",
+    label: "Bahía Blanca, Buenos Aires",
+    municipality: "Bahía Blanca",
+    department: "Buenos Aires",
+    center: [-62.2663, -38.7183],
+  },
+  {
+    id: "neuquen",
+    label: "Neuquén, Neuquén",
+    municipality: "Neuquén",
+    department: "Neuquén",
+    center: [-68.0591, -38.9516],
   },
 ];
+
+// Mantener alias para compatibilidad con cualquier import existente
+export const EL_SALVADOR_PLACES = ARGENTINA_PLACES;
 
 function normalize(value: string) {
   return value
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .trim();
 }
@@ -122,9 +246,9 @@ export function categoryMatchesLead(categoryId: string, leadCategory: string) {
 
 export function suggestPlaces(query: string, limit = 5) {
   const normalizedQuery = normalize(query);
-  if (!normalizedQuery) return EL_SALVADOR_PLACES.slice(0, limit);
+  if (!normalizedQuery) return ARGENTINA_PLACES.slice(0, limit);
 
-  return EL_SALVADOR_PLACES.filter((place) => {
+  return ARGENTINA_PLACES.filter((place) => {
     const haystack = normalize(
       `${place.label} ${place.municipality} ${place.department}`
     );
@@ -133,11 +257,38 @@ export function suggestPlaces(query: string, limit = 5) {
 }
 
 export function findNearestPlace(center: [number, number]) {
-  return EL_SALVADOR_PLACES.reduce((nearest, place) => {
+  return ARGENTINA_PLACES.reduce((nearest, place) => {
     const nearestDistance = distanceKm(center, nearest.center);
     const placeDistance = distanceKm(center, place.center);
     return placeDistance < nearestDistance ? place : nearest;
-  }, EL_SALVADOR_PLACES[0]);
+  }, ARGENTINA_PLACES[0]);
+}
+
+/**
+ * Geocodifica una ciudad+país usando Nominatim (OpenStreetMap).
+ * Retorna [longitude, latitude] o null si no se encuentra.
+ */
+export async function geocodeCity(
+  city: string,
+  country: string
+): Promise<{ center: [number, number]; label: string } | null> {
+  try {
+    const q = encodeURIComponent(`${city}, ${country}`);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&addressdetails=0`,
+      { headers: { "Accept-Language": "es", "User-Agent": "LeadScout-AI/1.0" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json() as Array<{ lat: string; lon: string; display_name: string }>;
+    if (!data.length) return null;
+    const { lat, lon, display_name } = data[0];
+    return {
+      center: [parseFloat(lon), parseFloat(lat)],
+      label: display_name.split(",").slice(0, 2).join(",").trim(),
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function getBrowserLocation(): Promise<BrowserLocationResult> {

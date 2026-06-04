@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/components/leadscout/module-placeholder";
+import { redirect } from "next/navigation";
 
-export default function CampanasPage() {
-  return <ModulePlaceholder view="campanas" />;
+export default function CampanasRedirect() {
+  redirect("/campaigns");
 }

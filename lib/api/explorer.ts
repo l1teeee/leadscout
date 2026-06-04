@@ -31,8 +31,20 @@ export interface ExplorerSearchResponse {
 }
 
 export async function searchExplorer(body: ExplorerSearchRequest): Promise<ExplorerSearchResponse> {
-  return apiFetch<ExplorerSearchResponse>("/api/explorer/search", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60_000);
+  try {
+    return await apiFetch<ExplorerSearchResponse>("/api/explorer/search", {
+      method: "POST",
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("La búsqueda tardó más de 60 segundos. Intentá con un radio menor.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 }

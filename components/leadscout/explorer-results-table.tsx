@@ -47,7 +47,7 @@ export function ExplorerResultsTable({
           />
           <input
             type="text"
-            placeholder="Buscar negocio, categoria o zona..."
+            placeholder="Buscar negocio, categoría o zona..."
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
             className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface-2)] pl-9 pr-3 text-sm text-[var(--text)] shadow-[2px_2px_0_0_var(--pixel-shadow)] placeholder:text-[var(--text-3)]"
@@ -102,7 +102,7 @@ export function ExplorerResultsTable({
         <table className="pixel-table w-full text-sm" style={bodyTextStyle}>
           <thead className="sticky top-0 z-10">
             <tr style={{ background: "var(--surface-2)" }}>
-              {["Negocio", "Categoria", "Zona", "Score", "Prioridad", "Estado"].map((h) => (
+              {["Negocio", "Categoría", "Zona", "Score", "Prioridad", "Estado"].map((h) => (
                 <th
                   key={h}
                   className="retro px-5 py-3 text-left font-bold uppercase pixel-text-xs"
@@ -119,8 +119,8 @@ export function ExplorerResultsTable({
                 <td colSpan={6} className="px-5 py-12 text-center">
                   <EmptyInsight
                     title="Primero exploremos una zona"
-                    description="Los negocios detectados apareceran aqui listos para revisar. Si ya buscaste, prueba limpiar filtros o cambiar el estado."
-                    action="Vuelve a Ubicacion y ejecuta una busqueda"
+                    description="Los negocios detectados aparecerán acá listos para revisar. Si ya buscaste, probá limpiar filtros o cambiar el estado."
+                    action="Volvé a Ubicación y ejecutá una búsqueda"
                     compact
                   />
                 </td>

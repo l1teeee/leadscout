@@ -1,5 +1,5 @@
-import { Oportunidades } from "@/components/leadscout/oportunidades";
+import { redirect } from "next/navigation";
 
-export default function OportunidadesPage() {
-  return <Oportunidades />;
+export default function OportunidadesRedirect() {
+  redirect("/opportunities");
 }

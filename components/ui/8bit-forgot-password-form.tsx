@@ -29,7 +29,7 @@ export default function ForgotPasswordForm() {
         });
       }, 1000);
     } catch {
-      setErrorMsg("No se pudo enviar el correo. Intenta de nuevo.");
+      setErrorMsg("No se pudo enviar el correo. Intentá de nuevo.");
     } finally {
       setIsLoading(false);
     }
@@ -50,8 +50,8 @@ export default function ForgotPasswordForm() {
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-5">
           <div className="animate-fade-up" style={{ animationDelay: "60ms" }}>
-            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Olvide mi clave</h2>
-            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Te enviamos un enlace de recuperacion a tu email</p>
+            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Olvidé mi clave</h2>
+            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Te enviamos un enlace de recuperación a tu email</p>
           </div>
 
           {sent ? (
@@ -59,7 +59,7 @@ export default function ForgotPasswordForm() {
               <CheckCircle size={28} style={{ color: "var(--c-qualified)" }} />
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--c-qualified)" }}>Correo enviado</p>
               <p className="text-xs" style={{ ...body, color: "var(--text-3)" }}>
-                Revisa tu bandeja de entrada y sigue el enlace para restablecer tu contrasena.
+                Revisá tu bandeja de entrada y seguí el enlace para restablecer tu contraseña.
               </p>
               {cooldown > 0 && (
                 <button type="button" disabled

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { getLeads } from "@/lib/api/leads";
 import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
 import { StatusBadge } from "@/components/ui/badge";
@@ -48,9 +49,10 @@ function KpiCard({ label, value, sub }: KpiCardProps) {
 }
 
 export async function Dashboard() {
+  const token = (await cookies()).get("ls_token")?.value;
   const [leads, summary] = await Promise.all([
-    getLeads().catch(() => []),
-    getReportSummary().catch(() => EMPTY_SUMMARY),
+    getLeads({}, token).catch(() => []),
+    getReportSummary(token).catch(() => EMPTY_SUMMARY),
   ]);
 
   const recent = leads.slice(0, 5);
@@ -136,9 +138,9 @@ export async function Dashboard() {
                   <tr>
                     <td colSpan={4}>
                       <EmptyInsight
-                        title="Aun no hay leads recientes"
-                        description="Haz tu primera exploracion y pronto encontraremos oportunidades para tu pipeline."
-                        action="Empieza en Explorer para llenar esta tabla"
+                        title="Aún no hay leads recientes"
+                        description="Hacé tu primera exploración y pronto encontraremos oportunidades para tu pipeline."
+                        action="Empezá en Explorer para llenar esta tabla"
                         compact
                       />
                     </td>

@@ -117,9 +117,9 @@ export function ChartAreaStep({
 
       {!hasData && (
         <EmptyInsight
-          title="Aun falta explorar una zona"
-          description="Cuando ejecutes tu primera busqueda, aqui veras los leads detectados por dia."
-          action="Explora una zona para activar la actividad semanal"
+          title="Aún falta explorar una zona"
+          description="Cuando ejecutes tu primera búsqueda, acá verás los leads detectados por día."
+          action="Explorá una zona para activar la actividad semanal"
           className="flex-1"
         />
       )}

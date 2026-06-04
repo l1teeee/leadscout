@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const AUTH_ROUTES = new Set(["/login", "/register", "/forgot-password", "/verify-otp", "/reset-password"]);
-const APP_PATTERN = /^\/(dashboard|explorer|oportunidades|leads|campanas|reportes|integraciones|configuracion)(\/|$)/;
+const APP_PATTERN = /^\/(dashboard|explorer|opportunities|oportunidades|leads|campaigns|campanas|reports|reportes|integrations|integraciones|settings|configuracion)(\/|$)/;
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("ls_token")?.value;

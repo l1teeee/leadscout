@@ -17,15 +17,15 @@ export function OnboardingTour() {
         animate: true,
         allowClose: true,
         nextBtnText: "Siguiente",
-        prevBtnText: "Atras",
+        prevBtnText: "Atrás",
         doneBtnText: "Terminar",
         popoverClass: "leadscout-driver-popover",
         steps: [
           {
             element: "[data-tour='dashboard-kpis']",
             popover: {
-              title: "Tu tablero principal",
-              description: "Aqui ves leads totales, nuevos de la semana, contactos activos y score promedio.",
+              title: "Tu panel principal",
+              description: "Acá ves el total de leads, los nuevos esta semana, contactos activos y el score promedio.",
               side: "bottom",
               align: "start",
             },
@@ -34,7 +34,7 @@ export function OnboardingTour() {
             element: "[data-tour='dashboard-leads']",
             popover: {
               title: "Leads recientes",
-              description: "Revisa los negocios detectados mas recientes, su categoria, score y estado comercial.",
+              description: "Revisá los negocios detectados más recientemente, su categoría, score y estado comercial.",
               side: "right",
               align: "start",
             },
@@ -43,7 +43,7 @@ export function OnboardingTour() {
             element: "[data-tour='dashboard-chart']",
             popover: {
               title: "Actividad semanal",
-              description: "Esta grafica muestra que dias generan mas oportunidades para tu workspace.",
+              description: "Este gráfico muestra qué días generan más oportunidades para tu workspace.",
               side: "left",
               align: "center",
             },
@@ -51,8 +51,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='sidebar-explorer']",
             popover: {
-              title: "Siguiente: Explorer",
-              description: "Al terminar iremos a Explorer para ver donde haces tu primera busqueda y donde aparecen los resultados.",
+              title: "Siguiente Explorer",
+              description: "Al terminar vamos al Explorer para ver dónde hacés tu primera búsqueda y dónde aparecen los resultados.",
               side: "right",
               align: "center",
             },
@@ -61,34 +61,34 @@ export function OnboardingTour() {
             element: "[data-tour='sidebar-leads']",
             popover: {
               title: "Leads",
-              description: "Administra la base completa, filtra por estado, prioridad y revisa datos de contacto.",
+              description: "Gestioná la base completa, filtrá por estado y prioridad, y revisá datos de contacto.",
               side: "right",
               align: "center",
             },
           },
           {
-            element: "[data-tour='sidebar-oportunidades']",
+            element: "[data-tour='sidebar-opportunities']",
             popover: {
               title: "Oportunidades",
-              description: "Organiza tu pipeline comercial por nuevos, contactados, calificados y perdidos.",
+              description: "Organizá tu pipeline comercial entre nuevos, contactados, calificados y perdidos.",
               side: "right",
               align: "center",
             },
           },
           {
-            element: "[data-tour='sidebar-reportes']",
+            element: "[data-tour='sidebar-reports']",
             popover: {
               title: "Reportes",
-              description: "Mide conversion, actividad, salud comercial y distribucion de oportunidades.",
+              description: "Medí conversión, actividad, salud comercial y distribución de oportunidades.",
               side: "right",
               align: "center",
             },
           },
           {
-            element: "[data-tour='sidebar-configuracion']",
+            element: "[data-tour='sidebar-settings']",
             popover: {
-              title: "Configuracion",
-              description: "Gestiona workspace, usuario, equipo, zonas, plan, seguridad y notificaciones.",
+              title: "Configuración",
+              description: "Gestioná workspace, usuario, equipo, zonas, plan, seguridad y notificaciones.",
               side: "right",
               align: "center",
             },

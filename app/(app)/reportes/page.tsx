@@ -1,5 +1,5 @@
-import { Reportes } from "@/components/leadscout/reportes";
+import { redirect } from "next/navigation";
 
-export default function ReportesPage() {
-  return <Reportes />;
+export default function ReportesRedirect() {
+  redirect("/reports");
 }

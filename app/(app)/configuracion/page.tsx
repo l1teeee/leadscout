@@ -1,5 +1,5 @@
-import { Configuracion } from "@/components/leadscout/configuracion";
+import { redirect } from "next/navigation";
 
-export default function ConfiguracionPage() {
-  return <Configuracion />;
+export default function ConfiguracionRedirect() {
+  redirect("/settings");
 }

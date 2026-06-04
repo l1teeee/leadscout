@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Building2, UserRound, Zap, SkipForward } from "lucide-react";
+import { ArrowRight, Building2, UserRound, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { completeOnboarding } from "@/lib/api/auth";
 import { getToken } from "@/lib/auth";
@@ -10,33 +10,51 @@ const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const inputCls =
   "h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] transition-[border-color,box-shadow] duration-150 focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none";
 
+type CountryEntry = { dialCode: string; apiName: string };
+
+const COUNTRY_DATA: Record<string, CountryEntry> = {
+  "El Salvador":  { dialCode: "+503", apiName: "El Salvador" },
+  "Guatemala":    { dialCode: "+502", apiName: "Guatemala" },
+  "Honduras":     { dialCode: "+504", apiName: "Honduras" },
+  "Costa Rica":   { dialCode: "+506", apiName: "Costa Rica" },
+  "Panama":       { dialCode: "+507", apiName: "Panama" },
+  "Mexico":       { dialCode: "+52",  apiName: "Mexico" },
+  "Argentina":    { dialCode: "+54",  apiName: "Argentina" },
+  "Colombia":     { dialCode: "+57",  apiName: "Colombia" },
+  "Peru":         { dialCode: "+51",  apiName: "Peru" },
+  "Chile":        { dialCode: "+56",  apiName: "Chile" },
+  "Otro":         { dialCode: "",     apiName: "" },
+};
+
 const INDUSTRIES = [
-  "Tecnologia",
+  "Tecnología",
   "Retail / Comercio",
-  "Gastronomia / Restaurantes",
+  "Gastronomía / Restaurantes",
   "Servicios profesionales",
   "Salud y bienestar",
-  "Educacion",
-  "Construccion / Inmobiliaria",
-  "Logistica y transporte",
+  "Educación",
+  "Construcción / Inmobiliaria",
+  "Logística y transporte",
   "Marketing y publicidad",
   "Manufactura",
   "Otro",
 ];
 
-const COUNTRIES = [
-  "El Salvador",
-  "Guatemala",
-  "Honduras",
-  "Costa Rica",
-  "Panama",
-  "Mexico",
-  "Argentina",
-  "Colombia",
-  "Peru",
-  "Chile",
-  "Otro",
-];
+// --- Sanitization ---
+// Strip HTML angle brackets and null bytes from free text
+function sanitizeText(val: string, maxLen = 100): string {
+  return val.replace(/[<>\x00]/g, "").slice(0, maxLen);
+}
+
+// Phone digits only: digits, spaces, dashes, parens, dots
+function sanitizePhone(val: string): string {
+  return val.replace(/[^\d\s\-().]/g, "").slice(0, 20);
+}
+
+// URLs: strip injection chars while preserving slashes and query strings
+function sanitizeUrl(val: string): string {
+  return val.replace(/[<>"'`\x00]/g, "").slice(0, 200);
+}
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -69,30 +87,94 @@ export default function OnboardingForm() {
   const [step, setStep] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
+  // Step 0
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("");
+
+  // Step 1
   const [workspaceName, setWorkspaceName] = useState("");
   const [industry, setIndustry] = useState("");
   const [country, setCountry] = useState("El Salvador");
   const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
+  const [cityCustom, setCityCustom] = useState(false);
+  const [cities, setCities] = useState<string[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(Boolean(COUNTRY_DATA["El Salvador"].apiName));
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [website, setWebsite] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const currentDialCode = COUNTRY_DATA[country]?.dialCode ?? "";
+
+  function handleCountryChange(nextCountry: string) {
+    const info = COUNTRY_DATA[nextCountry];
+
+    setCountry(nextCountry);
+    setPhoneNumber("");
+    setCity("");
+    setCityCustom(false);
+    setCities([]);
+    setCitiesLoading(Boolean(info?.apiName));
+  }
+
+  // Fetch cities when country changes
+  useEffect(() => {
+    const info = COUNTRY_DATA[country];
+
+    if (!info?.apiName) return;
+
+    const controller = new AbortController();
+
+    fetch("https://countriesnow.space/api/v0.1/countries/cities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ country: info.apiName }),
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("non-ok");
+        return res.json();
+      })
+      .then((json) => {
+        setCities(Array.isArray(json?.data) ? (json.data as string[]) : []);
+        setCitiesLoading(false);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          setCities([]);
+          setCitiesLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [country]);
 
   const finish = async (data: Record<string, string> = {}) => {
     setIsSubmitting(true);
+    setSubmitError("");
     try {
       const token = getToken();
-      if (token) await completeOnboarding(token, data);
-    } catch {
-      // Non-blocking: proceed to dashboard even if API fails
+      if (!token) {
+        throw new Error("Tu sesion expiro. Inicia sesion de nuevo para crear el workspace.");
+      }
+      await completeOnboarding(token, data);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo crear tu workspace. Intenta de nuevo."
+      );
+      setIsSubmitting(false);
+      return;
     }
+    sessionStorage.setItem("leadscout_onboarding_pending", "1");
     setIsExiting(true);
-    setTimeout(() => router.replace("/dashboard"), 180);
+    setTimeout(() => {
+      router.replace("/dashboard");
+      router.refresh();
+    }, 180);
   };
-
-  const skip = () => finish();
 
   const nextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +182,9 @@ export default function OnboardingForm() {
       setStep(1);
       return;
     }
+    const fullPhone = currentDialCode
+      ? `${currentDialCode} ${phoneNumber}`.trim()
+      : phoneNumber.trim();
     finish({
       full_name: fullName,
       role,
@@ -107,13 +192,21 @@ export default function OnboardingForm() {
       industry,
       country,
       city,
-      phone,
+      phone: fullPhone,
       website,
     });
   };
 
   const step0Valid = fullName.trim().length > 0;
-  const step1Valid = workspaceName.trim().length > 0 && industry.length > 0 && city.trim().length > 0;
+  const step1Valid =
+    workspaceName.trim().length > 0 &&
+    industry.length > 0 &&
+    city.trim().length > 0;
+
+  // City field display state
+  const showCityLoader = citiesLoading && country !== "Otro";
+  const showCitySelect = !cityCustom && !citiesLoading && cities.length > 0;
+  const showCityText = !showCityLoader && !showCitySelect;
 
   return (
     <div className={cn(isExiting ? "animate-exit" : "animate-scale-in", "w-full max-w-md")}>
@@ -132,7 +225,7 @@ export default function OnboardingForm() {
             </div>
             <div>
               <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-              <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Configuracion inicial</p>
+              <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Configuración inicial</p>
             </div>
           </div>
           <StepIndicator current={step} total={2} />
@@ -155,7 +248,7 @@ export default function OnboardingForm() {
             </h2>
             <p className="mt-1.5 text-xs" style={{ ...body, color: "var(--text-3)" }}>
               {step === 0
-                ? "Cuentanos un poco sobre ti para personalizar tu experiencia."
+                ? "Contanos un poco sobre vos para personalizar tu experiencia."
                 : "Configuremos tu espacio de trabajo en LeadScout."}
             </p>
           </div>
@@ -167,10 +260,11 @@ export default function OnboardingForm() {
                 <input
                   type="text"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Ej: Maria Lopez"
+                  onChange={(e) => setFullName(sanitizeText(e.target.value, 80))}
+                  placeholder="Ej: María López"
                   required
                   autoFocus
+                  maxLength={80}
                   className={inputCls}
                   style={body}
                 />
@@ -180,8 +274,9 @@ export default function OnboardingForm() {
                 <input
                   type="text"
                   value={role}
-                  onChange={(e) => setRole(e.target.value)}
+                  onChange={(e) => setRole(sanitizeText(e.target.value, 60))}
                   placeholder="Ej: Director comercial"
+                  maxLength={60}
                   className={inputCls}
                   style={body}
                 />
@@ -196,14 +291,16 @@ export default function OnboardingForm() {
                 <input
                   type="text"
                   value={workspaceName}
-                  onChange={(e) => setWorkspaceName(e.target.value)}
+                  onChange={(e) => setWorkspaceName(sanitizeText(e.target.value, 80))}
                   placeholder="Ej: Distribuidora El Sol"
                   required
                   autoFocus
+                  maxLength={80}
                   className={inputCls}
                   style={body}
                 />
               </div>
+
               <div>
                 <FieldLabel>Industria *</FieldLabel>
                 <select
@@ -219,52 +316,114 @@ export default function OnboardingForm() {
                   ))}
                 </select>
               </div>
+
+              {/* Country + City */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <FieldLabel>Pais</FieldLabel>
+                  <FieldLabel>País</FieldLabel>
                   <select
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    onChange={(e) => handleCountryChange(e.target.value)}
                     className={cn(inputCls, "cursor-pointer")}
                     style={body}
                   >
-                    {COUNTRIES.map((c) => (
+                    {Object.keys(COUNTRY_DATA).map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
                 </div>
+
                 <div>
                   <FieldLabel>Ciudad *</FieldLabel>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Ej: San Salvador"
-                    required
-                    className={inputCls}
-                    style={body}
-                  />
+
+                  {showCityLoader && (
+                    <div className={cn(inputCls, "flex items-center gap-2 cursor-not-allowed opacity-60")}>
+                      <Loader2 size={13} className="animate-spin shrink-0" style={{ color: "var(--text-3)" }} />
+                      <span className="text-xs" style={{ ...body, color: "var(--text-3)" }}>
+                        Cargando...
+                      </span>
+                    </div>
+                  )}
+
+                  {showCitySelect && (
+                    <select
+                      value={city}
+                      onChange={(e) => {
+                        if (e.target.value === "__custom__") {
+                          setCityCustom(true);
+                          setCity("");
+                        } else {
+                          setCity(e.target.value);
+                        }
+                      }}
+                      required
+                      className={cn(inputCls, "cursor-pointer")}
+                      style={body}
+                    >
+                      <option value="" disabled>Selecciona ciudad</option>
+                      {cities.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                      <option value="__custom__">Otra ciudad...</option>
+                    </select>
+                  )}
+
+                  {showCityText && (
+                    <input
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(sanitizeText(e.target.value, 80))}
+                      placeholder="Tu ciudad"
+                      required
+                      maxLength={80}
+                      autoFocus={cityCustom}
+                      className={inputCls}
+                      style={body}
+                    />
+                  )}
                 </div>
               </div>
+
+              {/* Phone + Website */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <FieldLabel>Telefono</FieldLabel>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+503 1234-5678"
-                    className={inputCls}
-                    style={body}
-                  />
+                  <FieldLabel>Teléfono</FieldLabel>
+                  <div className="flex">
+                    {currentDialCode && (
+                      <div
+                        className="flex h-9 shrink-0 items-center px-2 border-2 border-r-0 border-[var(--border)] bg-[var(--surface-2)] select-none"
+                        title="Código de país — cambiá seleccionando otro país"
+                      >
+                        <span
+                          className="text-xs font-bold whitespace-nowrap"
+                          style={{ ...body, color: "var(--text-2)" }}
+                        >
+                          {currentDialCode}
+                        </span>
+                      </div>
+                    )}
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(sanitizePhone(e.target.value))}
+                      placeholder="1234-5678"
+                      maxLength={20}
+                      className={cn(
+                        inputCls,
+                        currentDialCode ? "border-l-0 flex-1 min-w-0" : ""
+                      )}
+                      style={body}
+                    />
+                  </div>
                 </div>
                 <div>
                   <FieldLabel>Sitio web</FieldLabel>
                   <input
                     type="url"
                     value={website}
-                    onChange={(e) => setWebsite(e.target.value)}
+                    onChange={(e) => setWebsite(sanitizeUrl(e.target.value))}
                     placeholder="https://..."
+                    maxLength={200}
                     className={inputCls}
                     style={body}
                   />
@@ -275,24 +434,20 @@ export default function OnboardingForm() {
 
           {/* Actions */}
           <div className="animate-fade-up space-y-3 pt-1" style={{ animationDelay: "200ms" }}>
+            {submitError && (
+              <p className="text-xs font-semibold" style={{ ...body, color: "var(--c-hi)" }}>
+                {submitError}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={isSubmitting || (step === 0 ? !step0Valid : !step1Valid)}
               className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}
             >
-              {isSubmitting ? "Guardando..." : step === 0 ? "Siguiente" : "Guardar y continuar"}
+              {isSubmitting ? "Creando workspace..." : step === 0 ? "Siguiente" : "Guardar y continuar"}
               <ArrowRight size={13} />
-            </button>
-
-            <button
-              type="button"
-              onClick={skip}
-              className="retro pixel-text-xs motion-retro-control inline-flex w-full h-8 items-center justify-center gap-1.5 border-2 border-[var(--border)] bg-transparent font-bold hover:bg-[var(--surface-2)] active:translate-x-px active:translate-y-px"
-              style={{ color: "var(--text-3)" }}
-            >
-              <SkipForward size={11} />
-              Omitir por ahora
             </button>
           </div>
         </form>

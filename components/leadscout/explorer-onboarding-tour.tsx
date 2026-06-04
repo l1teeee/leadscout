@@ -22,15 +22,15 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           animate: true,
           allowClose: true,
           nextBtnText: "Siguiente",
-          prevBtnText: "Atras",
+          prevBtnText: "Atrás",
           doneBtnText: "Terminar",
           popoverClass: "leadscout-driver-popover",
           steps: [
             {
               element: "[data-tour='explorer-tab-resultados']",
               popover: {
-                title: "Pestana Resultados",
-                description: "Despues de ejecutar una busqueda, aqui revisas todos los negocios encontrados.",
+                title: "Pestaña Resultados",
+                description: "Después de ejecutar una búsqueda, acá revisás todos los negocios encontrados.",
                 side: "bottom",
                 align: "start",
               },
@@ -39,7 +39,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
               element: "[data-tour='explorer-results-summary']",
               popover: {
                 title: "Resumen de resultados",
-                description: "Este contador te dice cuantos negocios son visibles y cuantos estan representados en el mapa.",
+                description: "Este contador te dice cuántos negocios son visibles y cuántos están representados en el mapa.",
                 side: "bottom",
                 align: "start",
               },
@@ -48,7 +48,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
               element: "[data-tour='explorer-results-search']",
               popover: {
                 title: "Buscar dentro de resultados",
-                description: "Filtra por nombre, categoria o zona para encontrar rapidamente un negocio especifico.",
+                description: "Filtrá por nombre, categoría o zona para encontrar rápidamente un negocio específico.",
                 side: "bottom",
                 align: "start",
               },
@@ -66,7 +66,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
               element: "[data-tour='explorer-results-list']",
               popover: {
                 title: "Tabla de negocios",
-                description: "Aqui aparece cada lead con zona, score, prioridad y estado. Al hacer clic se abre el detalle lateral.",
+                description: "Acá aparece cada lead con zona, score, prioridad y estado. Al hacer clic se abre el detalle lateral.",
                 side: "top",
                 align: "start",
               },
@@ -89,7 +89,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
         animate: true,
         allowClose: true,
         nextBtnText: "Siguiente",
-        prevBtnText: "Atras",
+        prevBtnText: "Atrás",
         doneBtnText: "Ver resultados",
         popoverClass: "leadscout-driver-popover",
         steps: [
@@ -97,7 +97,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             element: "[data-tour='explorer-tabs']",
             popover: {
               title: "Explorer",
-              description: "Esta seccion sirve para configurar una busqueda y descubrir negocios locales.",
+              description: "Esta sección sirve para configurar una búsqueda y descubrir negocios locales.",
               side: "bottom",
               align: "start",
             },
@@ -105,8 +105,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-category']",
             popover: {
-              title: "Categoria",
-              description: "Primero eliges el rubro: gastronomia, retail, servicios, salud u otro tipo de negocio.",
+              title: "Categoría",
+              description: "Primero elegís el rubro: gastronomía, retail, servicios, salud u otro tipo de negocio.",
               side: "right",
               align: "center",
             },
@@ -114,8 +114,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-location']",
             popover: {
-              title: "Zona de busqueda",
-              description: "Luego defines donde buscar. Puedes escribir una ciudad o seleccionar una sugerencia.",
+              title: "Zona de búsqueda",
+              description: "Luego definís dónde buscar. Podés escribir una ciudad o seleccionar una sugerencia.",
               side: "right",
               align: "center",
             },
@@ -123,8 +123,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-actions']",
             popover: {
-              title: "Ejecutar busqueda",
-              description: "Este boton inicia el scraping. Tambien puedes usar tu ubicacion para centrar la busqueda.",
+              title: "Ejecutar búsqueda",
+              description: "Este botón inicia el scraping. También podés usar tu ubicación para centrar la búsqueda.",
               side: "right",
               align: "center",
             },
@@ -133,7 +133,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             element: "[data-tour='explorer-radius']",
             popover: {
               title: "Rango",
-              description: "El radio limita cuantos negocios se revisan. Un rango menor ayuda a tener resultados mas precisos.",
+              description: "El radio limita cuántos negocios se revisan. Un rango menor ayuda a tener resultados más precisos.",
               side: "right",
               align: "center",
             },
@@ -141,8 +141,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-map']",
             popover: {
-              title: "Mapa de busqueda",
-              description: "Aqui ves la zona activa, negocios detectados y puntos pendientes de escaneo.",
+              title: "Mapa de búsqueda",
+              description: "Acá ves la zona activa, negocios detectados y puntos pendientes de escaneo.",
               side: "left",
               align: "center",
             },
@@ -151,7 +151,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             element: "[data-tour='explorer-edit-zone']",
             popover: {
               title: "Mover zona",
-              description: "Activa editar zona para arrastrar el area de busqueda directamente en el mapa.",
+              description: "Activá editar zona para arrastrar el área de búsqueda directamente en el mapa.",
               side: "left",
               align: "center",
             },

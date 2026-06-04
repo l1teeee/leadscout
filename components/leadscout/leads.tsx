@@ -54,7 +54,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
       <aside className="pixel-card-sm bg-white p-5">
         <EmptyInsight
           title="Selecciona un lead para ver su historia"
-          description="Cuando encuentres oportunidades, aqui veras su score, brechas digitales y datos de contacto."
+          description="Cuando encuentres oportunidades, acá verás su score, brechas digitales y datos de contacto."
           compact
         />
       </aside>
@@ -101,8 +101,8 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
             ))
           ) : (
             <EmptyInsight
-              title="Aun estamos leyendo senales"
-              description="Cuando exploremos mas fuentes, aqui apareceran las brechas digitales detectadas."
+              title="Aún estamos leyendo señales"
+              description="Cuando exploremos más fuentes, acá aparecerán las brechas digitales detectadas."
               compact
             />
           )}
@@ -113,7 +113,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
         {!lead.phone && !lead.website && (
           <EmptyInsight
             title="Contacto por confirmar"
-            description="Todavia estamos buscando canales confiables para este lead."
+            description="Todavía estamos buscando canales confiables para este lead."
             compact
           />
         )}
@@ -136,7 +136,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
         <div className="flex items-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2">
           <CalendarClock size={14} />
           <span className="truncate" style={{ color: "var(--text-2)" }}>
-            {lead.lastContact ? `Ultimo contacto: ${lead.lastContact}` : "Contacto pendiente por confirmar"}
+            {lead.lastContact ? `Último contacto: ${lead.lastContact}` : "Contacto pendiente por confirmar"}
           </span>
         </div>
       </div>
@@ -193,7 +193,7 @@ export function Leads() {
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  Gestion comercial
+                  Gestión comercial
                 </p>
                 <h2 className="retro pixel-text-sm mt-1 uppercase" style={{ color: "var(--text)" }}>
                   Base de leads
@@ -307,11 +307,11 @@ export function Leads() {
           {!loading && filtered.length === 0 && (
             <div className="p-8">
               <EmptyInsight
-                title={leads.length === 0 ? "Aun no hay leads en tu workspace" : "No encontramos coincidencias"}
+                title={leads.length === 0 ? "Aún no hay leads en tu workspace" : "No encontramos coincidencias"}
                 description={
                   leads.length === 0
-                    ? "Explora una zona para empezar a llenar tu base. Pronto apareceran negocios listos para revisar."
-                    : "Prueba ampliar estado, prioridad o busqueda para volver a encontrar oportunidades."
+                    ? "Explorá una zona para empezar a llenar tu base. Pronto aparecerán negocios listos para revisar."
+                    : "Probá ampliar estado, prioridad o búsqueda para volver a encontrar oportunidades."
                 }
                 action={leads.length === 0 ? "Empieza en Explorer" : "Ajusta los filtros activos"}
                 compact

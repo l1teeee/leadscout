@@ -86,8 +86,8 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                 ))
               ) : (
                 <EmptyInsight
-                  title="Aun estamos leyendo senales"
-                  description="Cuando detectemos brechas digitales claras, apareceran aqui para priorizar este negocio."
+                  title="Aún estamos leyendo señales"
+                  description="Cuando detectemos brechas digitales claras, aparecerán acá para priorizar este negocio."
                   compact
                 />
               )}
@@ -104,7 +104,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
             {!hasContact && (
               <EmptyInsight
                 title="Contacto por confirmar"
-                description="Seguiremos explorando fuentes para encontrar telefono, sitio web o canales confiables."
+                description="Seguiremos explorando fuentes para encontrar teléfono, sitio web o canales confiables."
                 compact
               />
             )}
@@ -132,7 +132,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                 className="retro pixel-text-xs uppercase font-bold mb-1"
                 style={{ color: "var(--text-2)" }}
               >
-                Ultimo contacto
+                Último contacto
               </p>
               <p className="text-sm" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                 {lead.lastContact}

@@ -1,4 +1,4 @@
-import { Compass, Sparkles } from "lucide-react";
+import { Compass, Inbox, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const bodyTextStyle = {
@@ -30,11 +30,9 @@ export function EmptyInsight({
     >
       <div
         className="relative flex h-12 w-12 items-center justify-center border-2 border-[var(--border)] bg-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)]"
-        aria-label="Claude AI"
+        aria-label="Estado vacio"
       >
-        <span className="text-sm font-black" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-          C
-        </span>
+        <Inbox size={20} strokeWidth={2.4} style={{ color: "var(--text)" }} />
         <Sparkles
           size={14}
           className="absolute -right-2 -top-2 border-2 border-[var(--border)] bg-[var(--surface)] p-0.5"

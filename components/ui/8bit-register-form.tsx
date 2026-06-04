@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Zap, Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { login, register } from "@/lib/api/auth";
-import { setToken } from "@/lib/auth";
+import { clearToken, setToken } from "@/lib/auth";
 import LoadingScreen from "@/components/ui/8bit-loading-screen";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
@@ -32,17 +32,29 @@ export default function RegisterForm({ className }: { className?: string }) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showError = (msg: string) => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setErrorMsg(msg);
+    errorTimerRef.current = setTimeout(() => setErrorMsg(null), 2500);
+  };
+
+  useEffect(() => {
+    clearToken();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     setErrorMsg(null);
 
     if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-      setErrorMsg("La contrasena no cumple los requisitos.");
+      showError("La contraseña no cumple los requisitos.");
       return;
     }
     if (password !== confirm) {
-      setErrorMsg("Las contrasenas no coinciden.");
+      showError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -72,11 +84,11 @@ export default function RegisterForm({ className }: { className?: string }) {
       sessionStorage.setItem("leadscout_onboarding_pending", "1");
       await wait(650);
       setSuccess(true);
-      setTimeout(() => { router.replace("/dashboard"); router.refresh(); }, 1200);
+      setTimeout(() => { router.replace("/onboarding"); router.refresh(); }, 1200);
     } catch (err) {
       window.clearInterval(progressTimer);
       const msg = err instanceof Error ? err.message : "Error al crear cuenta.";
-      setErrorMsg(msg.includes("400") ? "Este correo ya tiene una cuenta." : msg);
+      showError(msg.includes("400") ? "Este correo ya tiene una cuenta." : "Error al crear la cuenta. Intentá de nuevo.");
       setIsLoading(false);
       setLoadingProgress(0);
     }
@@ -86,20 +98,19 @@ export default function RegisterForm({ className }: { className?: string }) {
     return (
       <div className="animate-scale-in w-full">
         <div className="pixel-card overflow-hidden">
-          <div className="flex items-center gap-3 px-5 py-4" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center" style={{ background: "var(--pixel-highlight)", border: "2px solid #000", boxShadow: "2px 2px 0 0 #000" }}>
-              <Zap size={15} color="#17110D" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-              <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Panel de operaciones</p>
+          <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
+            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Registro</p>
+            <div className="flex gap-1.5" aria-hidden="true">
+              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
+              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
+              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#3FAE2A" }} />
             </div>
           </div>
           <div className="px-6 py-8 flex flex-col items-center gap-4 text-center">
             <CheckCircle size={32} style={{ color: "var(--c-qualified)" }} />
             <div>
               <p className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Cuenta creada</p>
-              <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Redirigiendo al dashboard...</p>
+              <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Redirigiendo a la configuracion inicial...</p>
             </div>
           </div>
         </div>
@@ -111,13 +122,12 @@ export default function RegisterForm({ className }: { className?: string }) {
     return (
       <div className={cn("animate-scale-in w-full", className)}>
         <div className="pixel-card overflow-hidden">
-          <div className="flex items-center gap-3 px-5 py-4" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center" style={{ background: "var(--pixel-highlight)", border: "2px solid #000", boxShadow: "2px 2px 0 0 #000" }}>
-              <Zap size={15} color="#17110D" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-              <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Creando cuenta</p>
+          <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
+            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Registro</p>
+            <div className="flex gap-1.5" aria-hidden="true">
+              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
+              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
+              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#3FAE2A" }} />
             </div>
           </div>
           <LoadingScreen
@@ -125,9 +135,9 @@ export default function RegisterForm({ className }: { className?: string }) {
             progress={loadingProgress}
             tips={[
               "Creando credenciales seguras...",
-              "Preparando tu workspace inicial...",
-              "Asignando permisos de owner...",
-              "Iniciando sesion automaticamente...",
+              "Preparando la configuracion inicial...",
+              "Validando permisos de owner...",
+              "Iniciando sesión automáticamente...",
             ]}
           />
         </div>
@@ -138,13 +148,12 @@ export default function RegisterForm({ className }: { className?: string }) {
   return (
     <div className={cn("animate-scale-in w-full", className)}>
       <div className="pixel-card overflow-hidden">
-        <div className="flex items-center gap-3 px-5 py-4" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center" style={{ background: "var(--pixel-highlight)", border: "2px solid #000", boxShadow: "2px 2px 0 0 #000" }}>
-            <Zap size={15} color="#17110D" strokeWidth={2.5} />
-          </div>
-          <div>
-            <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Panel de operaciones</p>
+        <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
+          <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Registro</p>
+          <div className="flex gap-1.5" aria-hidden="true">
+            <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
+            <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
+            <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#3FAE2A" }} />
           </div>
         </div>
 
@@ -163,7 +172,7 @@ export default function RegisterForm({ className }: { className?: string }) {
           </div>
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "160ms" }}>
-            <label htmlFor="reg-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Contrasena</label>
+            <label htmlFor="reg-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Contraseña</label>
             <div className="relative">
               <input {...secureInputProps} id="reg-password" type={showPassword ? "text" : "password"} value={password}
                 onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required
@@ -179,9 +188,9 @@ export default function RegisterForm({ className }: { className?: string }) {
           {password.length > 0 && (
             <div className="space-y-1.5 px-1">
               {[
-                { label: "Minimo 8 caracteres", ok: password.length >= 8 },
-                { label: "Al menos una mayuscula", ok: /[A-Z]/.test(password) },
-                { label: "Al menos un numero", ok: /[0-9]/.test(password) },
+                { label: "Mínimo 8 caracteres", ok: password.length >= 8 },
+                { label: "Al menos una mayúscula", ok: /[A-Z]/.test(password) },
+                { label: "Al menos un número", ok: /[0-9]/.test(password) },
               ].map(({ label, ok }) => (
                 <div key={label} className="flex items-center gap-2">
                   <div className="h-4 w-4 shrink-0 border-2 flex items-center justify-center"
@@ -195,7 +204,7 @@ export default function RegisterForm({ className }: { className?: string }) {
           )}
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "200ms" }}>
-            <label htmlFor="reg-confirm" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Confirmar contrasena</label>
+            <label htmlFor="reg-confirm" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Confirmar contraseña</label>
             <input {...secureInputProps} id="reg-confirm" type={showPassword ? "text" : "password"} value={confirm}
               onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" required
               className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
@@ -203,7 +212,14 @@ export default function RegisterForm({ className }: { className?: string }) {
           </div>
 
           {errorMsg && (
-            <p className="retro pixel-text-xs border-2 border-[#E63946] px-3 py-2" style={{ color: "#E63946", background: "rgba(230,57,70,0.06)" }}>{errorMsg}</p>
+            <div
+              role="alert"
+              className="animate-scale-in retro pixel-text-xs border-2 border-[var(--c-hi)] px-3 py-2.5 flex items-start gap-2"
+              style={{ color: "var(--c-hi)", background: "rgba(230,57,70,0.08)" }}
+            >
+              <span aria-hidden="true" className="shrink-0 mt-px">✕</span>
+              <span>{errorMsg}</span>
+            </div>
           )}
 
           <div className="animate-fade-up" style={{ animationDelay: "240ms" }}>
@@ -216,7 +232,7 @@ export default function RegisterForm({ className }: { className?: string }) {
           </div>
 
           <p className="animate-fade-up text-center text-xs" style={{ ...body, color: "var(--text-3)" }}>
-            Ya tienes cuenta?{" "}
+            ¿Ya tenés cuenta?{" "}
             <Link href="/login" className="font-semibold underline underline-offset-2" style={{ color: "var(--text-2)" }}>Ingresar</Link>
           </p>
         </form>

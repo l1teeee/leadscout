@@ -6,9 +6,14 @@ export interface AuthUser {
   full_name?: string;
   role: string;
   onboarded: boolean;
+  workspace_id?: string;
   workspace_name?: string;
   industry?: string;
+  country?: string;
   city?: string;
+  approximate_latitude?: number;
+  approximate_longitude?: number;
+  approximate_location_label?: string;
 }
 
 export interface AuthResponse {
@@ -82,6 +87,17 @@ export async function completeOnboarding(
 ): Promise<AuthUser> {
   return apiFetch<AuthUser>("/api/auth/onboarding", {
     method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateApproximateLocation(
+  token: string,
+  data: { latitude: number; longitude: number; label?: string }
+): Promise<AuthUser> {
+  return apiFetch<AuthUser>("/api/auth/me/location", {
+    method: "PUT",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(data),
   });

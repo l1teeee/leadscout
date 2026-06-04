@@ -24,11 +24,11 @@ export default function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
-      setErrorMsg("Las contrasenas no coinciden.");
+      setErrorMsg("Las contraseñas no coinciden.");
       return;
     }
     if (password.length < 8) {
-      setErrorMsg("La contrasena debe tener al menos 8 caracteres.");
+      setErrorMsg("La contraseña debe tener al menos 8 caracteres.");
       return;
     }
     setIsLoading(true);
@@ -38,7 +38,7 @@ export default function ResetPasswordForm() {
       await resetPassword(accessToken, password);
       router.replace("/login");
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Error al actualizar contrasena.");
+      setErrorMsg(err instanceof Error ? err.message : "Error al actualizar contraseña.");
       setIsLoading(false);
     }
   };
@@ -52,24 +52,24 @@ export default function ResetPasswordForm() {
           </div>
           <div>
             <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Nueva contrasena</p>
+            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Nueva contraseña</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-5">
           <div className="animate-fade-up" style={{ animationDelay: "60ms" }}>
             <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Cambiar clave</h2>
-            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Elige una nueva contrasena para tu cuenta</p>
+            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Elegí una nueva contraseña para tu cuenta</p>
           </div>
 
           {!accessToken && (
             <p className="retro pixel-text-xs border-2 border-[#E63946] px-3 py-2" style={{ color: "#E63946", background: "rgba(230,57,70,0.06)" }}>
-              Enlace invalido. Solicita un nuevo correo de recuperacion.
+              Enlace inválido. Solicitá un nuevo correo de recuperación.
             </p>
           )}
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "120ms" }}>
-            <label htmlFor="rp-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Nueva contrasena</label>
+            <label htmlFor="rp-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Nueva contraseña</label>
             <div className="relative">
               <input id="rp-password" type={showPassword ? "text" : "password"} value={password}
                 onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={8}

@@ -22,6 +22,8 @@ export const EMPTY_SUMMARY: ReportSummary = {
   weekly_activity: [],
 };
 
-export async function getReportSummary(): Promise<ReportSummary> {
-  return apiFetch<ReportSummary>("/api/reports/summary");
+export async function getReportSummary(token?: string): Promise<ReportSummary> {
+  return apiFetch<ReportSummary>("/api/reports/summary", {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
 }

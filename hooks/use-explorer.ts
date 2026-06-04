@@ -2,14 +2,17 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Lead, LeadStatus } from "@/lib/data";
 import { getLeads } from "@/lib/api/leads";
+import { getMe, updateApproximateLocation } from "@/lib/api/auth";
 import { searchExplorer } from "@/lib/api/explorer";
 import {
   BUSINESS_CATEGORIES,
   categoryMatchesLead,
   getBrowserLocation,
+  geocodeCity,
   suggestPlaces,
   type PlaceSuggestion,
 } from "@/lib/location-service";
+import { getToken } from "@/lib/auth";
 import {
   DEFAULT_PLACE,
   DEFAULT_SEARCH_AREA,
@@ -57,6 +60,50 @@ export function useExplorer() {
 
   useEffect(() => {
     getLeads().then(setLeads).catch(() => setLeads([]));
+  }, []);
+
+  // Cargar ciudad/país del perfil del usuario y usarlos como default del mapa
+  useEffect(() => {
+    const token = getToken();
+    if (!token) return;
+
+    getMe(token)
+      .then(async (user) => {
+        if (user.approximate_latitude != null && user.approximate_longitude != null) {
+          const center: [number, number] = [user.approximate_longitude, user.approximate_latitude];
+          const label = user.approximate_location_label || "Mi zona aproximada";
+          setLocationQuery(label);
+          setSelectedPlace({
+            id: "saved-approx-location",
+            label,
+            municipality: label,
+            department: user.country ?? "Zona guardada",
+            center,
+          });
+          setCustomCenter(center);
+          return;
+        }
+
+        const city = user.city?.trim();
+        const country = user.country?.trim();
+        if (!city || !country) return;
+
+        const result = await geocodeCity(city, country);
+        if (!result) return;
+
+        setLocationQuery(`${city}, ${country}`);
+        setSelectedPlace({
+          id: "user-location",
+          label: `${city}, ${country}`,
+          municipality: city,
+          department: country,
+          center: result.center,
+        });
+        setCustomCenter(result.center);
+      })
+      .catch(() => {
+        // Si falla, usa el default hardcodeado (Palermo, CABA)
+      });
   }, []);
 
   const selectedCategoryInfo =
@@ -160,6 +207,16 @@ export function useExplorer() {
       setCustomCenter(result.center);
       setSelectedPlace(result.nearestPlace ?? null);
       setLocationQuery(result.label);
+      const token = getToken();
+      if (token) {
+        updateApproximateLocation(token, {
+          latitude: result.center[1],
+          longitude: result.center[0],
+          label: result.label,
+        }).catch(() => {
+          // Location persistence is useful, but the map should still update.
+        });
+      }
     } catch (error) {
       setLocationError(
         error instanceof Error ? error.message : "No se pudo obtener la ubicacion."
@@ -203,13 +260,15 @@ export function useExplorer() {
     setSearchError(null);
     try {
       const center = customCenter ?? selectedPlace?.center ?? DEFAULT_SEARCH_AREA.center;
+      const searchQuery = selectedCategory === "all" ? "negocios locales" : selectedCategoryInfo.label;
+      const searchCategory = selectedCategory === "all" ? "Comercio local" : selectedCategoryInfo.label;
       await searchExplorer({
-        query: selectedCategoryInfo.label,
-        location: locationQuery || DEFAULT_SEARCH_AREA.label || "San Salvador, El Salvador",
+        query: searchQuery,
+        location: locationQuery || DEFAULT_SEARCH_AREA.label || "Zona seleccionada",
         latitude: center[1],
         longitude: center[0],
         radius_km: searchRadius,
-        category: selectedCategoryInfo.label,
+        category: searchCategory,
       });
       const fresh = await getLeads();
       setLeads(fresh);

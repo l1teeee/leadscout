@@ -725,17 +725,5 @@ export function LayerMarkers({
     }
   }, [isLoaded, map, selectedId, selectedLayerId]);
 
-  React.useEffect(() => {
-    if (!isUsableMap(map) || !isLoaded || points.length === 0) return;
-
-    try {
-      const bounds = new MapLibreGL.LngLatBounds();
-      points.forEach((point) => bounds.extend([point.longitude, point.latitude]));
-      map.fitBounds(bounds, { padding: 48, maxZoom: 13, duration: 400 });
-    } catch {
-      // Ignore stale MapLibre instances while filters/geolocation update.
-    }
-  }, [isLoaded, map, points]);
-
   return null;
 }

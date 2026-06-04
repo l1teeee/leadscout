@@ -1,30 +1,29 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Bell, Building2, LogOut, Search, Settings, UserRound } from "lucide-react";
 import Link from "next/link";
 import { logout } from "@/lib/api/auth";
 import { clearToken, getToken, parseTokenUser } from "@/lib/auth";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
-const VIEW_TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/explorer": "Explorer",
-  "/oportunidades": "Oportunidades",
-  "/leads": "Leads",
-  "/campanas": "Campañas",
-  "/reportes": "Reportes",
-  "/integraciones": "Integraciones",
-  "/configuracion": "Configuración",
-};
+function getUserEmail() {
+  const tokenUser = parseTokenUser(getToken() ?? "");
+  return tokenUser?.email ?? "";
+}
 
 export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const title = VIEW_TITLES[pathname] ?? "LeadScout";
-  const tokenUser = parseTokenUser(getToken() ?? "");
-  const userEmail = tokenUser?.email ?? "";
+  const { lang, setLang } = useLanguage();
+  const tr = translations[lang];
+  const title = tr.topbar.titles[pathname] ?? "LeadScout";
+  const [userEmail] = useState(getUserEmail);
+
   const initials = userEmail ? userEmail.split("@")[0].slice(0, 2).toUpperCase() : "LS";
 
   async function handleSignOut() {
@@ -48,6 +47,16 @@ export function Topbar() {
 
       <div className="flex items-center gap-2">
         <button
+          onClick={() => setLang(lang === "en" ? "es" : "en")}
+          className="w-8 h-8 flex items-center justify-center rounded-none transition-transform active:translate-x-0.5 active:translate-y-0.5"
+          style={{ ...bodyFont, color: "var(--text)", background: "var(--surface-2)", border: "2px solid var(--border)", boxShadow: "2px 2px 0 0 var(--pixel-shadow)", fontSize: "10px", fontWeight: 700 }}
+          title={lang === "en" ? "Switch to Spanish" : "Cambiar a Ingles"}
+          aria-label="Toggle language"
+        >
+          {tr.langToggle}
+        </button>
+
+        <button
           className="w-8 h-8 flex items-center justify-center rounded-none transition-transform active:translate-x-0.5 active:translate-y-0.5"
           style={{ color: "var(--text)", background: "var(--surface-2)", border: "2px solid var(--border)", boxShadow: "2px 2px 0 0 var(--pixel-shadow)" }}
         >
@@ -64,7 +73,7 @@ export function Topbar() {
           <DropdownMenu.Trigger asChild>
             <button
               className="ml-1 flex h-8 items-center gap-2 rounded-none border-2 border-[var(--border)] bg-[var(--pixel-highlight)] px-2 shadow-[2px_2px_0_0_var(--pixel-shadow)] transition-transform active:translate-x-0.5 active:translate-y-0.5"
-              aria-label="Menu de usuario"
+              aria-label={tr.topbar.userMenu}
             >
               <span className="text-xs font-extrabold tracking-normal text-[var(--text)]" style={bodyFont}>
                 {initials}
@@ -103,12 +112,12 @@ export function Topbar() {
 
               <DropdownMenu.Item asChild>
                 <Link
-                  href="/configuracion"
+                  href="/settings"
                   className="mt-2 flex cursor-pointer items-center gap-2 border-2 border-transparent px-3 py-2 text-sm font-semibold outline-none hover:border-[var(--border)] hover:bg-[var(--surface-2)]"
                   style={{ color: "var(--text)" }}
                 >
                   <Settings size={14} />
-                  Configuracion
+                  {tr.topbar.settings}
                 </Link>
               </DropdownMenu.Item>
 
@@ -125,7 +134,7 @@ export function Topbar() {
                 style={{ color: "var(--c-hi)" }}
               >
                 <LogOut size={14} />
-                Cerrar sesion
+                {tr.topbar.signOut}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>

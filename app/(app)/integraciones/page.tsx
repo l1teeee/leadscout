@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/components/leadscout/module-placeholder";
+import { redirect } from "next/navigation";
 
-export default function IntegracionesPage() {
-  return <ModulePlaceholder view="integraciones" />;
+export default function IntegracionesRedirect() {
+  redirect("/integrations");
 }

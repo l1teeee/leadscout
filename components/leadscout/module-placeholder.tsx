@@ -1,56 +1,16 @@
+"use client";
 import { Switch } from "@/components/ui/8bit-switch";
 import { Spinner } from "@/components/ui/8bit-spinner";
-import type { ModulePlaceholderProps, PendingView } from "@/types";
-
-const MODULE_COPY: Record<
-  PendingView,
-  {
-    eyebrow: string;
-    title: string;
-    description: string;
-    status: string;
-    queue: string[];
-  }
-> = {
-  leads: {
-    eyebrow: "Operación",
-    title: "Leads",
-    description: "Listado central para administrar negocios detectados, estados y próximos contactos.",
-    status: "Base de leads en preparación",
-    queue: ["segmentos", "asignaciones", "acciones masivas"],
-  },
-  campanas: {
-    eyebrow: "Operación",
-    title: "Campañas",
-    description: "Espacio para organizar secuencias, mensajes y acciones comerciales por segmento.",
-    status: "Motor de campañas pendiente",
-    queue: ["plantillas", "secuencias", "métricas por envío"],
-  },
-  reportes: {
-    eyebrow: "Análisis",
-    title: "Reportes",
-    description: "Métricas para revisar actividad, conversión y calidad de oportunidades.",
-    status: "Panel analítico en cola",
-    queue: ["conversión", "actividad", "calidad del pipeline"],
-  },
-  integraciones: {
-    eyebrow: "Sistema",
-    title: "Integraciones",
-    description: "Conexiones con herramientas externas para enriquecer datos y sincronizar trabajo.",
-    status: "Conectores no instalados",
-    queue: ["crm", "email", "enriquecimiento"],
-  },
-  configuracion: {
-    eyebrow: "Sistema",
-    title: "Configuración",
-    description: "Preferencias generales del workspace, equipo y reglas operativas.",
-    status: "Preferencias listas para definir",
-    queue: ["equipo", "reglas", "workspace"],
-  },
-};
+import type { ModulePlaceholderProps } from "@/types";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
-  const copy = MODULE_COPY[view];
+  const { lang } = useLanguage();
+  const tr = translations[lang];
+  const copy = tr.modules[view as keyof typeof tr.modules];
+
+  if (!copy) return null;
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
@@ -90,7 +50,7 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
 
           <aside className="pixel-card-sm bg-[var(--surface-2)] p-4">
             <p className="retro pixel-text-xs font-bold uppercase" style={{ color: "var(--text)" }}>
-              Cola
+              {tr.queue}
             </p>
             <div className="mt-3 space-y-2">
               {copy.queue.map((item, index) => (
@@ -116,10 +76,10 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
           </aside>
         </div>
 
-        {view === "configuracion" && (
+        {view === "settings" && (
           <div className="border-t-2 border-[var(--border)] p-6">
             <p className="retro pixel-text-xs font-bold uppercase" style={{ color: "var(--text)" }}>
-              Componentes
+              Components
             </p>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -129,15 +89,15 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
                 </p>
                 <div className="mt-4 flex items-center justify-between gap-4">
                   <span className="text-sm" style={{ color: "var(--text-2)" }}>
-                    Modo compacto
+                    Compact mode
                   </span>
-                  <Switch defaultChecked aria-label="Modo compacto" />
+                  <Switch defaultChecked aria-label="Compact mode" />
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-4">
                   <span className="text-sm" style={{ color: "var(--text-2)" }}>
-                    Alertas activas
+                    Active alerts
                   </span>
-                  <Switch aria-label="Alertas activas" />
+                  <Switch aria-label="Active alerts" />
                 </div>
               </div>
 
@@ -147,13 +107,13 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
                 </p>
                 <div className="mt-4 flex items-center gap-5">
                   <div className="flex items-center gap-2">
-                    <Spinner size="sm" label="Cargando leads" />
+                    <Spinner size="sm" label="Loading leads" />
                     <span className="text-sm" style={{ color: "var(--text-2)" }}>
                       Leads
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Spinner variant="diamond" size="md" label="Sincronizando" />
+                    <Spinner variant="diamond" size="md" label="Syncing" />
                     <span className="text-sm" style={{ color: "var(--text-2)" }}>
                       Sync
                     </span>
@@ -167,3 +127,4 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
     </div>
   );
 }
+

@@ -36,14 +36,14 @@ export function ExplorerCategoryModal({
               className="text-base font-bold"
               style={{ ...bodyTextStyle, color: "var(--text)" }}
             >
-              Categoria de busqueda
+              Categoría de búsqueda
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-none border-2 border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-[1px_1px_0_0_var(--pixel-shadow)] transition-transform hover:bg-[var(--pixel-highlight)] active:translate-x-px active:translate-y-px active:shadow-none"
-            aria-label="Cerrar categorias"
+            aria-label="Cerrar categorías"
           >
             <X size={13} />
           </button>

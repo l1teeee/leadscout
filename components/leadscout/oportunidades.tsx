@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { getLeads } from "@/lib/api/leads";
 import { PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
@@ -16,7 +17,8 @@ const COLUMNS: { id: LeadStatus; label: string }[] = [
 ];
 
 export async function Oportunidades() {
-  const leads = await getLeads().catch(() => []);
+  const token = (await cookies()).get("ls_token")?.value;
+  const leads = await getLeads({}, token).catch(() => []);
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
@@ -120,8 +122,8 @@ export async function Oportunidades() {
                     }}
                   >
                     <EmptyInsight
-                      title="Esta etapa esta lista"
-                      description="Cuando clasifiques leads, apareceran aqui para mantener claro el avance comercial."
+                      title="Esta etapa está lista"
+                      description="Cuando clasifiques leads, aparecerán acá para mantener claro el avance comercial."
                       compact
                     />
                   </div>

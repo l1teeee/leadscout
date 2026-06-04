@@ -56,7 +56,7 @@ export interface LeadFilters {
   max_score?: number;
 }
 
-export async function getLeads(filters: LeadFilters = {}): Promise<Lead[]> {
+export async function getLeads(filters: LeadFilters = {}, token?: string): Promise<Lead[]> {
   const params = new URLSearchParams();
   if (filters.q) params.set("q", filters.q);
   if (filters.status) params.set("status", filters.status);
@@ -65,6 +65,8 @@ export async function getLeads(filters: LeadFilters = {}): Promise<Lead[]> {
   if (filters.min_score != null) params.set("min_score", String(filters.min_score));
   if (filters.max_score != null) params.set("max_score", String(filters.max_score));
   const qs = params.toString();
-  const res = await apiFetch<LeadListResponse>(`/api/leads${qs ? `?${qs}` : ""}`);
+  const res = await apiFetch<LeadListResponse>(`/api/leads${qs ? `?${qs}` : ""}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
   return res.data.map(adapt);
 }

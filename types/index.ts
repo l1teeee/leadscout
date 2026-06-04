@@ -3,16 +3,16 @@ import type { ElementType } from "react";
 export type View =
   | "dashboard"
   | "explorer"
-  | "oportunidades"
+  | "opportunities"
   | "leads"
-  | "campanas"
-  | "reportes"
-  | "integraciones"
-  | "configuracion";
+  | "campaigns"
+  | "reports"
+  | "integrations"
+  | "settings";
 
 export type ExplorerTab = "ubicacion" | "resultados";
 
-export type PendingView = Exclude<View, "dashboard" | "explorer" | "oportunidades">;
+export type PendingView = Exclude<View, "dashboard" | "explorer" | "opportunities">;
 
 // Sidebar
 export interface SidebarItem {

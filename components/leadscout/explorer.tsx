@@ -9,7 +9,7 @@ import { ExplorerOnboardingTour } from "./explorer-onboarding-tour";
 import type { ExplorerTab } from "@/types";
 
 const TABS: { id: ExplorerTab; label: string }[] = [
-  { id: "ubicacion", label: "Ubicacion" },
+  { id: "ubicacion", label: "Ubicación" },
   { id: "resultados", label: "Resultados" },
 ];
 
@@ -24,10 +24,12 @@ export function Explorer() {
     selected,
     placeSuggestions, visibleScrapingPoints,
     activeSelectedPoint, activeSearchArea, filtered,
+    isSearching, searchError,
     selectScrapingPoint, selectPlace, selectCategory,
     handleBrowserLocation, moveSearchArea,
     handleLocationQueryChange, toggleEditArea,
     selectLead, openCategoryModal, closeCategoryModal,
+    triggerSearch,
   } = useExplorer();
 
   return (
@@ -76,6 +78,9 @@ export function Explorer() {
               onSearchRadiusChange={setSearchRadius}
               activeSearchArea={activeSearchArea}
               onBrowserLocation={handleBrowserLocation}
+              onSearch={triggerSearch}
+              isSearching={isSearching}
+              searchError={searchError}
             />
             <ExplorerMapSection
               activeSearchArea={activeSearchArea}
@@ -86,6 +91,7 @@ export function Explorer() {
               onMoveSearchArea={moveSearchArea}
               onPointSelect={selectScrapingPoint}
               isLocating={isLocating}
+              isSearching={isSearching}
             />
           </div>
         )}

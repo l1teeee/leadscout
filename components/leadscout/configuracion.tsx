@@ -65,7 +65,7 @@ const zonePriorityColors: Record<ZonePriority, string> = {
 
 const usage = [
   { label: "Leads detectados", value: planUsage.leads.usedThisMonth, limit: planUsage.leads.monthlyLimit },
-  { label: "Busquedas mensuales", value: planUsage.searches.usedThisMonth, limit: planUsage.searches.monthlyLimit },
+  { label: "Búsquedas mensuales", value: planUsage.searches.usedThisMonth, limit: planUsage.searches.monthlyLimit },
   { label: "Miembros", value: planUsage.seats.used, limit: planUsage.seats.limit },
   { label: "Exportaciones", value: planUsage.exports.usedThisMonth, limit: planUsage.exports.monthlyLimit },
   { label: "Storage GB", value: planUsage.storageGb.used, limit: planUsage.storageGb.limit },
@@ -215,11 +215,11 @@ export function Configuracion() {
 
           <div className="grid gap-4 p-5 md:grid-cols-2">
             <Field label="Nombre del workspace" value={workspace.name} />
-            <Field label="Razon social" value={workspace.legalName} />
+            <Field label="Razón social" value={workspace.legalName} />
             <Field label="Industria" value={workspace.industry} />
-            <Field label="Pais" value={workspace.country} />
+            <Field label="País" value={workspace.country} />
             <Field label="Ciudad principal" value={workspace.city} />
-            <Field label="Telefono" value={workspace.phone} />
+            <Field label="Teléfono" value={workspace.phone} />
             <Field label="Sitio web" value={workspace.website} />
             <Field label="Zona horaria" value={currentUser.timezone} />
             <Field label="Moneda" value={workspace.currency} />
@@ -266,11 +266,11 @@ export function Configuracion() {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
           <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow="Operacion" title="Preferencias del workspace" icon={SlidersHorizontal} />
+            <SectionHeader eyebrow="Operación" title="Preferencias del workspace" icon={SlidersHorizontal} />
             <div className="grid gap-3 md:grid-cols-2">
-              <ToggleRow title="Asignacion automatica" description={`Modo activo: ${preferences.assignmentMode}.`} checked />
+              <ToggleRow title="Asignación automática" description={`Modo activo: ${preferences.assignmentMode}.`} checked />
               <ToggleRow title="Notas obligatorias" description="Requiere nota antes de mover una oportunidad de etapa." checked={preferences.requireLeadNotesBeforeStageChange} />
-              <ToggleRow title="Archivar perdidos" description={`Archiva leads perdidos despues de ${preferences.staleLeadDays} dias.`} checked={preferences.autoArchiveLostLeads} />
+              <ToggleRow title="Archivar perdidos" description={`Archiva leads perdidos después de ${preferences.staleLeadDays} días.`} checked={preferences.autoArchiveLostLeads} />
               <ToggleRow title="Reporte semanal" description={`Horario laboral: ${preferences.businessHours.mondayToFriday}.`} checked={false} />
             </div>
           </section>
@@ -335,7 +335,7 @@ export function Configuracion() {
               </div>
             </div>
             <div className="pixel-card-sm bg-white p-5">
-              <SectionHeader eyebrow="Categorias" title="Rubros activos" icon={Globe2} />
+              <SectionHeader eyebrow="Categorías" title="Rubros activos" icon={Globe2} />
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => (
                   <Tag key={category}>{category}</Tag>
@@ -365,7 +365,7 @@ export function Configuracion() {
                     Password activo
                   </p>
                   <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                    Rotacion cada {security.passwordRotationDays} dias
+                    Rotación cada {security.passwordRotationDays} días
                   </p>
                 </div>
               </div>
@@ -380,7 +380,7 @@ export function Configuracion() {
                   </p>
                 </div>
               </div>
-              <ToggleRow title="Verificacion en dos pasos" description={`Nivel de seguridad: ${security.level}.`} checked={security.twoFactorRequired} />
+              <ToggleRow title="Verificación en dos pasos" description={`Nivel de seguridad: ${security.level}.`} checked={security.twoFactorRequired} />
             </div>
           </section>
 
@@ -394,9 +394,9 @@ export function Configuracion() {
           </section>
 
           <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow="Auditoria" title="Actividad reciente" icon={Activity} />
+            <SectionHeader eyebrow="Auditoría" title="Actividad reciente" icon={Activity} />
             <div className="space-y-3">
-              {[`${currentUser.displayName} reviso seguridad`, "Mariana actualizo zonas", "Carlos cerro 3 oportunidades"].map((item) => (
+              {[`${currentUser.displayName} revisó seguridad`, "Mariana actualizó zonas", "Carlos cerró 3 oportunidades"].map((item) => (
                 <div key={item} className="flex items-center gap-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
                   <CheckCircle2 size={14} />
                   <span>{item}</span>

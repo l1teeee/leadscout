@@ -23,6 +23,9 @@ export interface ExplorerLocationPanelProps {
   onSearchRadiusChange: (r: number) => void;
   activeSearchArea: SearchArea;
   onBrowserLocation: () => void;
+  onSearch: () => void;
+  isSearching: boolean;
+  searchError: string | null;
 }
 
 export interface ExplorerMapSectionProps {
@@ -34,6 +37,7 @@ export interface ExplorerMapSectionProps {
   onMoveSearchArea: (center: [number, number]) => void;
   onPointSelect: (point: MapPoint) => void;
   isLocating: boolean;
+  isSearching: boolean;
 }
 
 export interface ExplorerResultsTableProps {

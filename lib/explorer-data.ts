@@ -1,36 +1,37 @@
 import { LEADS } from "@/lib/data";
-import { EL_SALVADOR_PLACES } from "@/lib/location-service";
+import { ARGENTINA_PLACES } from "@/lib/location-service";
 import type { LeadStatus } from "@/lib/data";
 import type { MapPoint, SearchArea, UndiscoveredPoint } from "@/components/ui/mapcn-layer-markers";
 
+// Coordenadas de barrios de CABA [longitude, latitude]
 export const SCRAPING_COORDS: Record<string, [number, number]> = {
-  "1": [-89.2093, 13.6989],
-  "2": [-89.2894, 13.6769],
-  "3": [-89.1792, 13.6924],
-  "4": [-89.2476, 13.7016],
-  "5": [-89.1872, 13.7216],
-  "6": [-89.2354, 13.6661],
-  "7": [-89.3008, 13.6732],
-  "8": [-89.1507, 13.7386],
-  "9": [-89.2261, 13.6893],
-  "10": [-89.2047, 13.7068],
+  "1":  [-58.4228, -34.5886], // Palermo
+  "2":  [-58.3940, -34.5874], // Recoleta
+  "3":  [-58.3731, -34.6212], // San Telmo
+  "4":  [-58.4392, -34.5978], // Villa Crespo
+  "5":  [-58.4555, -34.5566], // Belgrano
+  "6":  [-58.4165, -34.6098], // Almagro
+  "7":  [-58.4412, -34.6188], // Caballito
+  "8":  [-58.4620, -34.6353], // Flores
+  "9":  [-58.4180, -34.6276], // Boedo
+  "10": [-58.4614, -34.5431], // Núñez
 };
 
 export const SCRAPING_ZONES: Record<string, string> = {
-  "1": "Centro Historico, San Salvador",
-  "2": "Santa Tecla, La Libertad",
-  "3": "Soyapango, San Salvador",
-  "4": "Antiguo Cuscatlan, La Libertad",
-  "5": "Mejicanos, San Salvador",
-  "6": "San Marcos, San Salvador",
-  "7": "Nuevo Cuscatlan, La Libertad",
-  "8": "Ilopango, San Salvador",
-  "9": "Colonia Escalon, San Salvador",
-  "10": "San Salvador, San Salvador",
+  "1":  "Palermo, CABA",
+  "2":  "Recoleta, CABA",
+  "3":  "San Telmo, CABA",
+  "4":  "Villa Crespo, CABA",
+  "5":  "Belgrano, CABA",
+  "6":  "Almagro, CABA",
+  "7":  "Caballito, CABA",
+  "8":  "Flores, CABA",
+  "9":  "Boedo, CABA",
+  "10": "Núñez, CABA",
 };
 
 export const SCRAPING_POINTS: MapPoint[] = LEADS.map((lead) => {
-  const [longitude, latitude] = SCRAPING_COORDS[lead.id] ?? [-89.2182, 13.6929];
+  const [longitude, latitude] = SCRAPING_COORDS[lead.id] ?? [-58.4228, -34.5886];
   return {
     id: lead.id,
     name: lead.name,
@@ -42,21 +43,21 @@ export const SCRAPING_POINTS: MapPoint[] = LEADS.map((lead) => {
 });
 
 export const UNDISCOVERED_POINTS: UndiscoveredPoint[] = [
-  { id: "apopa-poi", label: "Punto de interes: Apopa", center: [-89.1786, 13.8072] },
-  { id: "san-marcos-poi", label: "Punto de interes: San Marcos", center: [-89.1835, 13.6583] },
-  { id: "lourdes-poi", label: "Punto de interes: Lourdes", center: [-89.3607, 13.7214] },
-  { id: "ilopango-poi", label: "Punto de interes: Ilopango", center: [-89.1177, 13.7014] },
+  { id: "la-boca-poi",      label: "Zona por escanear: La Boca",      center: [-58.3625, -34.6345] },
+  { id: "villa-urquiza-poi", label: "Zona por escanear: Villa Urquiza", center: [-58.4891, -34.5721] },
+  { id: "mataderos-poi",    label: "Zona por escanear: Mataderos",    center: [-58.5135, -34.6558] },
+  { id: "villa-lugano-poi", label: "Zona por escanear: Villa Lugano",  center: [-58.4748, -34.6713] },
 ];
 
 export const DEFAULT_SEARCH_AREA: SearchArea = {
-  center: [-89.2182, 13.6929],
+  center: [-58.4228, -34.5886], // Palermo, CABA
   radiusKm: 2,
-  label: "San Salvador, El Salvador",
+  label: "Palermo, CABA",
 };
 
-export const DEFAULT_PLACE = EL_SALVADOR_PLACES[0];
+export const DEFAULT_PLACE = ARGENTINA_PLACES[0];
 export const MIN_SEARCH_RADIUS_KM = 0.5;
-export const MAX_SEARCH_RADIUS_KM = 2;
+export const MAX_SEARCH_RADIUS_KM = 10;
 
 export const STATUS_FILTERS: { value: LeadStatus | ""; label: string }[] = [
   { value: "", label: "Todos" },

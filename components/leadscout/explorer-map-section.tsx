@@ -19,19 +19,20 @@ export function ExplorerMapSection({
   onMoveSearchArea,
   onPointSelect,
   isLocating,
+  isSearching,
 }: ExplorerMapSectionProps) {
   return (
     <section data-tour="explorer-map" className="pixel-card-sm flex h-full min-h-0 flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between border-b-2 border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-            Mapa de busqueda
+            Mapa de búsqueda
           </p>
           <h2 className="text-sm font-bold" style={{ color: "var(--text)" }}>
             Zona activa: {activeSearchArea.label}
           </h2>
           <p className="mt-1 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
-            Puntos grises con ? son puntos de interes pendientes de escaneo.
+            Puntos grises con ? son puntos de interés pendientes de escaneo.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -65,7 +66,7 @@ export function ExplorerMapSection({
             style={{ border: "2px solid var(--border)", boxShadow: "2px 2px 0 0 var(--pixel-shadow)" }}
           >
             <p className="retro pixel-text-xs uppercase text-center" style={{ color: "var(--text-2)" }}>
-              Arrastra el circulo para mover la zona
+              Arrastrá el círculo para mover la zona
             </p>
           </div>
         )}
@@ -82,16 +83,18 @@ export function ExplorerMapSection({
             onPointSelect={onPointSelect}
           />
         </Map>
-        {isLocating && (
+        {(isLocating || isSearching) && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-200/75 backdrop-grayscale">
             <div className="pixel-card-sm flex items-center gap-3 bg-white px-4 py-3">
-              <Spinner variant="diamond" size="md" label="Ubicando" />
+              <Spinner variant="diamond" size="md" label={isLocating ? "Ubicando" : "Buscando"} />
               <div>
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text)" }}>
-                  Ubicando
+                  {isLocating ? "Ubicando" : "Explorando zona"}
                 </p>
                 <p className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-                  Tomando posicion del navegador
+                  {isLocating
+                    ? "Tomando posicion aproximada del navegador"
+                    : "Detectando negocios cerca de la zona activa"}
                 </p>
               </div>
             </div>
