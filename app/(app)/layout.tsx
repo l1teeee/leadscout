@@ -3,17 +3,19 @@ import { redirect } from "next/navigation";
 import { PageTransition } from "@/components/leadscout/page-transition";
 import { Sidebar } from "@/components/leadscout/sidebar";
 import { Topbar } from "@/components/leadscout/topbar";
-
-const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
+import { env } from "@/lib/env";
+import { AuthSessionGuard } from "@/components/shared/auth-session-guard";
 
 interface AuthUser {
   onboarded: boolean;
   workspace_id?: string | null;
+  // Backend must populate this field — absence is treated as a compromised session.
+  user_signature?: string;
 }
 
 async function getCurrentUser(token: string): Promise<AuthUser | null> {
   try {
-    const response = await fetch(`${API_URL}/api/auth/me`, {
+    const response = await fetch(`${env.apiUrl}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
@@ -32,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await getCurrentUser(token);
   if (!user) redirect("/login");
   if (!user.onboarded || !user.workspace_id) redirect("/onboarding");
+  if (!user.user_signature) redirect("/login");
 
   return (
     <div className="flex h-full w-full overflow-hidden">
@@ -42,6 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <PageTransition>{children}</PageTransition>
         </main>
       </div>
+      <AuthSessionGuard signature={user.user_signature} />
     </div>
   );
 }

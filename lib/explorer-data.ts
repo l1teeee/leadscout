@@ -1,7 +1,6 @@
-import { LEADS } from "@/lib/data";
 import { ARGENTINA_PLACES } from "@/lib/location-service";
-import type { LeadStatus } from "@/lib/data";
 import type { MapPoint, SearchArea, UndiscoveredPoint } from "@/components/ui/mapcn-layer-markers";
+import type { LeadStatus } from "@/lib/data";
 
 // Coordenadas de barrios de CABA [longitude, latitude]
 export const SCRAPING_COORDS: Record<string, [number, number]> = {
@@ -30,17 +29,7 @@ export const SCRAPING_ZONES: Record<string, string> = {
   "10": "Núñez, CABA",
 };
 
-export const SCRAPING_POINTS: MapPoint[] = LEADS.map((lead) => {
-  const [longitude, latitude] = SCRAPING_COORDS[lead.id] ?? [-58.4228, -34.5886];
-  return {
-    id: lead.id,
-    name: lead.name,
-    category: lead.category,
-    score: lead.score,
-    longitude,
-    latitude,
-  };
-});
+export const SCRAPING_POINTS: MapPoint[] = [];
 
 export const UNDISCOVERED_POINTS: UndiscoveredPoint[] = [
   { id: "la-boca-poi",      label: "Zona por escanear: La Boca",      center: [-58.3625, -34.6345] },

@@ -12,7 +12,7 @@ import {
   suggestPlaces,
   type PlaceSuggestion,
 } from "@/lib/location-service";
-import { getToken } from "@/lib/auth";
+import { getToken, setUserSignature } from "@/lib/auth";
 import {
   DEFAULT_PLACE,
   DEFAULT_SEARCH_AREA,
@@ -73,6 +73,7 @@ export function useExplorer() {
 
     getMe(token)
       .then(async (user) => {
+        if (user.user_signature) setUserSignature(user.user_signature);
         if (user.approximate_latitude != null && user.approximate_longitude != null) {
           const center: [number, number] = [user.approximate_longitude, user.approximate_latitude];
           const label = user.approximate_location_label || tr.savedApproxZone;

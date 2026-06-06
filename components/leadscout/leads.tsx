@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { CalendarClock, Filter, Globe2, Phone, Search, SlidersHorizontal } from "lucide-react";
-import { getLeads } from "@/lib/api/leads";
+import { useLeads } from "@/lib/hooks/use-leads";
 import { translations } from "@/lib/i18n";
 import type { Lead, LeadPriority, LeadStatus } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
@@ -13,14 +12,6 @@ import { EmptyInsight } from "@/components/ui/empty-insight";
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
-
-function normalize(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
-}
 
 function LeadMetric({ label, value, tone }: { label: string; value: string | number; tone?: string }) {
   return (
@@ -137,38 +128,20 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
 export function Leads() {
   const { lang } = useLanguage();
   const tr = translations[lang];
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<LeadStatus | "">("");
-  const [priority, setPriority] = useState<LeadPriority | "">("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const {
+    leads,
+    filtered,
+    selected,
+    loading,
+    query, setQuery,
+    status, setStatus,
+    priority, setPriority,
+    setSelectedId,
+    highPriorityCount,
+    noContactCount,
+    avgScore,
+  } = useLeads();
 
-  useEffect(() => {
-    getLeads()
-      .then((data) => {
-        setLeads(data);
-        setSelectedId(data[0]?.id ?? null);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const filtered = useMemo(() => {
-    const q = normalize(query);
-    return leads.filter((lead) => {
-      const haystack = normalize(`${lead.name} ${lead.category} ${lead.location} ${lead.issues.join(" ")}`);
-      return (!q || haystack.includes(q)) &&
-        (!status || lead.status === status) &&
-        (!priority || lead.priority === priority);
-    });
-  }, [leads, priority, query, status]);
-
-  const selected = filtered.find((lead) => lead.id === selectedId) ?? filtered[0] ?? null;
-  const highPriority = filtered.filter((lead) => lead.priority === "alta").length;
-  const noContact = filtered.filter((lead) => !lead.lastContact).length;
-  const avgScore = filtered.length
-    ? Math.round(filtered.reduce((sum, lead) => sum + lead.score, 0) / filtered.length)
-    : 0;
   const statusOptions: { value: LeadStatus | ""; label: string }[] = [
     { value: "", label: tr.leads.filters.statusAll },
     { value: "nuevo", label: tr.leadStatus.nuevo },
@@ -187,8 +160,8 @@ export function Leads() {
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <LeadMetric label={tr.leads.kpi.visible} value={loading ? "..." : filtered.length} />
-        <LeadMetric label={tr.leads.kpi.highPriority} value={loading ? "..." : highPriority} tone="var(--c-hi)" />
-        <LeadMetric label={tr.leads.kpi.toContact} value={loading ? "..." : noContact} tone="var(--c-mid)" />
+        <LeadMetric label={tr.leads.kpi.highPriority} value={loading ? "..." : highPriorityCount} tone="var(--c-hi)" />
+        <LeadMetric label={tr.leads.kpi.toContact} value={loading ? "..." : noContactCount} tone="var(--c-mid)" />
         <LeadMetric label={tr.leads.kpi.avgScore} value={loading ? "..." : avgScore} />
       </div>
 

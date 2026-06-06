@@ -1,5 +1,5 @@
 "use client";
-import { useExplorer } from "@/hooks/use-explorer";
+import { useExplorer } from "@/lib/hooks/use-explorer";
 import { ExplorerLocationPanel } from "./explorer-location-panel";
 import { ExplorerMapSection } from "./explorer-map-section";
 import { ExplorerResultsTable } from "./explorer-results-table";

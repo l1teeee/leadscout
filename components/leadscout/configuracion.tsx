@@ -18,15 +18,14 @@ import {
 import { Switch } from "@/components/ui/8bit-switch";
 import { Tag } from "@/components/ui/badge";
 import {
-  SETTINGS_CURRENT_USER,
   SETTINGS_OPERATIONAL_PREFERENCES,
   SETTINGS_PLAN_USAGE,
   SETTINGS_SECURITY,
   SETTINGS_TEAM_MEMBERS,
-  SETTINGS_WORKSPACE,
   SETTINGS_WORK_ZONES,
   type ZonePriority,
 } from "@/lib/settings-data";
+import { useSettings } from "@/lib/hooks/use-settings";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 
@@ -34,8 +33,6 @@ const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
-const workspace = SETTINGS_WORKSPACE;
-const currentUser = SETTINGS_CURRENT_USER;
 const team = SETTINGS_TEAM_MEMBERS;
 const preferences = SETTINGS_OPERATIONAL_PREFERENCES;
 const planUsage = SETTINGS_PLAN_USAGE;
@@ -93,12 +90,14 @@ function SectionHeader({
   );
 }
 
-function Field({
+function EditableField({
   label,
   value,
+  onChange,
 }: {
   label: string;
   value: string;
+  onChange: (v: string) => void;
 }) {
   return (
     <label className="block">
@@ -107,8 +106,8 @@ function Field({
       </span>
       <input
         value={value}
-        readOnly
-        className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-semibold text-[var(--text)]"
+        onChange={(e) => onChange(e.target.value)}
+        className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-semibold text-[var(--text)] focus:outline-none focus:border-[var(--text)]"
         style={bodyTextStyle}
       />
     </label>
@@ -161,6 +160,20 @@ export function Configuracion() {
   const { lang } = useLanguage();
   const tr = translations[lang];
   const settings = tr.settings;
+
+  const {
+    workspaceName, setWorkspaceName,
+    industry, setIndustry,
+    country, setCountry,
+    city, setCity,
+    phone, setPhone,
+    website, setWebsite,
+    userFullName, userEmail, userRole,
+    saveStatus, save,
+  } = useSettings();
+
+  const saving = saveStatus === "saving";
+
   const usage = [
     { label: settings.usageLabels.leads, value: planUsage.leads.usedThisMonth, limit: planUsage.leads.monthlyLimit },
     { label: settings.usageLabels.searches, value: planUsage.searches.usedThisMonth, limit: planUsage.searches.monthlyLimit },
@@ -184,35 +197,32 @@ export function Configuracion() {
                     {tr.common.workspace}
                   </p>
                   <h1 className="mt-1 text-2xl font-black leading-tight" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    {workspace.name}
+                    {workspaceName || " "}
                   </h1>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Tag>{tr.settingsEnums.plan[planUsage.plan]}</Tag>
-                    <Tag>{tr.settingsEnums.workspaceStatus[workspace.status]}</Tag>
-                    <Tag>{workspace.country}</Tag>
+                    <Tag>{country}</Tag>
                   </div>
                 </div>
               </div>
               <button
                 type="button"
-                className="retro pixel-text-sm motion-retro-control inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)]"
+                disabled={saving}
+                onClick={save}
+                className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-60"
               >
-                {settings.save}
+                {saving ? "..." : saveStatus === "ok" ? "OK" : saveStatus === "error" ? "Error" : settings.save}
               </button>
             </div>
           </div>
 
           <div className="grid gap-4 p-5 md:grid-cols-2">
-            <Field label={settings.fields.workspaceName} value={workspace.name} />
-            <Field label={settings.fields.legalName} value={workspace.legalName} />
-            <Field label={settings.fields.industry} value={workspace.industry} />
-            <Field label={settings.fields.country} value={workspace.country} />
-            <Field label={settings.fields.mainCity} value={workspace.city} />
-            <Field label={settings.fields.phone} value={workspace.phone} />
-            <Field label={settings.fields.website} value={workspace.website} />
-            <Field label={settings.fields.timezone} value={currentUser.timezone} />
-            <Field label={settings.fields.currency} value={workspace.currency} />
-            <Field label={settings.fields.taxId} value={workspace.taxId} />
+            <EditableField label={settings.fields.workspaceName} value={workspaceName} onChange={setWorkspaceName} />
+            <EditableField label={settings.fields.industry} value={industry} onChange={setIndustry} />
+            <EditableField label={settings.fields.country} value={country} onChange={setCountry} />
+            <EditableField label={settings.fields.mainCity} value={city} onChange={setCity} />
+            <EditableField label={settings.fields.phone} value={phone} onChange={setPhone} />
+            <EditableField label={settings.fields.website} value={website} onChange={setWebsite} />
           </div>
         </section>
 
@@ -220,14 +230,14 @@ export function Configuracion() {
           <SectionHeader eyebrow={settings.account} title={settings.currentUser} icon={UserRound} />
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center border-2 border-[var(--border)] bg-[var(--pixel-highlight)] retro pixel-text-sm shadow-[2px_2px_0_var(--pixel-shadow)]">
-              {initials(currentUser.fullName)}
+              {initials(userFullName)}
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-black" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                {currentUser.fullName}
+                {userFullName}
               </p>
               <p className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                {currentUser.email}
+                {userEmail}
               </p>
             </div>
           </div>
@@ -237,15 +247,7 @@ export function Configuracion() {
                 {settings.role}
               </p>
               <p className="mt-1 text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                {tr.settingsEnums.teamRole[currentUser.role]}
-              </p>
-            </div>
-            <div className="pixel-inset bg-[var(--surface-2)] p-3">
-              <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                {settings.language}
-              </p>
-              <p className="mt-1 text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                {currentUser.locale}
+                {tr.settingsEnums.teamRole[userRole as keyof typeof tr.settingsEnums.teamRole] ?? userRole}
               </p>
             </div>
           </div>
@@ -385,7 +387,7 @@ export function Configuracion() {
           <section className="pixel-card-sm bg-white p-5">
             <SectionHeader eyebrow={settings.sections.audit} title={settings.sections.recentActivity} icon={Activity} />
             <div className="space-y-3">
-              {settings.auditItems(currentUser.displayName).map((item) => (
+              {settings.auditItems(userFullName.split(" ")[0] ?? userFullName).map((item) => (
                 <div key={item} className="flex items-center gap-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
                   <CheckCircle2 size={14} />
                   <span>{item}</span>

@@ -208,9 +208,6 @@ export const ARGENTINA_PLACES: PlaceSuggestion[] = [
   },
 ];
 
-// Mantener alias para compatibilidad con cualquier import existente
-export const EL_SALVADOR_PLACES = ARGENTINA_PLACES;
-
 function normalize(value: string) {
   return value
     .normalize("NFD")

@@ -1,6 +1,4 @@
 "use client";
-import { Switch } from "@/components/ui/8bit-switch";
-import { Spinner } from "@/components/ui/8bit-spinner";
 import type { ModulePlaceholderProps } from "@/types";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -76,53 +74,6 @@ export function ModulePlaceholder({ view }: ModulePlaceholderProps) {
           </aside>
         </div>
 
-        {view === "settings" && (
-          <div className="border-t-2 border-[var(--border)] p-6">
-            <p className="retro pixel-text-xs font-bold uppercase" style={{ color: "var(--text)" }}>
-              {tr.moduleDemo.components}
-            </p>
-
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="pixel-card-sm p-4">
-                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                  {tr.moduleDemo.switchTitle}
-                </p>
-                <div className="mt-4 flex items-center justify-between gap-4">
-                  <span className="text-sm" style={{ color: "var(--text-2)" }}>
-                    {tr.moduleDemo.compactMode}
-                  </span>
-                  <Switch defaultChecked aria-label={tr.moduleDemo.compactMode} />
-                </div>
-                <div className="mt-3 flex items-center justify-between gap-4">
-                  <span className="text-sm" style={{ color: "var(--text-2)" }}>
-                    {tr.moduleDemo.activeAlerts}
-                  </span>
-                  <Switch aria-label={tr.moduleDemo.activeAlerts} />
-                </div>
-              </div>
-
-              <div className="pixel-card-sm p-4">
-                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                  {tr.moduleDemo.loaders}
-                </p>
-                <div className="mt-4 flex items-center gap-5">
-                  <div className="flex items-center gap-2">
-                    <Spinner size="sm" label={tr.moduleDemo.loadingLeads} />
-                    <span className="text-sm" style={{ color: "var(--text-2)" }}>
-                      {tr.moduleDemo.leads}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Spinner variant="diamond" size="md" label={tr.moduleDemo.syncing} />
-                    <span className="text-sm" style={{ color: "var(--text-2)" }}>
-                      {tr.moduleDemo.Sync}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
     </div>
   );

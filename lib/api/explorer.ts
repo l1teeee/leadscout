@@ -1,4 +1,5 @@
 import { apiFetch } from "./client";
+import { getUserSignature, getToken, parseTokenUser } from "@/lib/auth";
 
 export interface ExplorerSearchRequest {
   query: string;
@@ -33,11 +34,22 @@ export interface ExplorerSearchResponse {
 export async function searchExplorer(body: ExplorerSearchRequest): Promise<ExplorerSearchResponse> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60_000);
+
+  const sig = getUserSignature();
+  const userId = (() => {
+    const t = getToken();
+    return t ? parseTokenUser(t)?.id : undefined;
+  })();
+
   try {
     return await apiFetch<ExplorerSearchResponse>("/api/explorer/search", {
       method: "POST",
       body: JSON.stringify(body),
       signal: controller.signal,
+      headers: {
+        ...(sig ? { "X-User-Signature": sig } : {}),
+        ...(userId ? { "X-User-Id": userId } : {}),
+      },
     });
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
