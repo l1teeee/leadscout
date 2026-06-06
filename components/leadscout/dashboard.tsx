@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { getLeads } from "@/lib/api/leads";
 import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
+import { getLang } from "@/lib/get-lang";
+import { translations } from "@/lib/i18n";
 import { StatusBadge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { ChartAreaStep } from "@/components/ui/8bit-chart-area-step";
@@ -12,11 +14,9 @@ const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
-const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-
-function toChartData(activity: { date: string; leads: number }[]) {
+function toChartData(activity: { date: string; leads: number }[], days: readonly string[]) {
   return activity.map((d) => ({
-    label: DAYS[new Date(d.date + "T12:00:00").getDay()],
+    label: days[new Date(d.date + "T12:00:00").getDay()],
     value: d.leads,
   }));
 }
@@ -49,6 +49,8 @@ function KpiCard({ label, value, sub }: KpiCardProps) {
 }
 
 export async function Dashboard() {
+  const lang = await getLang();
+  const tr = translations[lang];
   const token = (await cookies()).get("ls_token")?.value;
   const [leads, summary] = await Promise.all([
     getLeads({}, token).catch(() => []),
@@ -56,17 +58,17 @@ export async function Dashboard() {
   ]);
 
   const recent = leads.slice(0, 5);
-  const chartData = toChartData(summary.weekly_activity);
+  const chartData = toChartData(summary.weekly_activity, tr.dashboard.days);
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <OnboardingTour />
 
       <div data-tour="dashboard-kpis" data-stagger className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Total leads" value={summary.total_leads} sub="en base de datos" />
-        <KpiCard label="Esta semana" value={summary.new_this_week} sub="detectados" />
-        <KpiCard label="Contactados" value={summary.contacted} sub="en seguimiento" />
-        <KpiCard label="Score promedio" value={summary.avg_score} sub="sobre 100" />
+        <KpiCard label={tr.dashboard.kpi.totalLeads.label} value={summary.total_leads} sub={tr.dashboard.kpi.totalLeads.sub} />
+        <KpiCard label={tr.dashboard.kpi.thisWeek.label} value={summary.new_this_week} sub={tr.dashboard.kpi.thisWeek.sub} />
+        <KpiCard label={tr.dashboard.kpi.contacted.label} value={summary.contacted} sub={tr.dashboard.kpi.contacted.sub} />
+        <KpiCard label={tr.dashboard.kpi.avgScore.label} value={summary.avg_score} sub={tr.dashboard.kpi.avgScore.sub} />
       </div>
 
       <div data-stagger className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(520px,0.9fr)]">
@@ -79,7 +81,7 @@ export async function Dashboard() {
               className="retro pixel-text-sm font-black uppercase"
               style={{ color: "var(--text)" }}
             >
-              Leads recientes
+              {tr.dashboard.recentLeads}
             </h2>
           </div>
 
@@ -87,7 +89,7 @@ export async function Dashboard() {
             <table className="w-full min-w-[680px] text-sm" style={bodyTextStyle}>
               <thead className="bg-white">
                 <tr style={{ background: "#FAFAF9" }}>
-                  {["Negocio", "Categoría", "Score", "Estado"].map((h) => (
+                  {tr.dashboard.tableHeaders.map((h) => (
                     <th
                       key={h}
                       className="retro px-5 py-3 text-left text-[10px] font-black uppercase"
@@ -138,9 +140,9 @@ export async function Dashboard() {
                   <tr>
                     <td colSpan={4}>
                       <EmptyInsight
-                        title="Aún no hay leads recientes"
-                        description="Hacé tu primera exploración y pronto encontraremos oportunidades para tu pipeline."
-                        action="Empezá en Explorer para llenar esta tabla"
+                        title={tr.dashboard.empty.title}
+                        description={tr.dashboard.empty.description}
+                        action={tr.dashboard.empty.action}
                         compact
                       />
                     </td>
@@ -152,8 +154,8 @@ export async function Dashboard() {
         </div>
 
         <ChartAreaStep
-          title="Actividad semanal"
-          eyebrow="Leads detectados por día"
+          title={tr.dashboard.chart.title}
+          eyebrow={tr.dashboard.chart.eyebrow}
           data={chartData}
           className="min-h-[420px]"
           data-tour="dashboard-chart"

@@ -3,6 +3,8 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 type SpinnerVariant = "classic" | "diamond";
 type SpinnerSize = "sm" | "md" | "lg";
@@ -66,18 +68,21 @@ function Spinner({
   className,
   variant = "classic",
   size = "md",
-  label = "Cargando",
+  label,
   ...props
 }: SpinnerProps) {
+  const { lang } = useLanguage();
+  const displayLabel = label ?? translations[lang].common.loading;
+
   return (
     <div
       role="status"
-      aria-label={label}
+      aria-label={displayLabel}
       className={cn("inline-flex items-center justify-center text-[var(--text)]", className)}
       {...props}
     >
       {variant === "diamond" ? <DiamondSpinner size={size} /> : <ClassicSpinner size={size} />}
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{displayLabel}</span>
     </div>
   );
 }

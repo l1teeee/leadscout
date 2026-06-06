@@ -2,10 +2,15 @@
 
 import Link from "next/link";
 import { Zap } from "lucide-react";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
 export function LandingFooter() {
+  const { lang } = useLanguage();
+  const tr = translations[lang].landing.footer;
+
   return (
     <footer
       className="w-full px-4 py-6 sm:px-6 lg:px-8"
@@ -41,28 +46,35 @@ export function LandingFooter() {
             className="text-xs font-bold underline-offset-2 hover:underline"
             style={{ ...bodyFont, color: "#A1A1AA" }}
           >
-            Iniciar sesión
+            {tr.login}
           </Link>
           <Link
             href="/privacy"
             className="text-xs font-bold underline-offset-2 hover:underline"
             style={{ ...bodyFont, color: "#A1A1AA" }}
           >
-            Privacidad
+            {tr.privacy}
           </Link>
           <Link
             href="/terms"
             className="text-xs font-bold underline-offset-2 hover:underline"
             style={{ ...bodyFont, color: "#A1A1AA" }}
           >
-            Términos
+            {tr.terms}
           </Link>
         </nav>
 
         {/* Dev credit */}
         <p className="retro pixel-text-xs" style={{ color: "#71717A" }}>
-          developed by{" "}
-          <span style={{ color: "#A1A1AA", fontWeight: 700 }}>Numen Agency</span>
+          {tr.credit}{" "}
+          <a
+            href="https://delta-numen.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#A1A1AA", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: "3px" }}
+          >
+            Numen Agency
+          </a>
         </p>
       </div>
     </footer>

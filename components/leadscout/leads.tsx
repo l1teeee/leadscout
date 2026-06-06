@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarClock, Filter, Globe2, Phone, Search, SlidersHorizontal } from "lucide-react";
 import { getLeads } from "@/lib/api/leads";
+import { translations } from "@/lib/i18n";
 import type { Lead, LeadPriority, LeadStatus } from "@/lib/data";
+import { useLanguage } from "@/contexts/language-context";
 import { PriorityBadge, StatusBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
@@ -11,21 +13,6 @@ import { EmptyInsight } from "@/components/ui/empty-insight";
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
-
-const STATUS_OPTIONS: { value: LeadStatus | ""; label: string }[] = [
-  { value: "", label: "Todos" },
-  { value: "nuevo", label: "Nuevo" },
-  { value: "contactado", label: "Contactado" },
-  { value: "calificado", label: "Calificado" },
-  { value: "perdido", label: "Perdido" },
-];
-
-const PRIORITY_OPTIONS: { value: LeadPriority | ""; label: string }[] = [
-  { value: "", label: "Todas" },
-  { value: "alta", label: "Alta" },
-  { value: "media", label: "Media" },
-  { value: "baja", label: "Baja" },
-];
 
 function normalize(value: string) {
   return value
@@ -49,12 +36,15 @@ function LeadMetric({ label, value, tone }: { label: string; value: string | num
 }
 
 function LeadDetail({ lead }: { lead: Lead | null }) {
+  const { lang } = useLanguage();
+  const tr = translations[lang];
+
   if (!lead) {
     return (
       <aside className="pixel-card-sm bg-white p-5">
         <EmptyInsight
-          title="Selecciona un lead para ver su historia"
-          description="Cuando encuentres oportunidades, acá verás su score, brechas digitales y datos de contacto."
+          title={tr.leads.detailEmpty.title}
+          description={tr.leads.detailEmpty.description}
           compact
         />
       </aside>
@@ -66,7 +56,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-            Perfil del lead
+            {tr.leads.detail.profile}
           </p>
           <h2 className="mt-2 text-lg font-extrabold leading-snug" style={{ ...bodyTextStyle, color: "var(--text)" }}>
             {lead.name}
@@ -85,14 +75,14 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
 
       <div className="mt-5 pixel-inset bg-[var(--surface-2)] p-3">
         <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-          Score operativo
+          {tr.leads.detail.operationalScore}
         </p>
         <ScoreBar score={lead.score} showLabel className="mt-3" />
       </div>
 
       <div className="mt-5 space-y-2">
         <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text)" }}>
-          Brechas detectadas
+          {tr.leads.detail.gaps}
         </p>
         <div className="flex flex-wrap gap-1.5">
           {lead.issues.length > 0 ? (
@@ -101,8 +91,8 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
             ))
           ) : (
             <EmptyInsight
-              title="Aún estamos leyendo señales"
-              description="Cuando exploremos más fuentes, acá aparecerán las brechas digitales detectadas."
+              title={tr.leads.detail.gapsEmpty.title}
+              description={tr.leads.detail.gapsEmpty.description}
               compact
             />
           )}
@@ -112,8 +102,8 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
       <div className="mt-5 grid gap-2 text-sm font-semibold" style={bodyTextStyle}>
         {!lead.phone && !lead.website && (
           <EmptyInsight
-            title="Contacto por confirmar"
-            description="Todavía estamos buscando canales confiables para este lead."
+            title={tr.leads.detail.pendingContact}
+            description={tr.leads.detail.contactEmpty}
             compact
           />
         )}
@@ -136,7 +126,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
         <div className="flex items-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2">
           <CalendarClock size={14} />
           <span className="truncate" style={{ color: "var(--text-2)" }}>
-            {lead.lastContact ? `Último contacto: ${lead.lastContact}` : "Contacto pendiente por confirmar"}
+            {lead.lastContact ? `${tr.leads.detail.lastContact}: ${lead.lastContact}` : tr.leads.detail.pendingContact}
           </span>
         </div>
       </div>
@@ -145,6 +135,8 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
 }
 
 export function Leads() {
+  const { lang } = useLanguage();
+  const tr = translations[lang];
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -177,14 +169,27 @@ export function Leads() {
   const avgScore = filtered.length
     ? Math.round(filtered.reduce((sum, lead) => sum + lead.score, 0) / filtered.length)
     : 0;
+  const statusOptions: { value: LeadStatus | ""; label: string }[] = [
+    { value: "", label: tr.leads.filters.statusAll },
+    { value: "nuevo", label: tr.leadStatus.nuevo },
+    { value: "contactado", label: tr.leadStatus.contactado },
+    { value: "calificado", label: tr.leadStatus.calificado },
+    { value: "perdido", label: tr.leadStatus.perdido },
+  ];
+  const priorityOptions: { value: LeadPriority | ""; label: string }[] = [
+    { value: "", label: tr.leads.filters.priorityAll },
+    { value: "alta", label: tr.leadPriority.alta },
+    { value: "media", label: tr.leadPriority.media },
+    { value: "baja", label: tr.leadPriority.baja },
+  ];
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <LeadMetric label="Leads visibles" value={loading ? "..." : filtered.length} />
-        <LeadMetric label="Prioridad alta" value={loading ? "..." : highPriority} tone="var(--c-hi)" />
-        <LeadMetric label="Por contactar" value={loading ? "..." : noContact} tone="var(--c-mid)" />
-        <LeadMetric label="Score promedio" value={loading ? "..." : avgScore} />
+        <LeadMetric label={tr.leads.kpi.visible} value={loading ? "..." : filtered.length} />
+        <LeadMetric label={tr.leads.kpi.highPriority} value={loading ? "..." : highPriority} tone="var(--c-hi)" />
+        <LeadMetric label={tr.leads.kpi.toContact} value={loading ? "..." : noContact} tone="var(--c-mid)" />
+        <LeadMetric label={tr.leads.kpi.avgScore} value={loading ? "..." : avgScore} />
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -193,10 +198,10 @@ export function Leads() {
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  Gestión comercial
+                  {tr.leads.eyebrow}
                 </p>
                 <h2 className="retro pixel-text-sm mt-1 uppercase" style={{ color: "var(--text)" }}>
-                  Base de leads
+                  {tr.leads.title}
                 </h2>
               </div>
 
@@ -206,7 +211,7 @@ export function Leads() {
                   <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Buscar negocio, rubro o brecha"
+                    placeholder={tr.leads.searchPlaceholder}
                     className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)]"
                     style={bodyTextStyle}
                   />
@@ -220,7 +225,7 @@ export function Leads() {
                     className="h-9 w-full appearance-none rounded-none border-2 border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-xs font-semibold text-[var(--text)]"
                     style={bodyTextStyle}
                   >
-                    {STATUS_OPTIONS.map((option) => (
+                    {statusOptions.map((option) => (
                       <option key={option.value || "all"} value={option.value}>
                         {option.label}
                       </option>
@@ -236,7 +241,7 @@ export function Leads() {
                     className="h-9 w-full appearance-none rounded-none border-2 border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-xs font-semibold text-[var(--text)]"
                     style={bodyTextStyle}
                   >
-                    {PRIORITY_OPTIONS.map((option) => (
+                    {priorityOptions.map((option) => (
                       <option key={option.value || "all"} value={option.value}>
                         {option.label}
                       </option>
@@ -251,7 +256,7 @@ export function Leads() {
             <table className="w-full min-w-[840px] text-sm" style={bodyTextStyle}>
               <thead>
                 <tr className="bg-white">
-                  {["Negocio", "Score", "Estado", "Prioridad", "Contacto"].map((heading) => (
+                  {tr.leads.tableHeaders.map((heading) => (
                     <th
                       key={heading}
                       className="retro border-b-2 border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase"
@@ -294,7 +299,7 @@ export function Leads() {
                       </td>
                       <td className="px-4 py-3">
                         <p className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-                          {lead.lastContact ?? "Pendiente"}
+                          {lead.lastContact ?? tr.leads.pending}
                         </p>
                       </td>
                     </tr>
@@ -307,13 +312,13 @@ export function Leads() {
           {!loading && filtered.length === 0 && (
             <div className="p-8">
               <EmptyInsight
-                title={leads.length === 0 ? "Aún no hay leads en tu workspace" : "No encontramos coincidencias"}
+                title={leads.length === 0 ? tr.leads.emptyWorkspace.title : tr.leads.emptyFiltered.title}
                 description={
                   leads.length === 0
-                    ? "Explorá una zona para empezar a llenar tu base. Pronto aparecerán negocios listos para revisar."
-                    : "Probá ampliar estado, prioridad o búsqueda para volver a encontrar oportunidades."
+                    ? tr.leads.emptyWorkspace.description
+                    : tr.leads.emptyFiltered.description
                 }
-                action={leads.length === 0 ? "Empieza en Explorer" : "Ajusta los filtros activos"}
+                action={leads.length === 0 ? tr.leads.emptyWorkspace.action : tr.leads.emptyFiltered.action}
                 compact
               />
             </div>
@@ -322,7 +327,7 @@ export function Leads() {
           {loading && (
             <div className="p-8 text-center">
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                Cargando leads...
+                {tr.leads.loading}
               </p>
             </div>
           )}

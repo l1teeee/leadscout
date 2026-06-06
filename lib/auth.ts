@@ -3,7 +3,8 @@ const MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
 export function setToken(token: string): void {
   if (typeof document === "undefined") return;
-  document.cookie = `${COOKIE}=${encodeURIComponent(token)}; path=/; max-age=${MAX_AGE}; SameSite=Strict`;
+  const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${COOKIE}=${encodeURIComponent(token)}; path=/; max-age=${MAX_AGE}; SameSite=Strict${secure}`;
 }
 
 export function getToken(): string | null {
@@ -14,7 +15,8 @@ export function getToken(): string | null {
 
 export function clearToken(): void {
   if (typeof document === "undefined") return;
-  document.cookie = `${COOKIE}=; path=/; max-age=0`;
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${COOKIE}=; path=/; max-age=0; SameSite=Strict${secure}`;
 }
 
 export interface TokenUser {

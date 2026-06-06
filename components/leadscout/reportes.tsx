@@ -5,24 +5,11 @@ import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
 import { ChartAreaStep } from "@/components/ui/8bit-chart-area-step";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import type { LeadPriority, LeadStatus } from "@/lib/data";
+import { getLang } from "@/lib/get-lang";
+import { translations } from "@/lib/i18n";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
-};
-
-const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-
-const STATUS_LABELS: Record<LeadStatus, string> = {
-  nuevo: "Nuevos",
-  contactado: "Contactados",
-  calificado: "Calificados",
-  perdido: "Perdidos",
-};
-
-const PRIORITY_LABELS: Record<LeadPriority, string> = {
-  alta: "Alta",
-  media: "Media",
-  baja: "Baja",
 };
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
@@ -87,7 +74,15 @@ function FunnelRow({ label, value, total, color }: { label: string; value: numbe
   );
 }
 
-function CompactList({ title, rows }: { title: string; rows: { label: string; value: number; color?: string }[] }) {
+function CompactList({
+  title,
+  rows,
+  empty,
+}: {
+  title: string;
+  rows: { label: string; value: number; color?: string }[];
+  empty: { title: string; description: string };
+}) {
   const max = Math.max(1, ...rows.map((row) => row.value));
   const hasValues = rows.some((row) => row.value > 0);
   return (
@@ -98,8 +93,8 @@ function CompactList({ title, rows }: { title: string; rows: { label: string; va
       <div className="mt-4 space-y-3">
         {!hasValues && (
           <EmptyInsight
-            title="Aún no hay datos suficientes"
-            description="Cuando explores una zona, este reporte empezará a mostrar patrones útiles."
+            title={empty.title}
+            description={empty.description}
             compact
           />
         )}
@@ -126,6 +121,8 @@ function CompactList({ title, rows }: { title: string; rows: { label: string; va
 }
 
 export async function Reportes() {
+  const lang = await getLang();
+  const tr = translations[lang].reportes;
   const token = (await cookies()).get("ls_token")?.value;
   const [leads, summary] = await Promise.all([
     getLeads({}, token).catch(() => []),
@@ -138,14 +135,14 @@ export async function Reportes() {
   const highRisk = leads.filter((l) => l.score <= 20).length;
   const conversion = percent(qualified, sampleTotal);
 
-  const statusRows = (Object.keys(STATUS_LABELS) as LeadStatus[]).map((status) => ({
-    label: STATUS_LABELS[status],
+  const statusRows = (Object.keys(tr.statusLabels) as LeadStatus[]).map((status) => ({
+    label: tr.statusLabels[status],
     value: summary.by_status[status] ?? 0,
     color: STATUS_COLORS[status],
   }));
 
-  const priorityRows = (Object.keys(PRIORITY_LABELS) as LeadPriority[]).map((priority) => ({
-    label: PRIORITY_LABELS[priority],
+  const priorityRows = (Object.keys(tr.priorityLabels) as LeadPriority[]).map((priority) => ({
+    label: tr.priorityLabels[priority],
     value: summary.by_priority[priority] ?? 0,
   }));
 
@@ -154,36 +151,36 @@ export async function Reportes() {
     .sort((a, b) => b.value - a.value);
 
   const chartData = summary.weekly_activity.map((d) => ({
-    label: DAYS[new Date(d.date + "T12:00:00").getDay()],
+    label: tr.days[new Date(d.date + "T12:00:00").getDay()],
     value: d.leads,
   }));
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <ReportMetric label="Total leads" value={summary.total_leads} sub="Base estimada del workspace" icon={BarChart3} />
-        <ReportMetric label="Contactados" value={summary.contacted} sub="En seguimiento comercial" icon={Clock3} />
-        <ReportMetric label="Conversión" value={`${conversion}%`} sub="Calificados en la muestra" icon={TrendingUp} />
-        <ReportMetric label="Críticos" value={highRisk} sub="Score igual o menor a 20" icon={CircleDot} />
+        <ReportMetric label={tr.kpi.total.label} value={summary.total_leads} sub={tr.kpi.total.sub} icon={BarChart3} />
+        <ReportMetric label={tr.kpi.contacted.label} value={summary.contacted} sub={tr.kpi.contacted.sub} icon={Clock3} />
+        <ReportMetric label={tr.kpi.conversion.label} value={`${conversion}%`} sub={tr.kpi.conversion.sub} icon={TrendingUp} />
+        <ReportMetric label={tr.kpi.critical.label} value={highRisk} sub={tr.kpi.critical.sub} icon={CircleDot} />
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
-          <ChartAreaStep title="Actividad semanal" eyebrow="Leads detectados por día" data={chartData} />
+          <ChartAreaStep title={tr.chart.title} eyebrow={tr.chart.eyebrow} data={chartData} />
 
           <section className="pixel-card-sm bg-white p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  Pipeline
+                  {tr.sections.pipeline}
                 </p>
                 <h2 className="retro pixel-text-sm mt-2 uppercase" style={{ color: "var(--text)" }}>
-                  Conversión por etapa
+                  {tr.sections.conversionByStage}
                 </h2>
               </div>
               <div className="pixel-inset bg-[var(--surface-2)] px-3 py-2 text-right">
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  Muestra
+                  {tr.sections.sample}
                 </p>
                 <p className="retro pixel-text-sm tabular-nums" style={{ color: "var(--text)" }}>
                   {sampleTotal}
@@ -192,9 +189,9 @@ export async function Reportes() {
             </div>
             {sampleTotal === 0 ? (
               <EmptyInsight
-                title="El pipeline se activará pronto"
-                description="Ejecutá una primera exploración y acá veremos cómo avanzan los leads por etapa."
-                action="Explorá una zona para iniciar el reporte"
+                title={tr.pipelineEmpty.title}
+                description={tr.pipelineEmpty.description}
+                action={tr.pipelineEmpty.action}
                 compact
                 className="mt-5"
               />
@@ -216,37 +213,37 @@ export async function Reportes() {
               </div>
               <div>
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  Lectura rápida
+                  {tr.sections.quickRead}
                 </p>
                 <h2 className="retro pixel-text-sm mt-1 uppercase" style={{ color: "var(--text)" }}>
-                  Salud comercial
+                  {tr.sections.commercialHealth}
                 </h2>
               </div>
             </div>
             <div className="mt-4 grid gap-3">
               {sampleTotal === 0 ? (
                 <EmptyInsight
-                  title="Todavía no hay actividad comercial"
-                  description="En cuanto explores una zona, acá resumiremos prioridades, avances y oportunidades listas para seguimiento."
-                  action="Empezá con una búsqueda en Explorer"
+                  title={tr.noActivity.title}
+                  description={tr.noActivity.description}
+                  action={tr.noActivity.action}
                   compact
                 />
               ) : (
                 <>
                   <div className="pixel-inset bg-[var(--surface-2)] p-3">
                     <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                      {contacted} leads ya tienen avance comercial.
+                      {tr.insights.contacted.replace("{n}", String(contacted))}
                     </p>
                     <p className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                      Priorizá los negocios críticos sin contacto para subir velocidad del pipeline.
+                      {tr.insights.contactedAdvice}
                     </p>
                   </div>
                   <div className="pixel-inset bg-[var(--surface-2)] p-3">
                     <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                      {qualified} oportunidades están calificadas.
+                      {tr.insights.qualified.replace("{n}", String(qualified))}
                     </p>
                     <p className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                      Usalas como base para propuestas y siguientes reportes de cierre.
+                      {tr.insights.qualifiedAdvice}
                     </p>
                   </div>
                 </>
@@ -254,8 +251,8 @@ export async function Reportes() {
             </div>
           </section>
 
-          <CompactList title="Prioridad" rows={priorityRows} />
-          <CompactList title="Categorías" rows={categoryRows} />
+          <CompactList title={tr.sections.priority} rows={priorityRows} empty={tr.insufficientData} />
+          <CompactList title={tr.sections.categories} rows={categoryRows} empty={tr.insufficientData} />
         </div>
       </div>
     </div>

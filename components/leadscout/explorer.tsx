@@ -7,13 +7,16 @@ import { ExplorerLeadDetail } from "./explorer-lead-detail";
 import { ExplorerCategoryModal } from "./explorer-category-modal";
 import { ExplorerOnboardingTour } from "./explorer-onboarding-tour";
 import type { ExplorerTab } from "@/types";
-
-const TABS: { id: ExplorerTab; label: string }[] = [
-  { id: "ubicacion", label: "Ubicación" },
-  { id: "resultados", label: "Resultados" },
-];
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 export function Explorer() {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer;
+  const tabs: { id: ExplorerTab; label: string }[] = [
+    { id: "ubicacion", label: tr.tabs.ubicacion },
+    { id: "resultados", label: tr.tabs.resultados },
+  ];
   const {
     activeTab, setActiveTab,
     locationQuery, selectedPlace, isLocating, locationError,
@@ -41,7 +44,7 @@ export function Explorer() {
         style={{ width: selected ? "calc(100% - 384px)" : "100%" }}
       >
         <div data-tour="explorer-tabs" className="pixel-card-sm flex shrink-0 items-center gap-2 bg-white p-2">
-          {TABS.map((tab) => {
+          {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
@@ -55,7 +58,7 @@ export function Explorer() {
                     : { background: "var(--surface)", color: "var(--text-2)", borderColor: "var(--border)" }
                 }
               >
-                {tab.label}
+                {tr.tabs[tab.id]}
               </button>
             );
           })}

@@ -1,6 +1,8 @@
 "use client";
 import { cn } from "@/lib/utils";
 import type { LeadStatus, LeadPriority } from "@/lib/data";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const STATUS_DOT: Record<LeadStatus, string> = {
   nuevo: "bg-[var(--c-new)]",
@@ -9,23 +11,10 @@ const STATUS_DOT: Record<LeadStatus, string> = {
   perdido: "bg-[var(--c-lost)]",
 };
 
-const STATUS_LABEL: Record<LeadStatus, string> = {
-  nuevo:      "Nuevo",
-  contactado: "Contactado",
-  calificado: "Calificado",
-  perdido:    "Perdido",
-};
-
 const PRIORITY_DOT: Record<LeadPriority, string> = {
   alta: "bg-[var(--c-hi)]",
   media: "bg-[var(--c-mid)]",
   baja: "bg-[var(--c-lo)]",
-};
-
-const PRIORITY_LABEL: Record<LeadPriority, string> = {
-  alta:  "Alta",
-  media: "Media",
-  baja:  "Baja",
 };
 
 interface StatusBadgeProps {
@@ -34,6 +23,9 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang];
+
   return (
     <span
       className={cn(
@@ -43,7 +35,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       )}
     >
       <span className={cn("size-2 shrink-0 rounded-none", STATUS_DOT[status])} />
-      {STATUS_LABEL[status]}
+      {tr.leadStatus[status]}
     </span>
   );
 }
@@ -54,6 +46,9 @@ interface PriorityBadgeProps {
 }
 
 export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang];
+
   return (
     <span
       className={cn(
@@ -63,7 +58,7 @@ export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
       )}
     >
       <span className={cn("size-2 shrink-0 rounded-none", PRIORITY_DOT[priority])} />
-      {PRIORITY_LABEL[priority]}
+      {tr.leadPriority[priority]}
     </span>
   );
 }

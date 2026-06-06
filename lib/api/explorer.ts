@@ -41,7 +41,7 @@ export async function searchExplorer(body: ExplorerSearchRequest): Promise<Explo
     });
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
-      throw new Error("La búsqueda tardó más de 60 segundos. Intentá con un radio menor.");
+      throw new Error("EXPLORER_SEARCH_TIMEOUT");
     }
     throw err;
   } finally {

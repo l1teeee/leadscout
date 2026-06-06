@@ -1,10 +1,10 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { PageTransition } from "@/components/leadscout/page-transition";
 import { Sidebar } from "@/components/leadscout/sidebar";
 import { Topbar } from "@/components/leadscout/topbar";
-import { LanguageProvider } from "@/contexts/language-context";
 
-const API_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
 
 interface AuthUser {
   onboarded: boolean;
@@ -34,14 +34,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user.onboarded || !user.workspace_id) redirect("/onboarding");
 
   return (
-    <LanguageProvider>
-      <div className="flex h-full w-full overflow-hidden">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar />
-          <main className="flex-1 overflow-auto animate-fade-up">{children}</main>
-        </div>
+    <div className="flex h-full w-full overflow-hidden">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Topbar />
+        <main className="flex-1 overflow-auto">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
-    </LanguageProvider>
+    </div>
   );
 }

@@ -3,14 +3,8 @@
 import { useEffect, useState, type ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/8bit-progress";
-
-const DEFAULT_TIPS = [
-  "Preparando tu workspace...",
-  "Configurando acceso seguro...",
-  "Sincronizando preferencias iniciales...",
-  "Activando el panel de operaciones...",
-  "Casi listo para detectar oportunidades.",
-];
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 export interface LoadingScreenProps extends ComponentProps<"div"> {
   title?: string;
@@ -25,8 +19,8 @@ export interface LoadingScreenProps extends ComponentProps<"div"> {
 
 export default function LoadingScreen({
   className,
-  title = "CARGANDO",
-  tips = DEFAULT_TIPS,
+  title,
+  tips,
   progress = 0,
   showPercentage = true,
   tipInterval = 2400,
@@ -35,6 +29,10 @@ export default function LoadingScreen({
   autoProgressDuration = 5000,
   ...props
 }: LoadingScreenProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang];
+  const displayTitle = title ?? tr.loadingScreen.defaultTitle;
+  const displayTips = tips ?? tr.loadingScreen.tips;
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [internalProgress, setInternalProgress] = useState(autoProgress ? 0 : progress);
 
@@ -51,14 +49,14 @@ export default function LoadingScreen({
   }, [autoProgress, autoProgressDuration]);
 
   useEffect(() => {
-    if (!tips.length) return;
+    if (!displayTips.length) return;
 
     const tipTimer = window.setInterval(() => {
-      setCurrentTipIndex((prev) => (prev + 1) % tips.length);
+      setCurrentTipIndex((prev) => (prev + 1) % displayTips.length);
     }, tipInterval);
 
     return () => window.clearInterval(tipTimer);
-  }, [tips, tipInterval]);
+  }, [displayTips, tipInterval]);
 
   const isFullscreen = variant === "fullscreen";
   const displayProgress = autoProgress ? internalProgress : progress;
@@ -67,10 +65,10 @@ export default function LoadingScreen({
     <div className="flex flex-col items-center justify-center gap-6 p-8 text-center">
       <div>
         <h2 className="retro pixel-text-sm uppercase animate-fade-up" style={{ color: "var(--text)" }}>
-          {title}
+          {displayTitle}
         </h2>
         <p className="mt-2 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
-          No cierres esta ventana
+          {tr.common.noCloseWindow}
         </p>
       </div>
 
@@ -85,14 +83,14 @@ export default function LoadingScreen({
         <Progress value={displayProgress} className="h-5" />
       </div>
 
-      {tips.length > 0 && (
+      {displayTips.length > 0 && (
         <div className="flex min-h-12 w-full max-w-md items-center justify-center">
           <p
             key={currentTipIndex}
             className="animate-fade-up text-xs font-semibold leading-relaxed"
             style={{ color: "var(--text-2)" }}
           >
-            {tips[currentTipIndex]}
+            {displayTips[currentTipIndex]}
           </p>
         </div>
       )}

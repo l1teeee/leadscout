@@ -1,10 +1,13 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart3, Building2, Cable, LayoutDashboard, Search, Send, Target, Settings, Zap,
+  BarChart3, Building2, Cable, LayoutDashboard, LogOut, Search, Send, Target, Settings, Zap,
 } from "lucide-react";
+import { logoutAction } from "@/app/actions/auth-actions";
+import { logout } from "@/lib/api/auth";
+import { clearToken, getToken } from "@/lib/auth";
 import type { SidebarNavItemProps, SidebarMenuSectionProps, SidebarSection } from "@/types";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -95,11 +98,21 @@ function SidebarMenuSection({ section, pathname, isExpanded }: SidebarMenuSectio
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLoggingOut, startLogoutTransition] = useTransition();
   const router = useRouter();
   const pathname = usePathname();
   const sections = useSidebarSections();
   const { lang } = useLanguage();
   const tr = translations[lang];
+
+  function handleSidebarLogout() {
+    const token = getToken();
+    if (token) logout(token).catch(() => {});
+    clearToken();
+    startLogoutTransition(async () => {
+      await logoutAction();
+    });
+  }
 
   return (
     <aside
@@ -119,7 +132,7 @@ export function Sidebar() {
           type="button"
           onClick={() => router.push("/landing")}
           className={cn("flex items-center rounded-none text-left", isExpanded ? "gap-2.5" : "justify-center")}
-          aria-label="Ir a la landing de LeadScout"
+          aria-label={tr.nav.landingLabel}
           title="LeadScout"
         >
           <span
@@ -178,6 +191,27 @@ export function Sidebar() {
         >
           <Settings size={15} strokeWidth={pathname === "/settings" ? 2.5 : 2} />
           {isExpanded && <span className="truncate">{tr.nav.items.settings}</span>}
+        </button>
+        <button
+          onClick={handleSidebarLogout}
+          disabled={isLoggingOut}
+          title={tr.topbar.signOut}
+          aria-label={tr.topbar.signOut}
+          className={cn(
+            "mt-0.5 w-full flex items-center py-2 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer",
+            isExpanded ? "gap-2.5 px-2.5" : "justify-center px-0"
+          )}
+          style={{ ...bodyFont, color: isLoggingOut ? "#71717A" : "#E63946", border: "2px solid transparent" }}
+          onMouseEnter={(e) => {
+            if (isLoggingOut) return;
+            (e.currentTarget as HTMLElement).style.background = "#2A1B12";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "";
+          }}
+        >
+          <LogOut size={15} strokeWidth={2} />
+          {isExpanded && <span className="truncate">{isLoggingOut ? tr.nav.signingOut : tr.topbar.signOut}</span>}
         </button>
       </div>
     </aside>

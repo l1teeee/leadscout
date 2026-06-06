@@ -1,4 +1,8 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 function scoreColor(score: number) {
   if (score <= 20) return "var(--score-critical)";
@@ -7,11 +11,11 @@ function scoreColor(score: number) {
   return "var(--score-good)";
 }
 
-function scoreLabel(score: number) {
-  if (score <= 20) return "Crítico";
-  if (score <= 40) return "Débil";
-  if (score <= 60) return "Moderado";
-  return "Bueno";
+function scoreLabel(score: number, labels: Record<"critical" | "weak" | "moderate" | "good", string>) {
+  if (score <= 20) return labels.critical;
+  if (score <= 40) return labels.weak;
+  if (score <= 60) return labels.moderate;
+  return labels.good;
 }
 
 interface ScoreBarProps {
@@ -21,8 +25,9 @@ interface ScoreBarProps {
 }
 
 export function ScoreBar({ score, showLabel = false, className }: ScoreBarProps) {
+  const { lang } = useLanguage();
   const color = scoreColor(score);
-  const label = scoreLabel(score);
+  const label = scoreLabel(score, translations[lang].common.scoreLabels);
   const value = Math.max(0, Math.min(100, score));
 
   return (
@@ -53,8 +58,9 @@ interface ScoreBigProps {
 }
 
 export function ScoreBig({ score }: ScoreBigProps) {
+  const { lang } = useLanguage();
   const color = scoreColor(score);
-  const label = scoreLabel(score);
+  const label = scoreLabel(score, translations[lang].common.scoreLabels);
 
   return (
     <div>

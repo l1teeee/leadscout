@@ -1,6 +1,10 @@
+"use client";
+
 import { X } from "lucide-react";
 import { BUSINESS_CATEGORIES } from "@/lib/location-service";
 import type { ExplorerCategoryModalProps } from "@/types/explorer";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
@@ -11,6 +15,8 @@ export function ExplorerCategoryModal({
   onSelectCategory,
   categoryCounts,
 }: ExplorerCategoryModalProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer;
   if (!isOpen) return null;
 
   return (
@@ -29,21 +35,21 @@ export function ExplorerCategoryModal({
         <div className="flex items-start justify-between border-b-2 border-[var(--border)] bg-[var(--surface-2)] px-5 py-4">
           <div>
             <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-              Scraping
+              {tr.categoryModal.eyebrow}
             </p>
             <h2
               id="category-dialog-title"
               className="text-base font-bold"
               style={{ ...bodyTextStyle, color: "var(--text)" }}
             >
-              Categoría de búsqueda
+              {tr.categoryModal.title}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-none border-2 border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-[1px_1px_0_0_var(--pixel-shadow)] transition-transform hover:bg-[var(--pixel-highlight)] active:translate-x-px active:translate-y-px active:shadow-none"
-            aria-label="Cerrar categorías"
+            aria-label={tr.categoryModal.close}
           >
             <X size={13} />
           </button>
@@ -77,7 +83,7 @@ export function ExplorerCategoryModal({
                   }
                 >
                   <span className="retro block pixel-text-xs uppercase">
-                    {category.label}
+                    {tr.categories[category.id as keyof typeof tr.categories] ?? category.label}
                   </span>
                   <span
                     className="mt-2 block text-xs font-semibold"
@@ -86,7 +92,7 @@ export function ExplorerCategoryModal({
                       color: isActive ? "var(--surface-2)" : "var(--text-3)",
                     }}
                   >
-                    {count} marcador{count !== 1 ? "es" : ""} disponibles
+                    {tr.categoryModal.availableMarkers(count)}
                   </span>
                 </button>
               );

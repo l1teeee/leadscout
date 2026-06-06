@@ -4,9 +4,13 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 export function OnboardingTour() {
   const router = useRouter();
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer.tours;
 
   useEffect(() => {
     if (sessionStorage.getItem("leadscout_onboarding_pending") !== "1") return;
@@ -16,16 +20,16 @@ export function OnboardingTour() {
         showProgress: true,
         animate: true,
         allowClose: true,
-        nextBtnText: "Siguiente",
-        prevBtnText: "Atrás",
-        doneBtnText: "Terminar",
+        nextBtnText: tr.next,
+        prevBtnText: tr.prev,
+        doneBtnText: tr.doneDashboard,
         popoverClass: "leadscout-driver-popover",
         steps: [
           {
             element: "[data-tour='dashboard-kpis']",
             popover: {
-              title: "Tu panel principal",
-              description: "Acá ves el total de leads, los nuevos esta semana, contactos activos y el score promedio.",
+              title: tr.dashboard[0].title,
+              description: tr.dashboard[0].description,
               side: "bottom",
               align: "start",
             },
@@ -33,8 +37,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='dashboard-leads']",
             popover: {
-              title: "Leads recientes",
-              description: "Revisá los negocios detectados más recientemente, su categoría, score y estado comercial.",
+              title: tr.dashboard[1].title,
+              description: tr.dashboard[1].description,
               side: "right",
               align: "start",
             },
@@ -42,8 +46,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='dashboard-chart']",
             popover: {
-              title: "Actividad semanal",
-              description: "Este gráfico muestra qué días generan más oportunidades para tu workspace.",
+              title: tr.dashboard[2].title,
+              description: tr.dashboard[2].description,
               side: "left",
               align: "center",
             },
@@ -51,8 +55,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='sidebar-explorer']",
             popover: {
-              title: "Siguiente Explorer",
-              description: "Al terminar vamos al Explorer para ver dónde hacés tu primera búsqueda y dónde aparecen los resultados.",
+              title: tr.dashboard[3].title,
+              description: tr.dashboard[3].description,
               side: "right",
               align: "center",
             },
@@ -60,8 +64,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='sidebar-leads']",
             popover: {
-              title: "Leads",
-              description: "Gestioná la base completa, filtrá por estado y prioridad, y revisá datos de contacto.",
+              title: tr.dashboard[4].title,
+              description: tr.dashboard[4].description,
               side: "right",
               align: "center",
             },
@@ -69,8 +73,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='sidebar-opportunities']",
             popover: {
-              title: "Oportunidades",
-              description: "Organizá tu pipeline comercial entre nuevos, contactados, calificados y perdidos.",
+              title: tr.dashboard[5].title,
+              description: tr.dashboard[5].description,
               side: "right",
               align: "center",
             },
@@ -78,8 +82,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='sidebar-reports']",
             popover: {
-              title: "Reportes",
-              description: "Medí conversión, actividad, salud comercial y distribución de oportunidades.",
+              title: tr.dashboard[6].title,
+              description: tr.dashboard[6].description,
               side: "right",
               align: "center",
             },
@@ -87,8 +91,8 @@ export function OnboardingTour() {
           {
             element: "[data-tour='sidebar-settings']",
             popover: {
-              title: "Configuración",
-              description: "Gestioná workspace, usuario, equipo, zonas, plan, seguridad y notificaciones.",
+              title: tr.dashboard[7].title,
+              description: tr.dashboard[7].description,
               side: "right",
               align: "center",
             },
@@ -105,7 +109,7 @@ export function OnboardingTour() {
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [router]);
+  }, [router, tr]);
 
   return null;
 }

@@ -1,5 +1,9 @@
+"use client";
+
 import { Compass, Inbox, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -20,6 +24,9 @@ export function EmptyInsight({
   compact = false,
   className,
 }: EmptyInsightProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang];
+
   return (
     <div
       className={cn(
@@ -30,7 +37,7 @@ export function EmptyInsight({
     >
       <div
         className="relative flex h-12 w-12 items-center justify-center border-2 border-[var(--border)] bg-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)]"
-        aria-label="Estado vacio"
+        aria-label={tr.common.emptyState}
       >
         <Inbox size={20} strokeWidth={2.4} style={{ color: "var(--text)" }} />
         <Sparkles

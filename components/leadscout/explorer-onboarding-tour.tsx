@@ -4,12 +4,17 @@ import { useEffect } from "react";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import type { ExplorerTab } from "@/types";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 interface ExplorerOnboardingTourProps {
   setActiveTab: (tab: ExplorerTab) => void;
 }
 
 export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer.tours;
+
   useEffect(() => {
     if (sessionStorage.getItem("leadscout_explorer_tour_pending") !== "1") return;
 
@@ -21,16 +26,16 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           showProgress: true,
           animate: true,
           allowClose: true,
-          nextBtnText: "Siguiente",
-          prevBtnText: "Atrás",
-          doneBtnText: "Terminar",
+          nextBtnText: tr.next,
+          prevBtnText: tr.prev,
+          doneBtnText: tr.doneDashboard,
           popoverClass: "leadscout-driver-popover",
           steps: [
             {
               element: "[data-tour='explorer-tab-resultados']",
               popover: {
-                title: "Pestaña Resultados",
-                description: "Después de ejecutar una búsqueda, acá revisás todos los negocios encontrados.",
+                title: tr.explorerResults[0].title,
+                description: tr.explorerResults[0].description,
                 side: "bottom",
                 align: "start",
               },
@@ -38,8 +43,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             {
               element: "[data-tour='explorer-results-summary']",
               popover: {
-                title: "Resumen de resultados",
-                description: "Este contador te dice cuántos negocios son visibles y cuántos están representados en el mapa.",
+                title: tr.explorerResults[1].title,
+                description: tr.explorerResults[1].description,
                 side: "bottom",
                 align: "start",
               },
@@ -47,8 +52,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             {
               element: "[data-tour='explorer-results-search']",
               popover: {
-                title: "Buscar dentro de resultados",
-                description: "Filtrá por nombre, categoría o zona para encontrar rápidamente un negocio específico.",
+                title: tr.explorerResults[2].title,
+                description: tr.explorerResults[2].description,
                 side: "bottom",
                 align: "start",
               },
@@ -56,8 +61,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             {
               element: "[data-tour='explorer-results-filters']",
               popover: {
-                title: "Filtros comerciales",
-                description: "Cambia entre todos, nuevos, contactados, calificados o perdidos para revisar el pipeline.",
+                title: tr.explorerResults[3].title,
+                description: tr.explorerResults[3].description,
                 side: "bottom",
                 align: "center",
               },
@@ -65,8 +70,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             {
               element: "[data-tour='explorer-results-list']",
               popover: {
-                title: "Tabla de negocios",
-                description: "Acá aparece cada lead con zona, score, prioridad y estado. Al hacer clic se abre el detalle lateral.",
+                title: tr.explorerResults[4].title,
+                description: tr.explorerResults[4].description,
                 side: "top",
                 align: "start",
               },
@@ -88,16 +93,16 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
         showProgress: true,
         animate: true,
         allowClose: true,
-        nextBtnText: "Siguiente",
-        prevBtnText: "Atrás",
-        doneBtnText: "Ver resultados",
+        nextBtnText: tr.next,
+        prevBtnText: tr.prev,
+        doneBtnText: tr.doneExplorer,
         popoverClass: "leadscout-driver-popover",
         steps: [
           {
             element: "[data-tour='explorer-tabs']",
             popover: {
-              title: "Explorer",
-              description: "Esta sección sirve para configurar una búsqueda y descubrir negocios locales.",
+              title: tr.explorerSetup[0].title,
+              description: tr.explorerSetup[0].description,
               side: "bottom",
               align: "start",
             },
@@ -105,8 +110,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-category']",
             popover: {
-              title: "Categoría",
-              description: "Primero elegís el rubro: gastronomía, retail, servicios, salud u otro tipo de negocio.",
+              title: tr.explorerSetup[1].title,
+              description: tr.explorerSetup[1].description,
               side: "right",
               align: "center",
             },
@@ -114,8 +119,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-location']",
             popover: {
-              title: "Zona de búsqueda",
-              description: "Luego definís dónde buscar. Podés escribir una ciudad o seleccionar una sugerencia.",
+              title: tr.explorerSetup[2].title,
+              description: tr.explorerSetup[2].description,
               side: "right",
               align: "center",
             },
@@ -123,8 +128,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-actions']",
             popover: {
-              title: "Ejecutar búsqueda",
-              description: "Este botón inicia el scraping. También podés usar tu ubicación para centrar la búsqueda.",
+              title: tr.explorerSetup[3].title,
+              description: tr.explorerSetup[3].description,
               side: "right",
               align: "center",
             },
@@ -132,8 +137,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-radius']",
             popover: {
-              title: "Rango",
-              description: "El radio limita cuántos negocios se revisan. Un rango menor ayuda a tener resultados más precisos.",
+              title: tr.explorerSetup[4].title,
+              description: tr.explorerSetup[4].description,
               side: "right",
               align: "center",
             },
@@ -141,8 +146,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-map']",
             popover: {
-              title: "Mapa de búsqueda",
-              description: "Acá ves la zona activa, negocios detectados y puntos pendientes de escaneo.",
+              title: tr.explorerSetup[5].title,
+              description: tr.explorerSetup[5].description,
               side: "left",
               align: "center",
             },
@@ -150,8 +155,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           {
             element: "[data-tour='explorer-edit-zone']",
             popover: {
-              title: "Mover zona",
-              description: "Activá editar zona para arrastrar el área de búsqueda directamente en el mapa.",
+              title: tr.explorerSetup[6].title,
+              description: tr.explorerSetup[6].description,
               side: "left",
               align: "center",
             },
@@ -164,7 +169,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [setActiveTab]);
+  }, [setActiveTab, tr]);
 
   return null;
 }

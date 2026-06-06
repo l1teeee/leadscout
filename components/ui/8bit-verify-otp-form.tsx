@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Zap, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
@@ -9,7 +11,9 @@ const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 // This component is kept for reference but redirects to forgot-password.
 export default function VerifyOtpForm({ email }: { email: string }) {
   const router = useRouter();
-  const errorMsg = "Este flujo ya no esta disponible. Usa el enlace de recuperacion enviado a tu email.";
+  const { lang } = useLanguage();
+  const tr = translations[lang].auth.verifyOtp;
+  const errorMsg = tr.error;
 
   return (
     <div className="animate-scale-in w-full">
@@ -20,15 +24,15 @@ export default function VerifyOtpForm({ email }: { email: string }) {
           </div>
           <div>
             <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Recuperar acceso</p>
+            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>{tr.header}</p>
           </div>
         </div>
 
         <div className="px-6 pb-6 pt-5 space-y-5">
           <div>
-            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Recuperar cuenta</h2>
+            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>{tr.title}</h2>
             <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>
-              Revisa tu email <span className="font-semibold" style={{ color: "var(--text-2)" }}>{email}</span> y haz clic en el enlace de recuperacion.
+              {tr.descriptionPrefix} <span className="font-semibold" style={{ color: "var(--text-2)" }}>{email}</span> {tr.descriptionSuffix}
             </p>
           </div>
 
@@ -41,12 +45,12 @@ export default function VerifyOtpForm({ email }: { email: string }) {
             className="retro pixel-text-sm inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px"
             style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}
           >
-            Solicitar nuevo enlace
+            {tr.requestNew}
             <ArrowRight size={13} />
           </button>
 
           <p className="text-center text-xs" style={{ ...body, color: "var(--text-3)" }}>
-            <Link href="/login" className="font-semibold underline underline-offset-2" style={{ color: "var(--text-2)" }}>Volver al login</Link>
+            <Link href="/login" className="font-semibold underline underline-offset-2" style={{ color: "var(--text-2)" }}>{translations[lang].common.backToLogin}</Link>
           </p>
         </div>
       </div>

@@ -3,6 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { EmptyInsight } from "@/components/ui/empty-insight";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 export interface StepChartPoint {
   label: string;
@@ -65,12 +67,16 @@ function areaPath(data: StepChartPoint[], maxValue: number) {
 }
 
 export function ChartAreaStep({
-  title = "Actividad semanal",
-  eyebrow = "Leads detectados",
+  title,
+  eyebrow,
   data,
   className,
   ...props
 }: ChartAreaStepProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].common;
+  const chartTitle = title ?? translations[lang].dashboard.chart.title;
+  const chartEyebrow = eyebrow ?? translations[lang].dashboard.chart.eyebrow;
   const patternId = React.useId();
   const [activeIndex, setActiveIndex] = React.useState(0);
   const maxValue = buildScale(data);
@@ -93,13 +99,13 @@ export function ChartAreaStep({
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-            {eyebrow}
+            {chartEyebrow}
           </p>
           <h2
             className="retro pixel-text-sm mt-2 font-black uppercase"
             style={{ color: "var(--text)" }}
           >
-            {title}
+            {chartTitle}
           </h2>
         </div>
 
@@ -117,9 +123,9 @@ export function ChartAreaStep({
 
       {!hasData && (
         <EmptyInsight
-          title="Aún falta explorar una zona"
-          description="Cuando ejecutes tu primera búsqueda, acá verás los leads detectados por día."
-          action="Explorá una zona para activar la actividad semanal"
+          title={tr.chartEmpty.title}
+          description={tr.chartEmpty.description}
+          action={tr.chartEmpty.action}
           className="flex-1"
         />
       )}
@@ -130,7 +136,7 @@ export function ChartAreaStep({
         className="min-h-[260px] w-full flex-1 overflow-visible"
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label={`${title}: ${eyebrow}`}
+        aria-label={`${chartTitle}: ${chartEyebrow}`}
       >
         <defs>
           <pattern id={patternId} width="18" height="18" patternUnits="userSpaceOnUse">
@@ -278,7 +284,7 @@ export function ChartAreaStep({
               {active.label}
             </text>
             <text x="10" y="32" fontSize="10" fill="var(--text)">
-              Leads: {active.value}
+              {tr.leadsLabel}: {active.value}
             </text>
           </g>
         )}

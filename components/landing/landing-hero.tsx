@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useLayoutEffect, useState } from "react";
 import { useIntersection } from "@/hooks/use-intersection";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
-const statBoxes = [
-  { label: "Leads nuevos", value: "248", color: "var(--c-new)" },
-  { label: "Calificados", value: "73", color: "var(--c-qualified)" },
-  { label: "Prioridad alta", value: "19", color: "var(--c-hi)" },
-  { label: "Conversión", value: "31%", color: "var(--text)" },
-];
+const statColors = ["var(--c-new)", "var(--c-qualified)", "var(--c-hi)", "var(--text)"];
 
 const bars = [
   { height: "34%", color: "var(--c-new)" },
@@ -24,7 +22,11 @@ const bars = [
 ];
 
 export function LandingHero() {
+  const { lang } = useLanguage();
+  const tr = translations[lang].landing.hero;
   const { ref: mockRef, isVisible: isMockVisible } = useIntersection<HTMLDivElement>();
+  const [heroReady, setHeroReady] = useState(false);
+  useLayoutEffect(() => { setHeroReady(true); }, []);
 
   return (
     <section
@@ -32,55 +34,57 @@ export function LandingHero() {
       style={{ background: "var(--bg)", color: "var(--text)" }}
     >
       <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:grid-cols-[1fr_0.9fr] lg:px-8 lg:py-20">
-        <div data-stagger className="max-w-3xl">
+        <div className={heroReady ? "is-visible" : ""}>
+          <div data-stagger className="max-w-3xl">
           <p className="retro pixel-text-sm mb-5 uppercase" style={{ color: "var(--text-2)" }}>
-            Inteligencia comercial para LATAM
+            {tr.eyebrow}
           </p>
-          <h1 className="retro text-3xl font-black uppercase leading-tight sm:text-5xl lg:text-6xl" style={{ color: "var(--text)" }}>
-            ENCONTRÁ TUS PRÓXIMOS CLIENTES
+          <h1 className="retro text-2xl font-black uppercase leading-tight sm:text-5xl lg:text-6xl" style={{ color: "var(--text)" }}>
+            {tr.title}
           </h1>
           <p className="mt-6 max-w-2xl text-base font-medium leading-7 sm:text-lg" style={{ ...bodyFont, color: "var(--text-2)" }}>
-            LeadScout AI escanea el mercado LATAM y te entrega leads calificados con score de conversión, datos de contacto y mapa de oportunidades.
+            {tr.description}
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/login"
               className="lnd-btn-primary retro pixel-text-sm inline-flex h-12 items-center justify-center gap-2 px-5 font-bold active:translate-x-0.5 active:translate-y-0.5"
             >
-              Empezar gratis
+              {tr.primary}
               <ArrowRight size={16} />
             </Link>
             <Link
               href="#demo"
               className="lnd-btn-secondary retro pixel-text-sm inline-flex h-12 items-center justify-center px-5 font-bold active:translate-x-0.5 active:translate-y-0.5"
             >
-              Ver demo
+              {tr.secondary}
             </Link>
+          </div>
           </div>
         </div>
 
         <div
           id="demo"
           ref={mockRef}
-          className={`pixel-card reveal-left p-4 sm:p-5 ${isMockVisible ? "is-visible" : ""}`}
+          className={`pixel-card reveal-left w-full min-w-0 p-4 sm:p-5 ${isMockVisible ? "is-visible" : ""}`}
           style={{ background: "var(--surface)" }}
         >
           <div className="mb-4 flex items-center justify-between gap-3" style={{ borderBottom: "2px solid var(--border)", paddingBottom: "1rem" }}>
             <div>
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                Pipeline semanal
+                {tr.weeklyPipeline}
               </p>
               <h2 className="retro pixel-text-sm mt-2 uppercase" style={{ color: "var(--text)" }}>
-                Radar LATAM
+                {tr.radar}
               </h2>
             </div>
             <span className="retro pixel-text-xs px-2 py-1" style={{ background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
-              ACTIVO
+              {tr.active}
             </span>
           </div>
 
           <div data-stagger className="grid grid-cols-2 gap-3">
-            {statBoxes.map((stat) => (
+            {tr.stats.map((stat, index) => (
               <div
                 key={stat.label}
                 className="lnd-kpi-card p-3"
@@ -89,7 +93,7 @@ export function LandingHero() {
                   border: "2px solid var(--border)",
                 }}
               >
-                <div className="mb-2 h-2 w-8" style={{ background: stat.color }} />
+                <div className="mb-2 h-2 w-8" style={{ background: statColors[index] }} />
                 <p className="retro pixel-text-sm" style={{ color: "var(--text)" }}>
                   {stat.value}
                 </p>
@@ -103,22 +107,23 @@ export function LandingHero() {
           <div className="mt-5 p-4" style={{ background: "var(--bg)", border: "2px solid var(--border)" }}>
             <div className="mb-3 flex items-center justify-between">
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>
-                Leads por zona
+                {tr.zoneLeads}
               </p>
               <p className="text-xs font-bold" style={{ ...bodyFont, color: "var(--text-3)" }}>
-                Últimos 7 días
+                {tr.last7Days}
               </p>
             </div>
-            <div className="flex h-48 items-end gap-3" style={{ borderBottom: "2px solid var(--border)" }}>
+            <div className="flex h-36 items-end gap-3 sm:h-48" style={{ borderBottom: "2px solid var(--border)" }}>
               {bars.map((bar, index) => (
                 <div
                   key={`${bar.height}-${index}`}
                   className="lnd-bar flex-1"
                   style={{
-                    height: bar.height,
+                    height: isMockVisible ? bar.height : "0%",
                     background: bar.color,
                     border: "2px solid var(--border)",
                     boxShadow: "2px 2px 0 0 var(--pixel-shadow)",
+                    transition: `height 600ms linear ${index * 80}ms`,
                   }}
                 />
               ))}

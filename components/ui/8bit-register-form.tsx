@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { login, register } from "@/lib/api/auth";
 import { clearToken, setToken } from "@/lib/auth";
 import LoadingScreen from "@/components/ui/8bit-loading-screen";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const block = (e: React.SyntheticEvent) => e.preventDefault();
@@ -24,6 +26,8 @@ function wait(ms: number) {
 
 export default function RegisterForm({ className }: { className?: string }) {
   const router = useRouter();
+  const { lang } = useLanguage();
+  const tr = translations[lang].auth.register;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -50,11 +54,11 @@ export default function RegisterForm({ className }: { className?: string }) {
     setErrorMsg(null);
 
     if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-      showError("La contraseña no cumple los requisitos.");
+      showError(tr.invalidPassword);
       return;
     }
     if (password !== confirm) {
-      showError("Las contraseñas no coinciden.");
+      showError(tr.mismatch);
       return;
     }
 
@@ -87,8 +91,8 @@ export default function RegisterForm({ className }: { className?: string }) {
       setTimeout(() => { router.replace("/onboarding"); router.refresh(); }, 1200);
     } catch (err) {
       window.clearInterval(progressTimer);
-      const msg = err instanceof Error ? err.message : "Error al crear cuenta.";
-      showError(msg.includes("400") ? "Este correo ya tiene una cuenta." : "Error al crear la cuenta. Intentá de nuevo.");
+      const msg = err instanceof Error ? err.message : "";
+      showError(msg.includes("400") ? tr.duplicateEmail : tr.genericError);
       setIsLoading(false);
       setLoadingProgress(0);
     }
@@ -99,7 +103,7 @@ export default function RegisterForm({ className }: { className?: string }) {
       <div className="animate-scale-in w-full">
         <div className="pixel-card overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Registro</p>
+            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>{tr.header}</p>
             <div className="flex gap-1.5" aria-hidden="true">
               <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
               <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
@@ -109,8 +113,8 @@ export default function RegisterForm({ className }: { className?: string }) {
           <div className="px-6 py-8 flex flex-col items-center gap-4 text-center">
             <CheckCircle size={32} style={{ color: "var(--c-qualified)" }} />
             <div>
-              <p className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Cuenta creada</p>
-              <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Redirigiendo a la configuracion inicial...</p>
+              <p className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>{tr.successTitle}</p>
+              <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>{tr.successSubtitle}</p>
             </div>
           </div>
         </div>
@@ -123,7 +127,7 @@ export default function RegisterForm({ className }: { className?: string }) {
       <div className={cn("animate-scale-in w-full", className)}>
         <div className="pixel-card overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Registro</p>
+            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>{tr.header}</p>
             <div className="flex gap-1.5" aria-hidden="true">
               <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
               <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
@@ -131,14 +135,9 @@ export default function RegisterForm({ className }: { className?: string }) {
             </div>
           </div>
           <LoadingScreen
-            title="Creando usuario"
+            title={tr.loadingTitle}
             progress={loadingProgress}
-            tips={[
-              "Creando credenciales seguras...",
-              "Preparando la configuracion inicial...",
-              "Validando permisos de owner...",
-              "Iniciando sesión automáticamente...",
-            ]}
+            tips={[...tr.tips]}
           />
         </div>
       </div>
@@ -149,7 +148,7 @@ export default function RegisterForm({ className }: { className?: string }) {
     <div className={cn("animate-scale-in w-full", className)}>
       <div className="pixel-card overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-          <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Registro</p>
+          <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>{tr.header}</p>
           <div className="flex gap-1.5" aria-hidden="true">
             <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
             <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
@@ -159,12 +158,12 @@ export default function RegisterForm({ className }: { className?: string }) {
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-5">
           <div className="animate-fade-up" style={{ animationDelay: "60ms" }}>
-            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Crear cuenta</h2>
-            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Empieza a detectar oportunidades hoy</p>
+            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>{tr.title}</h2>
+            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>{tr.subtitle}</p>
           </div>
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "120ms" }}>
-            <label htmlFor="reg-email" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Email</label>
+            <label htmlFor="reg-email" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{translations[lang].common.email}</label>
             <input id="reg-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="m@example.com" required autoComplete="email"
               className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
@@ -172,7 +171,7 @@ export default function RegisterForm({ className }: { className?: string }) {
           </div>
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "160ms" }}>
-            <label htmlFor="reg-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Contraseña</label>
+            <label htmlFor="reg-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{translations[lang].common.password}</label>
             <div className="relative">
               <input {...secureInputProps} id="reg-password" type={showPassword ? "text" : "password"} value={password}
                 onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required
@@ -188,9 +187,9 @@ export default function RegisterForm({ className }: { className?: string }) {
           {password.length > 0 && (
             <div className="space-y-1.5 px-1">
               {[
-                { label: "Mínimo 8 caracteres", ok: password.length >= 8 },
-                { label: "Al menos una mayúscula", ok: /[A-Z]/.test(password) },
-                { label: "Al menos un número", ok: /[0-9]/.test(password) },
+                { label: tr.passwordRules[0], ok: password.length >= 8 },
+                { label: tr.passwordRules[1], ok: /[A-Z]/.test(password) },
+                { label: tr.passwordRules[2], ok: /[0-9]/.test(password) },
               ].map(({ label, ok }) => (
                 <div key={label} className="flex items-center gap-2">
                   <div className="h-4 w-4 shrink-0 border-2 flex items-center justify-center"
@@ -204,7 +203,7 @@ export default function RegisterForm({ className }: { className?: string }) {
           )}
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "200ms" }}>
-            <label htmlFor="reg-confirm" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Confirmar contraseña</label>
+            <label htmlFor="reg-confirm" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{tr.confirmPassword}</label>
             <input {...secureInputProps} id="reg-confirm" type={showPassword ? "text" : "password"} value={confirm}
               onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" required
               className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
@@ -226,14 +225,14 @@ export default function RegisterForm({ className }: { className?: string }) {
             <button type="submit" disabled={!email || !password || !confirm || isLoading}
               className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}>
-              {isLoading ? "Creando cuenta..." : "Crear cuenta"}
+              {isLoading ? tr.submitting : tr.submit}
               {!isLoading && <ArrowRight size={13} />}
             </button>
           </div>
 
           <p className="animate-fade-up text-center text-xs" style={{ ...body, color: "var(--text-3)" }}>
-            ¿Ya tenés cuenta?{" "}
-            <Link href="/login" className="font-semibold underline underline-offset-2" style={{ color: "var(--text-2)" }}>Ingresar</Link>
+            {tr.hasAccount}{" "}
+            <Link href="/login" className="font-semibold underline underline-offset-2" style={{ color: "var(--text-2)" }}>{tr.login}</Link>
           </p>
         </form>
       </div>

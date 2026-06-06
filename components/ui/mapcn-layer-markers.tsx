@@ -3,6 +3,8 @@
 import * as React from "react";
 import MapLibreGL from "maplibre-gl";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const lightStyle =
   "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
@@ -64,6 +66,7 @@ export function Map({
   center = DEFAULT_EL_SALVADOR_CENTER,
   zoom = 11,
 }: MapProps) {
+  const { lang } = useLanguage();
   const containerRef = React.useRef<HTMLDivElement>(null);
   const initialViewRef = React.useRef({ center, zoom });
   const [map, setMap] = React.useState<MapLibreGL.Map | null>(null);
@@ -116,7 +119,7 @@ export function Map({
         {!isLoaded && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
             <span className="retro pixel-text-xs text-[var(--text-2)]">
-              Cargando mapa
+              {translations[lang].common.mapLoading}
             </span>
           </div>
         )}

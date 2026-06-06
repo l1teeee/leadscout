@@ -1,9 +1,10 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Bell, Building2, LogOut, Search, Settings, UserRound } from "lucide-react";
 import Link from "next/link";
+import { logoutAction } from "@/app/actions/auth-actions";
 import { logout } from "@/lib/api/auth";
 import { clearToken, getToken, parseTokenUser } from "@/lib/auth";
 import { useLanguage } from "@/contexts/language-context";
@@ -21,17 +22,21 @@ export function Topbar() {
   const router = useRouter();
   const { lang, setLang } = useLanguage();
   const tr = translations[lang];
-  const title = tr.topbar.titles[pathname] ?? "LeadScout";
+  const title = (tr.topbar.titles as Record<string, string>)[pathname] ?? "LeadScout";
   const [userEmail] = useState(getUserEmail);
+  const [isPending, startTransition] = useTransition();
 
   const initials = userEmail ? userEmail.split("@")[0].slice(0, 2).toUpperCase() : "LS";
 
-  async function handleSignOut() {
+  function handleSignOut() {
     const token = getToken();
-    if (token) await logout(token);
+    if (token) {
+      logout(token).catch(() => {});
+    }
     clearToken();
-    router.replace("/login");
-    router.refresh();
+    startTransition(async () => {
+      await logoutAction();
+    });
   }
 
   return (
@@ -47,24 +52,29 @@ export function Topbar() {
 
       <div className="flex items-center gap-2">
         <button
-          onClick={() => setLang(lang === "en" ? "es" : "en")}
+          onClick={() => {
+            setLang(lang === "en" ? "es" : "en");
+            router.refresh();
+          }}
           className="w-8 h-8 flex items-center justify-center rounded-none transition-transform active:translate-x-0.5 active:translate-y-0.5"
           style={{ ...bodyFont, color: "var(--text)", background: "var(--surface-2)", border: "2px solid var(--border)", boxShadow: "2px 2px 0 0 var(--pixel-shadow)", fontSize: "10px", fontWeight: 700 }}
-          title={lang === "en" ? "Switch to Spanish" : "Cambiar a Ingles"}
-          aria-label="Toggle language"
+          title={tr.langToggle.nextTitle}
+          aria-label={tr.langToggle.label}
         >
-          {tr.langToggle}
+          {tr.langToggle.short}
         </button>
 
         <button
           className="w-8 h-8 flex items-center justify-center rounded-none transition-transform active:translate-x-0.5 active:translate-y-0.5"
           style={{ color: "var(--text)", background: "var(--surface-2)", border: "2px solid var(--border)", boxShadow: "2px 2px 0 0 var(--pixel-shadow)" }}
+          aria-label={tr.topbar.search}
         >
           <Search size={15} />
         </button>
         <button
           className="w-8 h-8 flex items-center justify-center rounded-none transition-transform active:translate-x-0.5 active:translate-y-0.5"
           style={{ color: "var(--text)", background: "var(--surface-2)", border: "2px solid var(--border)", boxShadow: "2px 2px 0 0 var(--pixel-shadow)" }}
+          aria-label={tr.topbar.notifications}
         >
           <Bell size={15} />
         </button>
@@ -97,7 +107,7 @@ export function Topbar() {
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold" style={{ color: "var(--text)" }}>
-                      {userEmail || "Usuario"}
+                      {userEmail || tr.topbar.userFallback}
                     </p>
                     <p className="truncate text-xs font-semibold" style={{ color: "var(--text-3)" }}>
                       {userEmail}
@@ -130,6 +140,7 @@ export function Topbar() {
 
               <DropdownMenu.Item
                 onSelect={handleSignOut}
+                disabled={isPending}
                 className="flex cursor-pointer items-center gap-2 border-2 border-transparent px-3 py-2 text-sm font-bold outline-none hover:border-[var(--border)] hover:bg-[var(--surface-2)]"
                 style={{ color: "var(--c-hi)" }}
               >

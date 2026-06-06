@@ -2,16 +2,10 @@
 
 import { Building2, LocateFixed, MapPin, Play, Search, SlidersHorizontal } from "lucide-react";
 import { useIntersection } from "@/hooks/use-intersection";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
-
-const explorerBullets = [
-  "Mapa interactivo para detectar zonas con potencial.",
-  "Radio ajustable por barrio, ciudad o área comercial.",
-  "Filtro por rubro para enfocar la prospección.",
-  "Sugerencias de ubicación mientras escribís.",
-  "Resultados ordenados por score de oportunidad.",
-];
 
 const results = [
   { name: "Panadería La Rural", zone: "Palermo", score: 87, color: "var(--c-qualified)" },
@@ -20,6 +14,8 @@ const results = [
 ];
 
 export function LandingExplorer() {
+  const { lang } = useLanguage();
+  const tr = translations[lang].landing.explorer;
   const { ref: textRef, isVisible: isTextVisible } = useIntersection<HTMLDivElement>();
   const { ref: mockRef, isVisible: isMockVisible } = useIntersection<HTMLDivElement>();
 
@@ -28,16 +24,16 @@ export function LandingExplorer() {
       <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
         <div ref={textRef} className={`reveal-right ${isTextVisible ? "is-visible" : ""}`}>
           <p className="retro pixel-text-sm uppercase" style={{ color: "var(--text-2)" }}>
-            EXPLORER
+            {tr.eyebrow}
           </p>
           <h2 className="retro mt-4 text-2xl font-black uppercase leading-tight sm:text-4xl" style={{ color: "var(--text)" }}>
-            Encontrá negocios por zona en segundos
+            {tr.title}
           </h2>
           <p className="mt-5 text-base font-medium leading-7" style={{ ...bodyFont, color: "var(--text-2)" }}>
-            Explorer escanea el mapa argentino y transforma búsquedas locales en listas accionables de negocios con potencial comercial.
+            {tr.description}
           </p>
           <ul data-stagger className="mt-7 space-y-3">
-            {explorerBullets.map((bullet) => (
+            {tr.bullets.map((bullet) => (
               <li key={bullet} className="flex gap-3 text-sm font-semibold leading-6" style={{ ...bodyFont, color: "var(--text)" }}>
                 <span className="mt-2 size-2 shrink-0" style={{ background: "var(--c-qualified)", border: "1px solid var(--border)" }} />
                 <span>{bullet}</span>
@@ -60,12 +56,12 @@ export function LandingExplorer() {
                   EXPLORER
                 </p>
                 <p className="text-sm font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
-                  Búsqueda local
+                  {tr.localSearch}
                 </p>
               </div>
             </div>
             <span className="retro pixel-text-xs px-2 py-1" style={{ background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
-              LIVE
+              {tr.live}
             </span>
           </div>
 
@@ -79,12 +75,12 @@ export function LandingExplorer() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="p-3" style={{ background: "var(--surface)", border: "2px solid var(--border)" }}>
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                Categoría
+                {tr.category}
               </p>
               <div className="mt-3 inline-flex items-center gap-2 px-3 py-2" style={{ background: "var(--bg)", border: "2px solid var(--border)", color: "var(--text)" }}>
                 <Building2 size={15} />
                 <span className="text-xs font-extrabold" style={bodyFont}>
-                  Restaurantes
+                  {tr.restaurants}
                 </span>
               </div>
             </div>
@@ -92,7 +88,7 @@ export function LandingExplorer() {
             <div className="p-3" style={{ background: "var(--surface)", border: "2px solid var(--border)" }}>
               <div className="flex items-center justify-between gap-3">
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  Radio
+                  {tr.radius}
                 </p>
                 <span className="text-xs font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
                   2.5km
@@ -104,7 +100,7 @@ export function LandingExplorer() {
               <div className="mt-2 flex items-center gap-2" style={{ color: "var(--text-3)" }}>
                 <SlidersHorizontal size={14} />
                 <span className="text-xs font-bold" style={bodyFont}>
-                  Ajustable
+                  {tr.adjustable}
                 </span>
               </div>
             </div>
@@ -116,29 +112,39 @@ export function LandingExplorer() {
               className="lnd-btn-primary retro pixel-text-sm inline-flex h-11 items-center justify-center gap-2 px-4 font-bold active:translate-x-0.5 active:translate-y-0.5"
             >
               <Play size={15} />
-              Ejecutar
+              {tr.run}
             </button>
             <button
               type="button"
               className="lnd-btn-secondary retro pixel-text-sm inline-flex h-11 items-center justify-center gap-2 px-4 font-bold active:translate-x-0.5 active:translate-y-0.5"
             >
               <LocateFixed size={15} />
-              Mi ubicación
+              {tr.myLocation}
             </button>
           </div>
 
           <div className="mt-5 p-4" style={{ background: "var(--bg)", border: "2px solid var(--border)" }}>
             <div className="mb-4 flex items-center justify-between gap-3">
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>
-                Resultados
+                {tr.results}
               </p>
               <p className="text-xs font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
-                14 negocios
+                {tr.businessCount}
               </p>
             </div>
             <div className="space-y-3">
-              {results.map((result) => (
-                <div key={result.name} className="lnd-row p-3" style={{ background: "var(--surface)", border: "2px solid var(--border)" }}>
+              {results.map((result, i) => (
+                <div
+                  key={result.name}
+                  className="lnd-row p-3"
+                  style={{
+                    background: "var(--surface)",
+                    border: "2px solid var(--border)",
+                    opacity: isMockVisible ? 1 : 0,
+                    transform: isMockVisible ? "translateX(0)" : "translateX(-12px)",
+                    transition: `opacity 400ms var(--ease-out) ${i * 150}ms, transform 400ms var(--ease-out) ${i * 150}ms`,
+                  }}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
@@ -153,7 +159,14 @@ export function LandingExplorer() {
                     </span>
                   </div>
                   <div className="mt-3 h-2" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-                    <div className="h-full" style={{ width: `${result.score}%`, background: result.color }} />
+                    <div
+                      className="h-full"
+                      style={{
+                        width: isMockVisible ? `${result.score}%` : "0%",
+                        background: result.color,
+                        transition: `width 700ms linear ${i * 150 + 200}ms`,
+                      }}
+                    />
                   </div>
                 </div>
               ))}

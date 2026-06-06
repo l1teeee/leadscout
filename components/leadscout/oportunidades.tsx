@@ -4,19 +4,18 @@ import { PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import type { LeadStatus } from "@/lib/data";
+import { getLang } from "@/lib/get-lang";
+import { translations } from "@/lib/i18n";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
-const COLUMNS: { id: LeadStatus; label: string }[] = [
-  { id: "nuevo",      label: "Nuevos" },
-  { id: "contactado", label: "Contactados" },
-  { id: "calificado", label: "Calificados" },
-  { id: "perdido",    label: "Perdidos" },
-];
+const COLUMNS: LeadStatus[] = ["nuevo", "contactado", "calificado", "perdido"];
 
 export async function Oportunidades() {
+  const lang = await getLang();
+  const tr = translations[lang].oportunidades;
   const token = (await cookies()).get("ls_token")?.value;
   const leads = await getLeads({}, token).catch(() => []);
 
@@ -24,9 +23,9 @@ export async function Oportunidades() {
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNS.map((col) => {
-          const colLeads = leads.filter((l) => l.status === col.id);
+          const colLeads = leads.filter((l) => l.status === col);
           return (
-            <div key={col.id} className="pixel-card-sm bg-[#FAFAF9] p-3">
+            <div key={col} className="pixel-card-sm bg-[#FAFAF9] p-3">
               <div
                 className="mb-3 flex items-center justify-between bg-white px-3 py-2"
                 style={{ border: "2px solid var(--pixel-border, #18181B)" }}
@@ -36,7 +35,7 @@ export async function Oportunidades() {
                     className="retro pixel-text-xs font-black uppercase"
                     style={{ color: "var(--text-2)" }}
                   >
-                    {col.label}
+                    {tr.columns[col]}
                   </h2>
                   <span
                     className="retro inline-flex h-6 min-w-6 items-center justify-center px-1 text-[10px] font-black"
@@ -92,7 +91,7 @@ export async function Oportunidades() {
                         ))
                       ) : (
                         <p className="text-[11px] font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                          Brechas por confirmar.
+                          {tr.gaps}
                         </p>
                       )}
                       {lead.issues.length > 2 && (
@@ -107,7 +106,7 @@ export async function Oportunidades() {
                         className="text-xs font-medium"
                         style={{ ...bodyTextStyle, color: "var(--text-3)" }}
                       >
-                        Contacto: {lead.lastContact}
+                        {tr.lastContact}: {lead.lastContact}
                       </p>
                     )}
                   </div>
@@ -122,8 +121,8 @@ export async function Oportunidades() {
                     }}
                   >
                     <EmptyInsight
-                      title="Esta etapa está lista"
-                      description="Cuando clasifiques leads, aparecerán acá para mantener claro el avance comercial."
+                      title={tr.empty.title}
+                      description={tr.empty.description}
                       compact
                     />
                   </div>

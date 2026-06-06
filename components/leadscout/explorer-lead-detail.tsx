@@ -1,3 +1,5 @@
+"use client";
+
 import { X, Phone, Globe } from "lucide-react";
 import { StatusBadge, PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
@@ -5,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { SCRAPING_ZONES } from "@/lib/explorer-data";
 import type { ExplorerLeadDetailProps } from "@/types/explorer";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const pixelBadgeClass =
@@ -13,6 +17,8 @@ const pixelButtonClass =
   "retro rounded-none border-2 border-[var(--border)] pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px active:shadow-none";
 
 export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer.detail;
   const hasIssues = lead.issues.length > 0;
   const hasContact = Boolean(lead.phone || lead.website);
 
@@ -37,7 +43,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
           <button
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-none border-2 border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-[1px_1px_0_0_var(--pixel-shadow)] transition-transform hover:bg-[var(--pixel-highlight)] active:translate-x-px active:translate-y-px active:shadow-none"
-            aria-label="Cerrar detalle"
+            aria-label={tr.close}
           >
             <X size={13} />
           </button>
@@ -49,7 +55,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               className="retro pixel-text-xs uppercase font-bold mb-2"
               style={{ color: "var(--text-2)" }}
             >
-              Score digital
+              {tr.digitalScore}
             </p>
             <ScoreBig score={lead.score} />
             <div className="mt-3">
@@ -62,7 +68,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               className="retro pixel-text-xs uppercase font-bold mb-2"
               style={{ color: "var(--text-2)" }}
             >
-              Estado
+              {tr.status}
             </p>
             <div className="flex gap-2">
               <StatusBadge status={lead.status} className={pixelBadgeClass} />
@@ -75,7 +81,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               className="retro pixel-text-xs uppercase font-bold mb-2"
               style={{ color: "var(--text-2)" }}
             >
-              Brechas detectadas
+              {tr.gaps}
             </p>
             <div className="flex flex-wrap gap-2">
               {hasIssues ? (
@@ -86,8 +92,8 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                 ))
               ) : (
                 <EmptyInsight
-                  title="Aún estamos leyendo señales"
-                  description="Cuando detectemos brechas digitales claras, aparecerán acá para priorizar este negocio."
+                  title={tr.gapsEmpty.title}
+                  description={tr.gapsEmpty.description}
                   compact
                 />
               )}
@@ -99,12 +105,12 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               className="retro pixel-text-xs uppercase font-bold mb-2"
               style={{ color: "var(--text-2)" }}
             >
-              Contacto
+              {tr.contact}
             </p>
             {!hasContact && (
               <EmptyInsight
-                title="Contacto por confirmar"
-                description="Seguiremos explorando fuentes para encontrar teléfono, sitio web o canales confiables."
+                title={tr.contactEmpty.title}
+                description={tr.contactEmpty.description}
                 compact
               />
             )}
@@ -132,7 +138,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                 className="retro pixel-text-xs uppercase font-bold mb-1"
                 style={{ color: "var(--text-2)" }}
               >
-                Último contacto
+                {tr.lastContact}
               </p>
               <p className="text-sm" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                 {lead.lastContact}
@@ -145,13 +151,13 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               variant="primary"
               className={`${pixelButtonClass} h-10 w-full justify-center`}
             >
-              Marcar como contactado
+              {tr.markContacted}
             </Button>
             <Button
               variant="secondary"
               className={`${pixelButtonClass} h-10 w-full justify-center bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--pixel-highlight)]`}
             >
-              Ver historial
+              {tr.history}
             </Button>
           </div>
         </div>

@@ -4,6 +4,8 @@ import { Info, MapPin, LocateFixed, Play, SlidersHorizontal } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/8bit-slider";
 import { MIN_SEARCH_RADIUS_KM, MAX_SEARCH_RADIUS_KM } from "@/lib/explorer-data";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 import type { ExplorerLocationPanelProps } from "@/types/explorer";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
@@ -13,12 +15,14 @@ function formatKm(value: number) {
 }
 
 function InfoTooltip({ text }: { text: string }) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer.location;
   const [open, setOpen] = useState(false);
   return (
     <span className="relative inline-flex items-center">
       <button
         type="button"
-        aria-label="Más información"
+        aria-label={tr.infoAria}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
         onFocus={() => setOpen(true)}
@@ -66,6 +70,13 @@ export function ExplorerLocationPanel({
   isSearching,
   searchError,
 }: ExplorerLocationPanelProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer.location;
+  const categoryLabels = translations[lang].explorer.categories;
+  const selectedCategoryLabel = selectedCategoryInfo
+    ? categoryLabels[selectedCategoryInfo.id as keyof typeof categoryLabels] ?? selectedCategoryInfo.label
+    : tr.allCategories;
+
   return (
     <section className="pixel-card-sm min-h-0 overflow-auto bg-white p-4 xl:h-fit xl:max-h-full">
       <div className="mb-4 flex items-center gap-2">
@@ -74,10 +85,10 @@ export function ExplorerLocationPanel({
         </div>
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-            Ubicación
+            {tr.eyebrow}
           </p>
           <h2 className="text-sm font-bold" style={{ color: "var(--text)" }}>
-            Configurar scraping
+            {tr.title}
           </h2>
         </div>
       </div>
@@ -85,7 +96,7 @@ export function ExplorerLocationPanel({
       <div className="space-y-3">
         <div>
           <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-            Categoría de búsqueda
+            {tr.categoryLabel}
           </span>
           <button
             type="button"
@@ -95,10 +106,10 @@ export function ExplorerLocationPanel({
           >
             <div>
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                Categoría seleccionada
+                {tr.selectedCategory}
               </p>
               <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                {selectedCategoryInfo?.label ?? "Todas"}
+                {selectedCategoryLabel}
               </p>
             </div>
             <SlidersHorizontal size={15} style={{ color: "var(--text)" }} />
@@ -106,10 +117,10 @@ export function ExplorerLocationPanel({
           <div className="mt-2 pixel-inset bg-[var(--surface-2)] px-3 py-2">
             <div className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--text-2)" }}>
               {visiblePointsCount > 0
-                ? `${visiblePointsCount} marcador${visiblePointsCount !== 1 ? "es" : ""} para esta categoría.`
+                ? tr.markers(visiblePointsCount)
                 : <>
-                    Sin marcadores en esta zona
-                    <InfoTooltip text="Ejecutá una búsqueda en esta zona o probá otra categoría para ver negocios en el mapa." />
+                    {tr.noMarkers}
+                    <InfoTooltip text={tr.noMarkersTooltip} />
                   </>
               }
             </div>
@@ -119,15 +130,15 @@ export function ExplorerLocationPanel({
         <label className="block">
           <span className="mb-1 flex items-center gap-1.5">
             <span className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-              Zona donde se va a buscar
+              {tr.zoneLabel}
             </span>
-            <InfoTooltip text="La zona queda bloqueada para seleccionar comercios. Usá 'Editar zona' en el mapa solo cuando necesites mover el área de búsqueda." />
+            <InfoTooltip text={tr.zoneTooltip} />
           </span>
           <input
             data-tour="explorer-location"
             value={locationQuery}
             onChange={(e) => onLocationQueryChange(e.target.value)}
-            placeholder="Ej: Palermo, CABA"
+            placeholder={tr.placeholder}
             className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)]"
             style={bodyTextStyle}
           />
@@ -145,7 +156,7 @@ export function ExplorerLocationPanel({
             ))}
             {placeSuggestions.length === 0 && locationQuery.trim().length > 2 && (
               <div className="px-3 py-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                Pronto encontraremos opciones para &quot;{locationQuery}&quot;. Prueba otra zona cercana.
+                {tr.noSuggestions(locationQuery)}
               </div>
             )}
           </div>
@@ -160,7 +171,7 @@ export function ExplorerLocationPanel({
             onClick={onSearch}
           >
             <Play size={13} />
-            {isSearching ? "Buscando" : "Ejecutar"}
+            {isSearching ? tr.running : tr.run}
           </Button>
           <Button
             variant="secondary"
@@ -170,7 +181,7 @@ export function ExplorerLocationPanel({
             onClick={onBrowserLocation}
           >
             <LocateFixed size={13} />
-            {isLocating ? "Ubicando" : "Mi ubicación"}
+            {isLocating ? tr.locating : tr.myLocation}
           </Button>
         </div>
 
@@ -191,8 +202,8 @@ export function ExplorerLocationPanel({
 
         <div data-tour="explorer-radius" className="border-t border-[var(--border)] pt-3">
           <p className="retro pixel-text-xs uppercase flex items-center gap-1" style={{ color: "var(--text-3)" }}>
-            Rango para tomar datos
-            <InfoTooltip text="Un radio menor da resultados más precisos. Aumentalo si querés cubrir más negocios en la zona." />
+            {tr.rangeTitle}
+            <InfoTooltip text={tr.rangeTooltip} />
           </p>
           <div className="mt-3">
             <Slider
@@ -200,15 +211,14 @@ export function ExplorerLocationPanel({
               min={MIN_SEARCH_RADIUS_KM}
               max={MAX_SEARCH_RADIUS_KM}
               step={0.5}
-              aria-label="Rango de búsqueda en kilómetros"
+              aria-label={tr.radiusAria}
               onValueChange={(value) => onSearchRadiusChange(value[0] ?? MAX_SEARCH_RADIUS_KM)}
             />
           </div>
           <div className="mt-2 flex items-center justify-between text-xs font-semibold">
             <span style={{ color: "var(--text-3)" }}>{formatKm(MIN_SEARCH_RADIUS_KM)} km</span>
             <span style={{ color: "var(--text)" }}>
-              {formatKm(activeSearchArea.radiusKm)} km desde{" "}
-              {selectedPlace?.municipality ?? "la zona activa"}
+              {formatKm(activeSearchArea.radiusKm)} km {tr.fromZone(selectedPlace?.municipality ?? tr.activeZone)}
             </span>
             <span style={{ color: "var(--text-3)" }}>{formatKm(MAX_SEARCH_RADIUS_KM)} km</span>
           </div>

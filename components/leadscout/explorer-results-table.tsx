@@ -1,10 +1,15 @@
+"use client";
+
 import { Search, SlidersHorizontal } from "lucide-react";
 import { StatusBadge, PriorityBadge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { Button } from "@/components/ui/button";
 import { EmptyInsight } from "@/components/ui/empty-insight";
-import { SCRAPING_ZONES, STATUS_FILTERS } from "@/lib/explorer-data";
+import { SCRAPING_ZONES } from "@/lib/explorer-data";
 import type { ExplorerResultsTableProps } from "@/types/explorer";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
+import type { LeadStatus } from "@/lib/data";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const pixelBadgeClass =
@@ -22,19 +27,30 @@ export function ExplorerResultsTable({
   filterStatus,
   onFilterStatusChange,
 }: ExplorerResultsTableProps) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer.results;
+  const rootTr = translations[lang];
+  const statusFilters: { value: LeadStatus | ""; label: string }[] = [
+    { value: "", label: rootTr.common.all },
+    { value: "nuevo", label: rootTr.leadStatus.nuevo },
+    { value: "contactado", label: rootTr.leadStatus.contactado },
+    { value: "calificado", label: rootTr.leadStatus.calificado },
+    { value: "perdido", label: rootTr.leadStatus.perdido },
+  ];
+
   return (
     <section className="pixel-card-sm flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between border-b-2 border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-            Resultados del scraping
+            {tr.eyebrow}
           </p>
           <h2 className="text-sm font-bold" style={{ color: "var(--text)" }}>
-            Tabla de negocios encontrados
+            {tr.title}
           </h2>
         </div>
         <span data-tour="explorer-results-summary" className="retro pixel-text-xs" style={{ color: "var(--text-2)" }}>
-          {filtered.length} visibles / {visibleCount} en mapa
+          {tr.summary(filtered.length, visibleCount)}
         </span>
       </div>
 
@@ -47,7 +63,7 @@ export function ExplorerResultsTable({
           />
           <input
             type="text"
-            placeholder="Buscar negocio, categoría o zona..."
+            placeholder={tr.searchPlaceholder}
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
             className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface-2)] pl-9 pr-3 text-sm text-[var(--text)] shadow-[2px_2px_0_0_var(--pixel-shadow)] placeholder:text-[var(--text-3)]"
@@ -56,7 +72,7 @@ export function ExplorerResultsTable({
         </div>
 
         <div data-tour="explorer-results-filters" className="flex items-center gap-2">
-          {STATUS_FILTERS.map((s) => (
+          {statusFilters.map((s) => (
             <button
               key={s.value}
               onClick={() => onFilterStatusChange(s.value)}
@@ -88,13 +104,13 @@ export function ExplorerResultsTable({
           className={`${pixelButtonClass} h-8 bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--pixel-highlight)]`}
         >
           <SlidersHorizontal size={13} />
-          Filtros
+          {tr.filters}
         </Button>
       </div>
 
       <div className="mx-3 mb-3 pixel-inset shrink-0 px-3 py-2">
         <span className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>
-          {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
+          {tr.count(filtered.length)}
         </span>
       </div>
 
@@ -102,7 +118,7 @@ export function ExplorerResultsTable({
         <table className="pixel-table w-full text-sm" style={bodyTextStyle}>
           <thead className="sticky top-0 z-10">
             <tr style={{ background: "var(--surface-2)" }}>
-              {["Negocio", "Categoría", "Zona", "Score", "Prioridad", "Estado"].map((h) => (
+              {tr.headers.map((h) => (
                 <th
                   key={h}
                   className="retro px-5 py-3 text-left font-bold uppercase pixel-text-xs"
@@ -118,9 +134,9 @@ export function ExplorerResultsTable({
               <tr>
                 <td colSpan={6} className="px-5 py-12 text-center">
                   <EmptyInsight
-                    title="Primero exploremos una zona"
-                    description="Los negocios detectados aparecerán acá listos para revisar. Si ya buscaste, probá limpiar filtros o cambiar el estado."
-                    action="Volvé a Ubicación y ejecutá una búsqueda"
+                    title={tr.empty.title}
+                    description={tr.empty.description}
+                    action={tr.empty.action}
                     compact
                   />
                 </td>

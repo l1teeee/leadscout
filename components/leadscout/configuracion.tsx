@@ -25,10 +25,10 @@ import {
   SETTINGS_TEAM_MEMBERS,
   SETTINGS_WORKSPACE,
   SETTINGS_WORK_ZONES,
-  type TeamMemberStatus,
-  type TeamRole,
   type ZonePriority,
 } from "@/lib/settings-data";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -43,33 +43,11 @@ const security = SETTINGS_SECURITY;
 const workZones = SETTINGS_WORK_ZONES;
 const categories = Array.from(new Set(workZones.flatMap((zone) => zone.categories))).slice(0, 10);
 
-const roleLabels: Record<TeamRole, string> = {
-  owner: "Owner",
-  admin: "Admin",
-  ventas: "Ventas",
-  analista: "Analista",
-  viewer: "Viewer",
-};
-
-const statusLabels: Record<TeamMemberStatus, string> = {
-  activo: "Activo",
-  invitado: "Invitado",
-  suspendido: "Suspendido",
-};
-
 const zonePriorityColors: Record<ZonePriority, string> = {
   alta: "var(--c-hi)",
   media: "var(--c-mid)",
   baja: "var(--c-lo)",
 };
-
-const usage = [
-  { label: "Leads detectados", value: planUsage.leads.usedThisMonth, limit: planUsage.leads.monthlyLimit },
-  { label: "Búsquedas mensuales", value: planUsage.searches.usedThisMonth, limit: planUsage.searches.monthlyLimit },
-  { label: "Miembros", value: planUsage.seats.used, limit: planUsage.seats.limit },
-  { label: "Exportaciones", value: planUsage.exports.usedThisMonth, limit: planUsage.exports.monthlyLimit },
-  { label: "Storage GB", value: planUsage.storageGb.used, limit: planUsage.storageGb.limit },
-];
 
 function initials(name: string) {
   return name
@@ -180,6 +158,17 @@ function UsageRow({ label, value, limit }: { label: string; value: number; limit
 }
 
 export function Configuracion() {
+  const { lang } = useLanguage();
+  const tr = translations[lang];
+  const settings = tr.settings;
+  const usage = [
+    { label: settings.usageLabels.leads, value: planUsage.leads.usedThisMonth, limit: planUsage.leads.monthlyLimit },
+    { label: settings.usageLabels.searches, value: planUsage.searches.usedThisMonth, limit: planUsage.searches.monthlyLimit },
+    { label: settings.usageLabels.members, value: planUsage.seats.used, limit: planUsage.seats.limit },
+    { label: settings.usageLabels.exports, value: planUsage.exports.usedThisMonth, limit: planUsage.exports.monthlyLimit },
+    { label: settings.usageLabels.storage, value: planUsage.storageGb.used, limit: planUsage.storageGb.limit },
+  ];
+
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -192,14 +181,14 @@ export function Configuracion() {
                 </div>
                 <div>
                   <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                    Workspace
+                    {tr.common.workspace}
                   </p>
                   <h1 className="mt-1 text-2xl font-black leading-tight" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                     {workspace.name}
                   </h1>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Tag>{planUsage.plan}</Tag>
-                    <Tag>{workspace.status}</Tag>
+                    <Tag>{tr.settingsEnums.plan[planUsage.plan]}</Tag>
+                    <Tag>{tr.settingsEnums.workspaceStatus[workspace.status]}</Tag>
                     <Tag>{workspace.country}</Tag>
                   </div>
                 </div>
@@ -208,27 +197,27 @@ export function Configuracion() {
                 type="button"
                 className="retro pixel-text-sm motion-retro-control inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)]"
               >
-                Guardar cambios
+                {settings.save}
               </button>
             </div>
           </div>
 
           <div className="grid gap-4 p-5 md:grid-cols-2">
-            <Field label="Nombre del workspace" value={workspace.name} />
-            <Field label="Razón social" value={workspace.legalName} />
-            <Field label="Industria" value={workspace.industry} />
-            <Field label="País" value={workspace.country} />
-            <Field label="Ciudad principal" value={workspace.city} />
-            <Field label="Teléfono" value={workspace.phone} />
-            <Field label="Sitio web" value={workspace.website} />
-            <Field label="Zona horaria" value={currentUser.timezone} />
-            <Field label="Moneda" value={workspace.currency} />
-            <Field label="NIT" value={workspace.taxId} />
+            <Field label={settings.fields.workspaceName} value={workspace.name} />
+            <Field label={settings.fields.legalName} value={workspace.legalName} />
+            <Field label={settings.fields.industry} value={workspace.industry} />
+            <Field label={settings.fields.country} value={workspace.country} />
+            <Field label={settings.fields.mainCity} value={workspace.city} />
+            <Field label={settings.fields.phone} value={workspace.phone} />
+            <Field label={settings.fields.website} value={workspace.website} />
+            <Field label={settings.fields.timezone} value={currentUser.timezone} />
+            <Field label={settings.fields.currency} value={workspace.currency} />
+            <Field label={settings.fields.taxId} value={workspace.taxId} />
           </div>
         </section>
 
         <aside className="pixel-card-sm h-fit bg-white p-5">
-          <SectionHeader eyebrow="Cuenta" title="Usuario actual" icon={UserRound} />
+          <SectionHeader eyebrow={settings.account} title={settings.currentUser} icon={UserRound} />
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center border-2 border-[var(--border)] bg-[var(--pixel-highlight)] retro pixel-text-sm shadow-[2px_2px_0_var(--pixel-shadow)]">
               {initials(currentUser.fullName)}
@@ -245,15 +234,15 @@ export function Configuracion() {
           <div className="mt-4 grid gap-2">
             <div className="pixel-inset bg-[var(--surface-2)] p-3">
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                Rol
+                {settings.role}
               </p>
               <p className="mt-1 text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                {roleLabels[currentUser.role]}
+                {tr.settingsEnums.teamRole[currentUser.role]}
               </p>
             </div>
             <div className="pixel-inset bg-[var(--surface-2)] p-3">
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                Idioma
+                {settings.language}
               </p>
               <p className="mt-1 text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                 {currentUser.locale}
@@ -266,24 +255,24 @@ export function Configuracion() {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
           <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow="Operación" title="Preferencias del workspace" icon={SlidersHorizontal} />
+            <SectionHeader eyebrow={settings.sections.operation} title={settings.sections.preferences} icon={SlidersHorizontal} />
             <div className="grid gap-3 md:grid-cols-2">
-              <ToggleRow title="Asignación automática" description={`Modo activo: ${preferences.assignmentMode}.`} checked />
-              <ToggleRow title="Notas obligatorias" description="Requiere nota antes de mover una oportunidad de etapa." checked={preferences.requireLeadNotesBeforeStageChange} />
-              <ToggleRow title="Archivar perdidos" description={`Archiva leads perdidos después de ${preferences.staleLeadDays} días.`} checked={preferences.autoArchiveLostLeads} />
-              <ToggleRow title="Reporte semanal" description={`Horario laboral: ${preferences.businessHours.mondayToFriday}.`} checked={false} />
+              <ToggleRow title={settings.toggles.autoAssign.title} description={settings.toggles.autoAssign.description(tr.settingsEnums.assignmentMode[preferences.assignmentMode])} checked />
+              <ToggleRow title={settings.toggles.requiredNotes.title} description={settings.toggles.requiredNotes.description} checked={preferences.requireLeadNotesBeforeStageChange} />
+              <ToggleRow title={settings.toggles.archiveLost.title} description={settings.toggles.archiveLost.description(preferences.staleLeadDays)} checked={preferences.autoArchiveLostLeads} />
+              <ToggleRow title={settings.toggles.weeklyReport.title} description={settings.toggles.weeklyReport.description(preferences.businessHours.mondayToFriday)} checked={false} />
             </div>
           </section>
 
           <section className="pixel-card-sm overflow-hidden bg-white">
             <div className="border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-5">
-              <SectionHeader eyebrow="Equipo" title="Miembros y roles" icon={UsersRound} />
+              <SectionHeader eyebrow={settings.sections.team} title={settings.sections.members} icon={UsersRound} />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-sm" style={bodyTextStyle}>
                 <thead>
                   <tr>
-                    {["Nombre", "Email", "Rol", "Estado", "Actividad"].map((heading) => (
+                    {settings.teamHeaders.map((heading) => (
                       <th
                         key={heading}
                         className="retro border-b-2 border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase"
@@ -304,12 +293,12 @@ export function Configuracion() {
                         {member.email}
                       </td>
                       <td className="px-4 py-3">
-                        <Tag>{roleLabels[member.role]}</Tag>
+                        <Tag>{tr.settingsEnums.teamRole[member.role]}</Tag>
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-2 text-xs font-bold" style={{ color: "var(--text-2)" }}>
                           <span className="h-2 w-2 bg-[var(--c-qualified)]" />
-                          {statusLabels[member.status]}
+                          {tr.settingsEnums.teamStatus[member.status]}
                         </span>
                       </td>
                       <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
@@ -324,7 +313,7 @@ export function Configuracion() {
 
           <section className="grid gap-5 md:grid-cols-2">
             <div className="pixel-card-sm bg-white p-5">
-              <SectionHeader eyebrow="Zonas" title="Cobertura comercial" icon={MapPin} />
+              <SectionHeader eyebrow={settings.sections.zones} title={settings.sections.coverage} icon={MapPin} />
               <div className="flex flex-wrap gap-2">
                 {workZones.map((zone) => (
                   <Tag key={zone.id}>
@@ -335,7 +324,7 @@ export function Configuracion() {
               </div>
             </div>
             <div className="pixel-card-sm bg-white p-5">
-              <SectionHeader eyebrow="Categorías" title="Rubros activos" icon={Globe2} />
+              <SectionHeader eyebrow={settings.sections.categories} title={settings.sections.activeCategories} icon={Globe2} />
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => (
                   <Tag key={category}>{category}</Tag>
@@ -347,7 +336,7 @@ export function Configuracion() {
 
         <div className="space-y-5">
           <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow="Plan" title="Uso mensual" icon={CreditCard} />
+            <SectionHeader eyebrow={settings.sections.plan} title={settings.sections.monthlyUsage} icon={CreditCard} />
             <div className="space-y-4">
               {usage.map((item) => (
                 <UsageRow key={item.label} {...item} />
@@ -356,16 +345,16 @@ export function Configuracion() {
           </section>
 
           <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow="Seguridad" title="Acceso y sesiones" icon={ShieldCheck} />
+            <SectionHeader eyebrow={settings.sections.security} title={settings.sections.accessSessions} icon={ShieldCheck} />
             <div className="grid gap-3">
               <div className="flex items-center gap-3 border-2 border-[var(--border)] bg-[var(--surface)] p-3">
                 <KeyRound size={16} />
                 <div>
                   <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    Password activo
+                    {settings.securityLabels.password}
                   </p>
                   <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                    Rotación cada {security.passwordRotationDays} días
+                    {settings.securityLabels.rotation(security.passwordRotationDays)}
                   </p>
                 </div>
               </div>
@@ -373,30 +362,30 @@ export function Configuracion() {
                 <BadgeCheck size={16} />
                 <div>
                   <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    Dominios permitidos
+                    {settings.securityLabels.domains}
                   </p>
                   <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
                     {security.allowedEmailDomains.join(", ")}
                   </p>
                 </div>
               </div>
-              <ToggleRow title="Verificación en dos pasos" description={`Nivel de seguridad: ${security.level}.`} checked={security.twoFactorRequired} />
+              <ToggleRow title={settings.toggles.twoFactor.title} description={settings.toggles.twoFactor.description(tr.settingsEnums.securityLevel[security.level])} checked={security.twoFactorRequired} />
             </div>
           </section>
 
           <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow="Sistema" title="Notificaciones" icon={Bell} />
+            <SectionHeader eyebrow={settings.sections.system} title={settings.sections.notifications} icon={Bell} />
             <div className="space-y-3">
-              <ToggleRow title="Nuevos leads" description="Avisar al detectar oportunidades nuevas." checked={preferences.preferredContactChannels.includes("app")} />
-              <ToggleRow title="Email operativo" description="Enviar alertas y reportes al correo del equipo." checked={preferences.preferredContactChannels.includes("email")} />
-              <ToggleRow title="WhatsApp comercial" description="Usar WhatsApp como canal preferido de seguimiento." checked={preferences.preferredContactChannels.includes("whatsapp")} />
+              <ToggleRow title={settings.toggles.newLeads.title} description={settings.toggles.newLeads.description} checked={preferences.preferredContactChannels.includes("app")} />
+              <ToggleRow title={settings.toggles.operationalEmail.title} description={settings.toggles.operationalEmail.description} checked={preferences.preferredContactChannels.includes("email")} />
+              <ToggleRow title={settings.toggles.commercialWhatsapp.title} description={settings.toggles.commercialWhatsapp.description} checked={preferences.preferredContactChannels.includes("whatsapp")} />
             </div>
           </section>
 
           <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow="Auditoría" title="Actividad reciente" icon={Activity} />
+            <SectionHeader eyebrow={settings.sections.audit} title={settings.sections.recentActivity} icon={Activity} />
             <div className="space-y-3">
-              {[`${currentUser.displayName} revisó seguridad`, "Mariana actualizó zonas", "Carlos cerró 3 oportunidades"].map((item) => (
+              {settings.auditItems(currentUser.displayName).map((item) => (
                 <div key={item} className="flex items-center gap-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
                   <CheckCircle2 size={14} />
                   <span>{item}</span>

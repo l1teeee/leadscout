@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/8bit-button";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 interface NotFound1Props {
   className?: string;
@@ -12,13 +16,19 @@ interface NotFound1Props {
 }
 
 export default function NotFound1({
-  title = "Página no encontrada",
-  description = "La ruta que buscás no está disponible.",
-  cta = "Volver al inicio",
+  title,
+  description,
+  cta,
   href = "/",
   imageSrc = "https://www.8bitcn.com/_next/image?url=%2Fimages%2F8bit-ogre.png&w=256&q=75&dpl=dpl_B9Q5u7DD6qZpoCz3VRwuR19npVHK",
   className,
 }: NotFound1Props) {
+  const { lang } = useLanguage();
+  const tr = translations[lang].notFound;
+  const displayTitle = title ?? tr.title;
+  const displayDescription = description ?? tr.description;
+  const displayCta = cta ?? tr.cta;
+
   return (
     <div
       className={cn(
@@ -47,12 +57,12 @@ export default function NotFound1({
         </div>
       )}
       <h1 className="retro font-bold text-2xl tracking-tight sm:text-4xl">
-        {title}
+        {displayTitle}
       </h1>
-      <p className="retro text-muted-foreground text-xs">{description}</p>
+      <p className="retro text-muted-foreground text-xs">{displayDescription}</p>
       <div className="flex justify-center">
         <Link href={href}>
-          <Button>{cta}</Button>
+          <Button>{displayCta}</Button>
         </Link>
       </div>
     </div>

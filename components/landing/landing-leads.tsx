@@ -2,39 +2,26 @@
 
 import { Filter, PhoneCall, Sparkles, Users } from "lucide-react";
 import { useIntersection } from "@/hooks/use-intersection";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
-const kpis = [
-  { label: "leads", value: "247", color: "var(--c-new)" },
-  { label: "prioridad alta", value: "31", color: "var(--c-hi)" },
-  { label: "por contactar", value: "89", color: "var(--c-qualified)" },
-  { label: "score promedio", value: "74", color: "var(--text)" },
-];
+const kpiColors = ["var(--c-new)", "var(--c-hi)", "var(--c-qualified)", "var(--text)"];
 
-const leadRows = [
-  { business: "Café Tortoni", score: 91, status: "nuevo", priority: "alta", color: "var(--c-hi)" },
-  { business: "Librería El Ateneo", score: 78, status: "contactado", priority: "media", color: "var(--c-new)" },
-  { business: "Estudio García", score: 63, status: "calificado", priority: "baja", color: "var(--c-qualified)" },
-  { business: "Ferretería Roma", score: 55, status: "nuevo", priority: "media", color: "var(--c-new)" },
-];
-
-const leadBullets = [
-  "Scoring automático para priorizar cada conversación.",
-  "Estados de pipeline visibles en toda la operación.",
-  "Brechas digitales detectadas para abrir el contacto.",
-  "Panel de contacto con contexto comercial completo.",
-  "Filtros rápidos por score, estado y prioridad.",
-];
+const leadScores = [91, 78, 63, 55];
+const leadColors = ["var(--c-hi)", "var(--c-new)", "var(--c-qualified)", "var(--c-new)"];
 
 export function LandingLeads() {
+  const { lang } = useLanguage();
+  const tr = translations[lang].landing.leads;
   const { ref: mockRef, isVisible: isMockVisible } = useIntersection<HTMLDivElement>();
   const { ref: textRef, isVisible: isTextVisible } = useIntersection<HTMLDivElement>();
 
   return (
     <section className="w-full px-4 py-16 sm:px-6 lg:px-8 lg:py-20" style={{ background: "var(--surface)" }}>
       <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
-        <div ref={mockRef} className={`pixel-card reveal-right p-4 sm:p-5 ${isMockVisible ? "is-visible" : ""}`}>
+        <div ref={mockRef} className={`pixel-card reveal-right w-full min-w-0 overflow-hidden p-4 sm:p-5 ${isMockVisible ? "is-visible" : ""}`}>
           <div className="flex items-center justify-between gap-3 pb-4" style={{ borderBottom: "2px solid var(--border)" }}>
             <div className="flex items-center gap-3">
               <span
@@ -48,14 +35,14 @@ export function LandingLeads() {
                   LEADS
                 </p>
                 <p className="text-sm font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
-                  Prioridad comercial
+                  {tr.heading}
                 </p>
               </div>
             </div>
             <button
               type="button"
               className="inline-flex size-9 items-center justify-center active:translate-x-0.5 active:translate-y-0.5"
-              aria-label="Filtrar leads"
+              aria-label={tr.filterAria}
               style={{
                 background: "var(--surface-2)",
                 border: "2px solid var(--border)",
@@ -69,9 +56,9 @@ export function LandingLeads() {
           </div>
 
           <div data-stagger className="mt-5 grid grid-cols-2 gap-3">
-            {kpis.map((kpi) => (
+            {tr.kpis.map((kpi, index) => (
               <div key={kpi.label} className="lnd-kpi-card p-3" style={{ background: "var(--surface-2)", border: "2px solid var(--border)" }}>
-                <div className="mb-2 h-2 w-8" style={{ background: kpi.color }} />
+                <div className="mb-2 h-2 w-8" style={{ background: kpiColors[index] }} />
                 <p className="retro text-xl font-black" style={{ color: "var(--text)" }}>
                   {kpi.value}
                 </p>
@@ -82,30 +69,37 @@ export function LandingLeads() {
             ))}
           </div>
 
-          <div className="mt-5 overflow-x-auto" style={{ border: "2px solid var(--border)" }}>
-            <table className="pixel-table w-full min-w-[560px]" style={bodyFont}>
+          <div className="mt-5 max-w-full overflow-x-auto" style={{ border: "2px solid var(--border)" }}>
+            <table className="pixel-table w-full" style={bodyFont}>
               <thead style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
                 <tr>
-                  <th className="px-3 py-3 text-left text-xs font-extrabold uppercase">Negocio</th>
-                  <th className="px-3 py-3 text-left text-xs font-extrabold uppercase">Score</th>
-                  <th className="px-3 py-3 text-left text-xs font-extrabold uppercase">Estado</th>
-                  <th className="px-3 py-3 text-left text-xs font-extrabold uppercase">Prior</th>
+                  {tr.columns.map((heading) => (
+                    <th key={heading} className="px-3 py-3 text-left text-xs font-extrabold uppercase">{heading}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody style={{ background: "var(--surface)", color: "var(--text)" }}>
-                {leadRows.map((lead) => (
-                  <tr key={lead.business} className="lnd-row">
+                {tr.rows.map((lead, i) => (
+                  <tr
+                    key={lead.business}
+                    className="lnd-row"
+                    style={{
+                      opacity: isMockVisible ? 1 : 0,
+                      transform: isMockVisible ? "translateX(0)" : "translateX(-10px)",
+                      transition: `opacity 350ms var(--ease-out) ${i * 120}ms, transform 350ms var(--ease-out) ${i * 120}ms`,
+                    }}
+                  >
                     <td className="px-3 py-3 text-sm font-extrabold">{lead.business}</td>
                     <td className="px-3 py-3">
                       <span className="retro pixel-text-xs px-2 py-1" style={{ background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
-                        {lead.score}
+                        {leadScores[i]}
                       </span>
                     </td>
                     <td className="px-3 py-3 text-xs font-bold uppercase" style={{ color: "var(--text-2)" }}>
                       {lead.status}
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-xs font-extrabold uppercase" style={{ color: lead.color }}>
+                      <span className="text-xs font-extrabold uppercase" style={{ color: leadColors[i] }}>
                         {lead.priority}
                       </span>
                     </td>
@@ -118,26 +112,26 @@ export function LandingLeads() {
 
         <div ref={textRef} className={`reveal-left ${isTextVisible ? "is-visible" : ""}`}>
           <p className="retro pixel-text-sm uppercase" style={{ color: "var(--text-2)" }}>
-            SCORE IA
+            {tr.eyebrow}
           </p>
           <h2 className="retro mt-4 text-2xl font-black uppercase leading-tight sm:text-4xl" style={{ color: "var(--text)" }}>
-            Gestiona cada prospecto con score de IA
+            {tr.title}
           </h2>
           <p className="mt-5 text-base font-medium leading-7" style={{ ...bodyFont, color: "var(--text-2)" }}>
-            La IA analiza señales comerciales, presencia digital y contexto local para ordenar tus leads por probabilidad de conversión.
+            {tr.description}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-2 px-3 py-2 text-xs font-extrabold" style={{ ...bodyFont, background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
               <Sparkles size={14} />
-              Score vivo
+              {tr.scoreLive}
             </span>
             <span className="inline-flex items-center gap-2 px-3 py-2 text-xs font-extrabold" style={{ ...bodyFont, background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
               <PhoneCall size={14} />
-              Contacto directo
+              {tr.directContact}
             </span>
           </div>
           <ul data-stagger className="mt-7 space-y-3">
-            {leadBullets.map((bullet) => (
+            {tr.bullets.map((bullet) => (
               <li key={bullet} className="flex gap-3 text-sm font-semibold leading-6" style={{ ...bodyFont, color: "var(--text)" }}>
                 <span className="mt-2 size-2 shrink-0" style={{ background: "var(--c-new)", border: "1px solid var(--border)" }} />
                 <span>{bullet}</span>

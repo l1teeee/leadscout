@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { login } from "@/lib/api/auth";
 import { clearToken, setToken } from "@/lib/auth";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const inputCls =
@@ -12,6 +14,8 @@ const inputCls =
 
 export default function LoginForm() {
   const router = useRouter();
+  const { lang } = useLanguage();
+  const tr = translations[lang].auth.login;
   const [email, setEmail] = useState(() => {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("ls_remember_email") ?? "";
@@ -24,6 +28,9 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [lockoutSecondsLeft, setLockoutSecondsLeft] = useState(0);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showError = (msg: string) => {
@@ -32,11 +39,32 @@ export default function LoginForm() {
     errorTimerRef.current = setTimeout(() => setErrorMsg(null), 2500);
   };
 
-  const isDisabled = !email || !password || isLoading;
+  const isDisabled = !email || !password || isLoading || Boolean(lockoutUntil);
 
   useEffect(() => {
     clearToken();
   }, []);
+
+  useEffect(() => {
+    if (!lockoutUntil) {
+      setLockoutSecondsLeft(0);
+      return;
+    }
+
+    const updateLockout = () => {
+      const secondsLeft = Math.max(0, Math.ceil((lockoutUntil - Date.now()) / 1000));
+      setLockoutSecondsLeft(secondsLeft);
+
+      if (secondsLeft === 0) {
+        setFailedAttempts(0);
+        setLockoutUntil(null);
+      }
+    };
+
+    updateLockout();
+    const timer = setInterval(updateLockout, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutUntil]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +75,8 @@ export default function LoginForm() {
     try {
       const result = await login(email, password);
       setToken(result.access_token);
+      setFailedAttempts(0);
+      setLockoutUntil(null);
 
       if (rememberMe) {
         localStorage.setItem("ls_remember_email", email);
@@ -58,7 +88,12 @@ export default function LoginForm() {
       router.refresh();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
-      showError(msg.includes("401") ? "Email o contraseña incorrectos." : "Error al iniciar sesión. Intentá de nuevo.");
+      showError(msg.includes("401") ? tr.badCredentials : tr.genericError);
+      const nextAttempts = failedAttempts + 1;
+      setFailedAttempts(nextAttempts);
+      if (nextAttempts >= 5) {
+        setLockoutUntil(Date.now() + 60000);
+      }
       setIsLoading(false);
     }
   };
@@ -70,7 +105,7 @@ export default function LoginForm() {
           className="flex items-center justify-between px-5 py-3"
           style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}
         >
-          <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>Acceso</p>
+          <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>{translations[lang].auth.access}</p>
           <div className="flex gap-1.5" aria-hidden="true">
             <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
             <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
@@ -80,12 +115,12 @@ export default function LoginForm() {
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-5">
           <div className="animate-fade-up" style={{ animationDelay: "60ms" }}>
-            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Ingresar</h2>
-            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Accedé a tu cuenta para continuar</p>
+            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>{tr.title}</h2>
+            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>{tr.subtitle}</p>
           </div>
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "120ms" }}>
-            <label htmlFor="login-email" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Email</label>
+            <label htmlFor="login-email" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{translations[lang].common.email}</label>
             <input id="login-email" type="email" value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="m@example.com" required autoComplete="email" className={inputCls} style={body} />
@@ -93,8 +128,8 @@ export default function LoginForm() {
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "180ms" }}>
             <div className="flex items-center justify-between">
-              <label htmlFor="login-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Contraseña</label>
-              <Link href="/forgot-password" className="retro pixel-text-xs underline-offset-2 hover:underline" style={{ color: "var(--text-3)" }}>¿Olvidaste?</Link>
+              <label htmlFor="login-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{translations[lang].common.password}</label>
+              <Link href="/forgot-password" className="retro pixel-text-xs underline-offset-2 hover:underline" style={{ color: "var(--text-3)" }}>{tr.forgot}</Link>
             </div>
             <div className="relative">
               <input id="login-password" type={showPassword ? "text" : "password"} value={password}
@@ -114,7 +149,7 @@ export default function LoginForm() {
               style={{ background: rememberMe ? "var(--border)" : "var(--surface)", boxShadow: "1px 1px 0 var(--pixel-shadow)" }}>
               {rememberMe && <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="var(--pixel-highlight)" strokeWidth="1.5" strokeLinecap="square" /></svg>}
             </button>
-            <span className="retro pixel-text-xs uppercase cursor-pointer select-none" style={{ color: "var(--text-2)" }} onClick={() => setRememberMe((v) => !v)}>Recordame</span>
+            <span className="retro pixel-text-xs uppercase cursor-pointer select-none" style={{ color: "var(--text-2)" }} onClick={() => setRememberMe((v) => !v)}>{tr.remember}</span>
           </div>
 
           {errorMsg && (
@@ -128,18 +163,29 @@ export default function LoginForm() {
             </div>
           )}
 
+          {lockoutUntil && (
+            <div
+              role="alert"
+              className="animate-scale-in retro pixel-text-xs border-2 border-[var(--c-hi)] px-3 py-2.5 flex items-start gap-2"
+              style={{ color: "var(--c-hi)", background: "rgba(230,57,70,0.08)" }}
+            >
+              <span aria-hidden="true" className="shrink-0 mt-px">x</span>
+              <span>{tr.lockout(lockoutSecondsLeft)}</span>
+            </div>
+          )}
+
           <div className="animate-fade-up" style={{ animationDelay: "240ms" }}>
             <button type="submit" disabled={isDisabled}
               className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}>
-              {isLoading ? "Ingresando..." : "Ingresar"}
+              {isLoading ? tr.submitting : tr.submit}
               {!isLoading && <ArrowRight size={13} />}
             </button>
           </div>
 
           <p className="animate-fade-up text-center text-xs mt-6" style={{ ...body, color: "var(--text-3)" }}>
-            ¿No tenés cuenta?{" "}
-            <Link href="/register" className="font-semibold underline underline-offset-2 hover:text-[var(--text)]" style={{ color: "var(--text-2)" }}>Registrarse</Link>
+            {tr.noAccount}{" "}
+            <Link href="/register" className="font-semibold underline underline-offset-2 hover:text-[var(--text)]" style={{ color: "var(--text-2)" }}>{tr.register}</Link>
           </p>
         </form>
       </div>

@@ -3,11 +3,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Zap, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { resetPassword } from "@/lib/api/auth";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
 export default function ResetPasswordForm() {
   const router = useRouter();
+  const { lang } = useLanguage();
+  const tr = translations[lang].auth.reset;
   const [accessToken] = useState(() => {
     if (typeof window === "undefined") return "";
     const params = new URLSearchParams(window.location.hash.replace("#", "?"));
@@ -24,11 +28,11 @@ export default function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
-      setErrorMsg("Las contraseñas no coinciden.");
+      setErrorMsg(tr.mismatch);
       return;
     }
     if (password.length < 8) {
-      setErrorMsg("La contraseña debe tener al menos 8 caracteres.");
+      setErrorMsg(tr.tooShort);
       return;
     }
     setIsLoading(true);
@@ -38,7 +42,7 @@ export default function ResetPasswordForm() {
       await resetPassword(accessToken, password);
       router.replace("/login");
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Error al actualizar contraseña.");
+      setErrorMsg(err instanceof Error ? err.message : tr.genericError);
       setIsLoading(false);
     }
   };
@@ -52,24 +56,24 @@ export default function ResetPasswordForm() {
           </div>
           <div>
             <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Nueva contraseña</p>
+            <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>{tr.header}</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-5">
           <div className="animate-fade-up" style={{ animationDelay: "60ms" }}>
-            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>Cambiar clave</h2>
-            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>Elegí una nueva contraseña para tu cuenta</p>
+            <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>{tr.title}</h2>
+            <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>{tr.subtitle}</p>
           </div>
 
           {!accessToken && (
             <p className="retro pixel-text-xs border-2 border-[#E63946] px-3 py-2" style={{ color: "#E63946", background: "rgba(230,57,70,0.06)" }}>
-              Enlace inválido. Solicitá un nuevo correo de recuperación.
+              {tr.invalidLink}
             </p>
           )}
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "120ms" }}>
-            <label htmlFor="rp-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Nueva contraseña</label>
+            <label htmlFor="rp-password" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{tr.newPassword}</label>
             <div className="relative">
               <input id="rp-password" type={showPassword ? "text" : "password"} value={password}
                 onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={8}
@@ -84,7 +88,7 @@ export default function ResetPasswordForm() {
           </div>
 
           <div className="animate-fade-up space-y-1.5" style={{ animationDelay: "160ms" }}>
-            <label htmlFor="rp-confirm" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>Confirmar</label>
+            <label htmlFor="rp-confirm" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{translations[lang].common.confirm}</label>
             <input id="rp-confirm" type={showPassword ? "text" : "password"} value={confirm}
               onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" required
               autoComplete="new-password"
@@ -100,7 +104,7 @@ export default function ResetPasswordForm() {
             <button type="submit" disabled={isDisabled}
               className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}>
-              {isLoading ? "Guardando..." : "Guardar nueva clave"}
+              {isLoading ? tr.submitting : tr.submit}
               {!isLoading && <ArrowRight size={13} />}
             </button>
           </div>

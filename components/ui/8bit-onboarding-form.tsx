@@ -5,6 +5,8 @@ import { ArrowRight, Building2, UserRound, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { completeOnboarding } from "@/lib/api/auth";
 import { getToken } from "@/lib/auth";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const inputCls =
@@ -25,20 +27,6 @@ const COUNTRY_DATA: Record<string, CountryEntry> = {
   "Chile":        { dialCode: "+56",  apiName: "Chile" },
   "Otro":         { dialCode: "",     apiName: "" },
 };
-
-const INDUSTRIES = [
-  "Tecnología",
-  "Retail / Comercio",
-  "Gastronomía / Restaurantes",
-  "Servicios profesionales",
-  "Salud y bienestar",
-  "Educación",
-  "Construcción / Inmobiliaria",
-  "Logística y transporte",
-  "Marketing y publicidad",
-  "Manufactura",
-  "Otro",
-];
 
 // --- Sanitization ---
 // Strip HTML angle brackets and null bytes from free text
@@ -84,6 +72,8 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 
 export default function OnboardingForm() {
   const router = useRouter();
+  const { lang } = useLanguage();
+  const tr = translations[lang].auth.onboarding;
   const [step, setStep] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
@@ -156,14 +146,14 @@ export default function OnboardingForm() {
     try {
       const token = getToken();
       if (!token) {
-        throw new Error("Tu sesion expiro. Inicia sesion de nuevo para crear el workspace.");
+        throw new Error(tr.expiredSession);
       }
       await completeOnboarding(token, data);
     } catch (error) {
       setSubmitError(
         error instanceof Error
           ? error.message
-          : "No se pudo crear tu workspace. Intenta de nuevo."
+          : tr.submitError
       );
       setIsSubmitting(false);
       return;
@@ -225,7 +215,7 @@ export default function OnboardingForm() {
             </div>
             <div>
               <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
-              <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>Configuración inicial</p>
+              <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>{tr.header}</p>
             </div>
           </div>
           <StepIndicator current={step} total={2} />
@@ -240,28 +230,28 @@ export default function OnboardingForm() {
                 : <Building2 size={14} style={{ color: "var(--text-3)" }} />
               }
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                {step === 0 ? "Paso 1 de 2" : "Paso 2 de 2"}
+                {tr.step(step + 1, 2)}
               </p>
             </div>
             <h2 className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>
-              {step === 0 ? "Queremos conocerte" : "Tu empresa"}
+              {step === 0 ? tr.personalTitle : tr.companyTitle}
             </h2>
             <p className="mt-1.5 text-xs" style={{ ...body, color: "var(--text-3)" }}>
               {step === 0
-                ? "Contanos un poco sobre vos para personalizar tu experiencia."
-                : "Configuremos tu espacio de trabajo en LeadScout."}
+                ? tr.personalSubtitle
+                : tr.companySubtitle}
             </p>
           </div>
 
           {step === 0 && (
             <div data-stagger className="space-y-4">
               <div>
-                <FieldLabel>Nombre completo *</FieldLabel>
+                <FieldLabel>{tr.fullName}</FieldLabel>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(sanitizeText(e.target.value, 80))}
-                  placeholder="Ej: María López"
+                  placeholder={tr.fullNamePlaceholder}
                   required
                   autoFocus
                   maxLength={80}
@@ -270,12 +260,12 @@ export default function OnboardingForm() {
                 />
               </div>
               <div>
-                <FieldLabel>Cargo o rol</FieldLabel>
+                <FieldLabel>{tr.role}</FieldLabel>
                 <input
                   type="text"
                   value={role}
                   onChange={(e) => setRole(sanitizeText(e.target.value, 60))}
-                  placeholder="Ej: Director comercial"
+                  placeholder={tr.rolePlaceholder}
                   maxLength={60}
                   className={inputCls}
                   style={body}
@@ -287,12 +277,12 @@ export default function OnboardingForm() {
           {step === 1 && (
             <div data-stagger className="space-y-4">
               <div>
-                <FieldLabel>Nombre del workspace / empresa *</FieldLabel>
+                <FieldLabel>{tr.workspaceName}</FieldLabel>
                 <input
                   type="text"
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(sanitizeText(e.target.value, 80))}
-                  placeholder="Ej: Distribuidora El Sol"
+                  placeholder={tr.workspacePlaceholder}
                   required
                   autoFocus
                   maxLength={80}
@@ -302,7 +292,7 @@ export default function OnboardingForm() {
               </div>
 
               <div>
-                <FieldLabel>Industria *</FieldLabel>
+                <FieldLabel>{tr.industry}</FieldLabel>
                 <select
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
@@ -310,8 +300,8 @@ export default function OnboardingForm() {
                   className={cn(inputCls, "cursor-pointer")}
                   style={body}
                 >
-                  <option value="" disabled>Selecciona tu industria</option>
-                  {INDUSTRIES.map((ind) => (
+                  <option value="" disabled>{tr.industryPlaceholder}</option>
+                  {tr.industries.map((ind) => (
                     <option key={ind} value={ind}>{ind}</option>
                   ))}
                 </select>
@@ -320,7 +310,7 @@ export default function OnboardingForm() {
               {/* Country + City */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <FieldLabel>País</FieldLabel>
+                  <FieldLabel>{tr.country}</FieldLabel>
                   <select
                     value={country}
                     onChange={(e) => handleCountryChange(e.target.value)}
@@ -328,19 +318,19 @@ export default function OnboardingForm() {
                     style={body}
                   >
                     {Object.keys(COUNTRY_DATA).map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>{tr.countries[c as keyof typeof tr.countries]}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <FieldLabel>Ciudad *</FieldLabel>
+                  <FieldLabel>{tr.city}</FieldLabel>
 
                   {showCityLoader && (
                     <div className={cn(inputCls, "flex items-center gap-2 cursor-not-allowed opacity-60")}>
                       <Loader2 size={13} className="animate-spin shrink-0" style={{ color: "var(--text-3)" }} />
                       <span className="text-xs" style={{ ...body, color: "var(--text-3)" }}>
-                        Cargando...
+                        {tr.loadingCities}
                       </span>
                     </div>
                   )}
@@ -360,11 +350,11 @@ export default function OnboardingForm() {
                       className={cn(inputCls, "cursor-pointer")}
                       style={body}
                     >
-                      <option value="" disabled>Selecciona ciudad</option>
+                      <option value="" disabled>{tr.citySelect}</option>
                       {cities.map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
-                      <option value="__custom__">Otra ciudad...</option>
+                      <option value="__custom__">{tr.cityOther}</option>
                     </select>
                   )}
 
@@ -373,7 +363,7 @@ export default function OnboardingForm() {
                       type="text"
                       value={city}
                       onChange={(e) => setCity(sanitizeText(e.target.value, 80))}
-                      placeholder="Tu ciudad"
+                      placeholder={tr.cityPlaceholder}
                       required
                       maxLength={80}
                       autoFocus={cityCustom}
@@ -387,12 +377,12 @@ export default function OnboardingForm() {
               {/* Phone + Website */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <FieldLabel>Teléfono</FieldLabel>
+                  <FieldLabel>{tr.phone}</FieldLabel>
                   <div className="flex">
                     {currentDialCode && (
                       <div
                         className="flex h-9 shrink-0 items-center px-2 border-2 border-r-0 border-[var(--border)] bg-[var(--surface-2)] select-none"
-                        title="Código de país — cambiá seleccionando otro país"
+                        title={tr.phoneCodeTitle}
                       >
                         <span
                           className="text-xs font-bold whitespace-nowrap"
@@ -417,7 +407,7 @@ export default function OnboardingForm() {
                   </div>
                 </div>
                 <div>
-                  <FieldLabel>Sitio web</FieldLabel>
+                  <FieldLabel>{tr.website}</FieldLabel>
                   <input
                     type="url"
                     value={website}
@@ -446,7 +436,7 @@ export default function OnboardingForm() {
               className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}
             >
-              {isSubmitting ? "Creando workspace..." : step === 0 ? "Siguiente" : "Guardar y continuar"}
+              {isSubmitting ? tr.submitting : step === 0 ? tr.next : tr.finish}
               <ArrowRight size={13} />
             </button>
           </div>

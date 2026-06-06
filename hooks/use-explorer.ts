@@ -22,6 +22,8 @@ import {
 import type { MapPoint, SearchArea } from "@/components/ui/mapcn-layer-markers";
 import type { ExplorerTab } from "@/types";
 import type { SearchBounds } from "@/types/explorer";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 function getSearchBounds({ center, radiusKm }: SearchArea): SearchBounds {
   const [lng, lat] = center;
@@ -35,6 +37,8 @@ function getSearchBounds({ center, radiusKm }: SearchArea): SearchBounds {
 }
 
 export function useExplorer() {
+  const { lang } = useLanguage();
+  const tr = translations[lang].explorer.errors;
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -71,13 +75,13 @@ export function useExplorer() {
       .then(async (user) => {
         if (user.approximate_latitude != null && user.approximate_longitude != null) {
           const center: [number, number] = [user.approximate_longitude, user.approximate_latitude];
-          const label = user.approximate_location_label || "Mi zona aproximada";
+          const label = user.approximate_location_label || tr.savedApproxZone;
           setLocationQuery(label);
           setSelectedPlace({
             id: "saved-approx-location",
             label,
             municipality: label,
-            department: user.country ?? "Zona guardada",
+            department: user.country ?? tr.savedZone,
             center,
           });
           setCustomCenter(center);
@@ -104,7 +108,7 @@ export function useExplorer() {
       .catch(() => {
         // Si falla, usa el default hardcodeado (Palermo, CABA)
       });
-  }, []);
+  }, [tr.savedApproxZone, tr.savedZone]);
 
   const selectedCategoryInfo =
     BUSINESS_CATEGORIES.find((c) => c.id === selectedCategory) ?? BUSINESS_CATEGORIES[0];
@@ -219,7 +223,7 @@ export function useExplorer() {
       }
     } catch (error) {
       setLocationError(
-        error instanceof Error ? error.message : "No se pudo obtener la ubicacion."
+        error instanceof Error ? error.message : tr.locationUnavailable
       );
     } finally {
       setIsLocating(false);
@@ -229,7 +233,7 @@ export function useExplorer() {
   function moveSearchArea(center: [number, number]) {
     setCustomCenter(center);
     setSelectedPlace(null);
-    setLocationQuery(`Zona personalizada (${center[1].toFixed(2)}, ${center[0].toFixed(2)})`);
+    setLocationQuery(tr.customZone(center[1].toFixed(2), center[0].toFixed(2)));
     setLocationError(null);
   }
 
@@ -260,11 +264,11 @@ export function useExplorer() {
     setSearchError(null);
     try {
       const center = customCenter ?? selectedPlace?.center ?? DEFAULT_SEARCH_AREA.center;
-      const searchQuery = selectedCategory === "all" ? "negocios locales" : selectedCategoryInfo.label;
-      const searchCategory = selectedCategory === "all" ? "Comercio local" : selectedCategoryInfo.label;
+      const searchQuery = selectedCategory === "all" ? tr.localBusinesses : selectedCategoryInfo.label;
+      const searchCategory = selectedCategory === "all" ? tr.localCommerce : selectedCategoryInfo.label;
       await searchExplorer({
         query: searchQuery,
-        location: locationQuery || DEFAULT_SEARCH_AREA.label || "Zona seleccionada",
+        location: locationQuery || DEFAULT_SEARCH_AREA.label || tr.selectedZone,
         latitude: center[1],
         longitude: center[0],
         radius_km: searchRadius,
@@ -273,7 +277,8 @@ export function useExplorer() {
       const fresh = await getLeads();
       setLeads(fresh);
     } catch (err) {
-      setSearchError(err instanceof Error ? err.message : "Error al buscar negocios.");
+      const message = err instanceof Error ? err.message : "";
+      setSearchError(message === "EXPLORER_SEARCH_TIMEOUT" ? tr.timeout : message || tr.searchFailed);
     } finally {
       setIsSearching(false);
     }
