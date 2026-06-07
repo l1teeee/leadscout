@@ -27,7 +27,7 @@ export function LandingCta() {
           {tr.description}
         </p>
         <Link
-          href="/login"
+          href="/register"
           className="lnd-cta-btn lnd-cta-btn-pulse retro pixel-text-sm mt-8 inline-flex h-12 items-center justify-center gap-2 px-6 font-bold active:translate-x-0.5 active:translate-y-0.5"
         >
           {tr.action}

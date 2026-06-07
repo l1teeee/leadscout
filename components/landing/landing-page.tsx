@@ -15,10 +15,10 @@ export function LandingPage() {
     <main className="min-h-screen w-full" style={{ background: "var(--bg)", color: "var(--text)" }}>
       <LandingNavbar />
       <LandingHero />
-      <LandingFeatures />
       <LandingExplorer />
       <LandingLeads />
       <LandingSteps />
+      <LandingFeatures />
       <LandingStats />
       <LandingCta />
       <LandingFooter />

@@ -1,16 +1,14 @@
 "use client";
 
-import { Filter, PhoneCall, Sparkles, Users } from "lucide-react";
+import { Filter, ListChecks, PhoneCall, Users } from "lucide-react";
 import { useIntersection } from "@/hooks/use-intersection";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
-const kpiColors = ["var(--c-new)", "var(--c-hi)", "var(--c-qualified)", "var(--text)"];
-
-const leadScores = [91, 78, 63, 55];
-const leadColors = ["var(--c-hi)", "var(--c-new)", "var(--c-qualified)", "var(--c-new)"];
+const cardColors = ["var(--c-new)", "var(--c-hi)", "var(--c-qualified)", "var(--text)"];
+const priorityColors = ["var(--c-hi)", "var(--c-new)", "var(--c-qualified)", "var(--c-new)"];
 
 export function LandingLeads() {
   const { lang } = useLanguage();
@@ -32,7 +30,7 @@ export function LandingLeads() {
               </span>
               <div>
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  LEADS
+                  {tr.panelEyebrow}
                 </p>
                 <p className="text-sm font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
                   {tr.heading}
@@ -56,14 +54,18 @@ export function LandingLeads() {
           </div>
 
           <div data-stagger className="mt-5 grid grid-cols-2 gap-3">
-            {tr.kpis.map((kpi, index) => (
-              <div key={kpi.label} className="lnd-kpi-card p-3" style={{ background: "var(--surface-2)", border: "2px solid var(--border)" }}>
-                <div className="mb-2 h-2 w-8" style={{ background: kpiColors[index] }} />
-                <p className="retro text-xl font-black" style={{ color: "var(--text)" }}>
-                  {kpi.value}
+            {tr.cards.map((card, index) => (
+              <div
+                key={card.title}
+                className="lnd-kpi-card p-3"
+                style={{ background: "var(--surface-2)", border: "2px solid var(--border)" }}
+              >
+                <div className="mb-2 h-2 w-8" style={{ background: cardColors[index] }} />
+                <p className="text-sm font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
+                  {card.title}
                 </p>
-                <p className="mt-1 text-xs font-bold" style={{ ...bodyFont, color: "var(--text-2)" }}>
-                  {kpi.label}
+                <p className="mt-1 text-xs font-semibold leading-5" style={{ ...bodyFont, color: "var(--text-2)" }}>
+                  {card.description}
                 </p>
               </div>
             ))}
@@ -74,7 +76,9 @@ export function LandingLeads() {
               <thead style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
                 <tr>
                   {tr.columns.map((heading) => (
-                    <th key={heading} className="px-3 py-3 text-left text-xs font-extrabold uppercase">{heading}</th>
+                    <th key={heading} className="px-3 py-3 text-left text-xs font-extrabold uppercase">
+                      {heading}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -86,20 +90,20 @@ export function LandingLeads() {
                     style={{
                       opacity: isMockVisible ? 1 : 0,
                       transform: isMockVisible ? "translateX(0)" : "translateX(-10px)",
-                      transition: `opacity 350ms var(--ease-out) ${i * 120}ms, transform 350ms var(--ease-out) ${i * 120}ms`,
+                      transition: `opacity 280ms var(--ease-out) ${i * 80}ms, transform 280ms var(--ease-out) ${i * 80}ms`,
                     }}
                   >
                     <td className="px-3 py-3 text-sm font-extrabold">{lead.business}</td>
                     <td className="px-3 py-3">
                       <span className="retro pixel-text-xs px-2 py-1" style={{ background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
-                        {leadScores[i]}
+                        {lead.signal}
                       </span>
                     </td>
                     <td className="px-3 py-3 text-xs font-bold uppercase" style={{ color: "var(--text-2)" }}>
                       {lead.status}
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-xs font-extrabold uppercase" style={{ color: leadColors[i] }}>
+                      <span className="text-xs font-extrabold uppercase" style={{ color: priorityColors[i] }}>
                         {lead.priority}
                       </span>
                     </td>
@@ -122,12 +126,12 @@ export function LandingLeads() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-2 px-3 py-2 text-xs font-extrabold" style={{ ...bodyFont, background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
-              <Sparkles size={14} />
-              {tr.scoreLive}
+              <ListChecks size={14} />
+              {tr.reviewSignals}
             </span>
             <span className="inline-flex items-center gap-2 px-3 py-2 text-xs font-extrabold" style={{ ...bodyFont, background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
               <PhoneCall size={14} />
-              {tr.directContact}
+              {tr.availableContact}
             </span>
           </div>
           <ul data-stagger className="mt-7 space-y-3">

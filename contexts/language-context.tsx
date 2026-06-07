@@ -12,32 +12,58 @@ const LanguageContext = createContext<LanguageContextValue>({
   setLang: () => {},
 });
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => {
-    if (typeof localStorage === "undefined") return "es";
+function isLang(value: string | null | undefined): value is Lang {
+  return value === "en" || value === "es";
+}
 
-    const stored = localStorage.getItem("ls_lang") as Lang | null;
-    if (stored === "en" || stored === "es") return stored;
+function getCookieLang(): Lang | null {
+  if (typeof document === "undefined") return null;
 
-    const cookieLang = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("ls_lang="))
-      ?.split("=")[1] as Lang | undefined;
+  const value = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("ls_lang="))
+    ?.split("=")[1];
 
-    return cookieLang === "en" || cookieLang === "es" ? cookieLang : "es";
-  });
+  return isLang(value) ? value : null;
+}
+
+export function LanguageProvider({
+  children,
+  initialLang = "es",
+}: {
+  children: React.ReactNode;
+  initialLang?: Lang;
+}) {
+  const [lang, setLangState] = useState<Lang>(initialLang);
 
   function setLang(l: Lang) {
     setLangState(l);
     if (typeof localStorage !== "undefined") {
       localStorage.setItem("ls_lang", l);
     }
-    document.cookie = `ls_lang=${l}; path=/; max-age=31536000; SameSite=Lax`;
+    if (typeof document !== "undefined") {
+      document.cookie = `ls_lang=${l}; path=/; max-age=31536000; SameSite=Lax`;
+    }
   }
 
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
+
+  useEffect(() => {
+    if (getCookieLang()) {
+      localStorage.setItem("ls_lang", initialLang);
+      return;
+    }
+
+    const stored = localStorage.getItem("ls_lang");
+    if (isLang(stored) && stored !== initialLang) {
+      window.setTimeout(() => setLang(stored), 0);
+      return;
+    }
+
+    localStorage.setItem("ls_lang", initialLang);
+  }, [initialLang]);
 
   return (
     <LanguageContext.Provider value={{ lang, setLang }}>
