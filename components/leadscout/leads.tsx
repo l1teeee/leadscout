@@ -6,6 +6,7 @@ import { useLeads, PAGE_SIZE, type SortField } from "@/lib/hooks/use-leads";
 import { translations } from "@/lib/i18n";
 import type { Lead, LeadPriority, LeadStatus } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
+import { ExplorerLeadDetail } from "@/components/leadscout/explorer-lead-detail";
 import { PriorityBadge, StatusBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
@@ -249,6 +250,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
 export function Leads() {
   const { lang } = useLanguage();
   const tr = translations[lang];
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const {
     leads,
     selected,
@@ -414,7 +416,10 @@ export function Leads() {
                   return (
                     <tr
                       key={lead.id}
-                      onClick={() => setSelectedId(lead.id)}
+                      onClick={() => {
+                        setSelectedId(lead.id);
+                        setSelectedLead(lead);
+                      }}
                       className="cursor-pointer transition-colors hover:bg-(--surface-2)"
                       style={{
                         background: isSelected ? "var(--surface-2)" : "var(--surface)",
@@ -512,6 +517,15 @@ export function Leads() {
 
         <LeadDetail lead={selected} />
       </div>
+
+      {selectedLead && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" onClick={() => setSelectedLead(null)} />
+          <div className="fixed inset-y-0 right-0 z-50 flex">
+            <ExplorerLeadDetail lead={selectedLead} onClose={() => setSelectedLead(null)} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

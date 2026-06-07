@@ -1,4 +1,3 @@
-import type { LeadPriority, LeadStatus } from "@/lib/data";
 import type {
   LeadAssignmentMode,
   SecurityLevel,
@@ -8,11 +7,10 @@ import type {
   WorkspaceStatus,
   ZonePriority,
 } from "@/lib/settings-data";
-
-export type Lang = "en" | "es";
-
-export const leadStatuses: LeadStatus[] = ["nuevo", "contactado", "calificado", "perdido", "desvinculado"];
-export const leadPriorities: LeadPriority[] = ["alta", "media", "baja"];
+import type { Lang } from "@/lib/i18n-types";
+import type { LeadPriority, LeadStatus } from "@/lib/data";
+export { leadPriorities, leadStatuses } from "@/lib/i18n-types";
+export type { Lang } from "@/lib/i18n-types";
 
 export const translations = {
   en: {

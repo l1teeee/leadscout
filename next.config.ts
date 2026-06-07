@@ -23,6 +23,17 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-dropdown-menu",
+    ],
+    serverComponentsHmrCache: false,
+  },
+  onDemandEntries: {
+    maxInactiveAge: 15_000,
+    pagesBufferLength: 2,
+  },
   async headers() {
     return [
       {

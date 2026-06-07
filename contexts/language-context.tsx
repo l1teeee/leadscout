@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import type { Lang } from "@/lib/i18n";
+import type { Lang } from "@/lib/i18n-types";
 
 type LanguageContextValue = {
   lang: Lang;

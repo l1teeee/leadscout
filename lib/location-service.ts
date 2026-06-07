@@ -33,9 +33,12 @@ export function getBusinessCategory(categoryId: string) {
 }
 
 export function categoryMatchesLead(categoryId: string, leadCategory: string) {
+  if (categoryId === 'all') return true;
+  if (!leadCategory || leadCategory === 'all') return true;
   const category = getBusinessCategory(categoryId);
-  if (!category || category.id === "all") return true;
-  return category.match.includes(leadCategory);
+  if (!category) return false;
+  if (category.match.includes(leadCategory)) return true;
+  return leadCategory === categoryId;
 }
 
 interface NominatimItem {

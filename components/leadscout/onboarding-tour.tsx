@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -15,7 +14,8 @@ export function OnboardingTour() {
   useEffect(() => {
     if (sessionStorage.getItem("leadscout_onboarding_pending") !== "1") return;
 
-    const timer = window.setTimeout(() => {
+    const timer = window.setTimeout(async () => {
+      const { driver } = await import("driver.js");
       const tour = driver({
         showProgress: true,
         animate: true,

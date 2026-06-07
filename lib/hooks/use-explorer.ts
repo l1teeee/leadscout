@@ -242,11 +242,10 @@ export function useExplorer() {
   }, [scrapingPoints, hasLocation, customCenter, selectedPlace, searchRadius]);
 
   const visibleScrapingPoints = useMemo(() => {
-    return zoneScrapingPoints.filter(
-      (p) =>
-        categoryMatchesLead(selectedCategory, p.category)
+    return scrapingPoints.filter(
+      (p) => categoryMatchesLead(selectedCategory, p.category)
     );
-  }, [zoneScrapingPoints, selectedCategory]);
+  }, [scrapingPoints, selectedCategory]);
 
   const categoryCounts = useMemo(
     () =>

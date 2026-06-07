@@ -630,6 +630,12 @@ export function LayerMarkers({
           cluster: clustered,
           clusterMaxZoom: 15,
           clusterRadius: 44,
+          clusterProperties: {
+            green_count: [
+              ["+", ["accumulated"], ["get", "green_count"]],
+              ["case", [">", ["get", "score"], 60], 1, 0],
+            ],
+          },
         });
       }
 
@@ -651,9 +657,21 @@ export function LayerMarkers({
               30,
               32,
             ],
-            "circle-color": "#1C1917",
-            "circle-stroke-color": "#FFFFFF",
-            "circle-stroke-width": 3,
+            "circle-color": [
+              "interpolate",
+              ["linear"],
+              ["/", ["number", ["get", "green_count"], 0], ["get", "point_count"]],
+              0,
+              "#C8A040",
+              0.33,
+              "#A8B040",
+              0.66,
+              "#78A050",
+              1.0,
+              "#4A8850",
+            ],
+            "circle-stroke-color": "#1C1917",
+            "circle-stroke-width": 2,
           },
         });
       }

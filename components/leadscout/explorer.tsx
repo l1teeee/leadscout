@@ -1,16 +1,29 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useExplorer } from "@/lib/hooks/use-explorer";
 import { ExplorerLocationPanel } from "./explorer-location-panel";
 import { ExplorerMapSection } from "./explorer-map-section";
 import { ExplorerResultsTable } from "./explorer-results-table";
-import { ExplorerResultsMap } from "./explorer-results-map";
 import { ExplorerLeadDetail } from "./explorer-lead-detail";
 import { ExplorerCategoryModal } from "./explorer-category-modal";
 import { ExplorerOnboardingTour } from "./explorer-onboarding-tour";
 import type { ExplorerTab } from "@/types";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+
+const ExplorerResultsMap = dynamic(
+  () => import("./explorer-results-map").then((mod) => mod.ExplorerResultsMap),
+  {
+    loading: () => (
+      <div className="pixel-card-sm flex min-h-0 flex-1 items-center justify-center bg-white p-5">
+        <span className="retro pixel-text-xs uppercase text-(--text-3)">
+          Cargando mapa
+        </span>
+      </div>
+    ),
+  }
+);
 
 export function Explorer() {
   const { lang } = useLanguage();

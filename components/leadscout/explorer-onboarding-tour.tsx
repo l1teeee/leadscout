@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import type { ExplorerTab } from "@/types";
 import { useLanguage } from "@/contexts/language-context";
@@ -21,7 +20,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
     const startResultsTour = () => {
       setActiveTab("resultados");
 
-      window.setTimeout(() => {
+      window.setTimeout(async () => {
+        const { driver } = await import("driver.js");
         const resultsTour = driver({
           showProgress: true,
           animate: true,
@@ -88,7 +88,8 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
 
     setActiveTab("ubicacion");
 
-    const timer = window.setTimeout(() => {
+    const timer = window.setTimeout(async () => {
+      const { driver } = await import("driver.js");
       const explorerTour = driver({
         showProgress: true,
         animate: true,

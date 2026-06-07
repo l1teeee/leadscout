@@ -21,6 +21,7 @@ interface ApiLead {
   google_place_id: string | null;
   source: string;
   last_contact: string | null;
+  ai_analysis: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -46,6 +47,7 @@ function adapt(a: ApiLead): Lead {
     phone: a.phone ?? undefined,
     website: a.website ?? undefined,
     lastContact: a.last_contact ?? undefined,
+    ai_analysis: a.ai_analysis ?? undefined,
   };
 }
 
@@ -87,4 +89,18 @@ export async function getLeads(filters: LeadFilters = {}, token?: string): Promi
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   return { leads: res.data.map(adapt), total: res.total };
+}
+
+export async function updateLeadStatus(id: string, status: LeadStatus): Promise<void> {
+  await apiFetch(`/api/leads/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function updateLead(id: string, data: Record<string, unknown>): Promise<void> {
+  await apiFetch(`/api/leads/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }

@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { apiFetch } from "@/lib/api/client";
 import { getLeads } from "@/lib/api/leads";
 import { parseApiError } from "@/lib/api/errors";
 import type { Lead, LeadStatus, LeadPriority } from "@/lib/data";
+
+interface WorkspaceStats {
+  total: number;
+  high_priority_count: number;
+  no_contact_count: number;
+  avg_score: number;
+}
 
 export const PAGE_SIZE = 10;
 
@@ -40,6 +48,11 @@ export function useLeads(): UseLeadsReturn {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [wsStats, setWsStats] = useState<WorkspaceStats>({ total: 0, high_priority_count: 0, no_contact_count: 0, avg_score: 0 });
+
+  useEffect(() => {
+    apiFetch<WorkspaceStats>("/api/leads/stats").then(setWsStats).catch(() => {});
+  }, []);
 
   // raw query (typed) vs debounced (sent to API)
   const [query, setQueryState] = useState("");
@@ -118,11 +131,9 @@ export function useLeads(): UseLeadsReturn {
   const selected = leads.find((l) => l.id === selectedId) ?? leads[0] ?? null;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  const highPriorityCount = leads.filter((l) => l.priority === "alta").length;
-  const noContactCount = leads.filter((l) => !l.lastContact).length;
-  const avgScore = leads.length
-    ? Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length)
-    : 0;
+  const highPriorityCount = wsStats.total > 0 ? wsStats.high_priority_count : leads.filter((l) => l.priority === "alta").length;
+  const noContactCount = wsStats.total > 0 ? wsStats.no_contact_count : leads.filter((l) => !l.lastContact).length;
+  const avgScore = wsStats.total > 0 ? wsStats.avg_score : (leads.length ? Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length) : 0);
 
   return {
     leads,

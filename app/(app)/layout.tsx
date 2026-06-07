@@ -34,9 +34,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!token) redirect("/login");
 
   const user = await getCurrentUser(token);
-  if (!user) redirect("/login");
+  if (!user) redirect("/api/auth/force-logout");
   if (!user.onboarded || !user.workspace_id) redirect("/onboarding");
-  if (!user.user_signature) redirect("/login");
+  if (!user.user_signature) redirect("/api/auth/force-logout");
 
   return (
     <div className="flex h-full w-full overflow-hidden">

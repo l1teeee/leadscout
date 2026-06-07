@@ -6,10 +6,8 @@ import { Spinner } from "@/components/ui/8bit-spinner";
 import {
   Map,
   SearchAreaLayer,
-  UndiscoveredPointsLayer,
   LayerMarkers,
 } from "@/components/ui/mapcn-layer-markers";
-import { UNDISCOVERED_POINTS } from "@/lib/explorer-data";
 import type { ExplorerMapSectionProps } from "@/types/explorer";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -50,11 +48,6 @@ export function ExplorerMapSection({
               ? tr.activeZone(activeSearchArea.label ?? translations[lang].explorer.location.activeZone)
               : tr.noLocationTitle}
           </h2>
-          {hasLocation && (
-            <p className="mt-1 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
-              {tr.undiscoveredHelp}
-            </p>
-          )}
         </div>
         <div className="flex items-center gap-3">
           {activeSelectedPoint && (
@@ -116,7 +109,6 @@ export function ExplorerMapSection({
 
         {hasLocation ? (
           <Map center={activeSearchArea.center} zoom={13}>
-            <UndiscoveredPointsLayer points={UNDISCOVERED_POINTS} />
             <SearchAreaLayer
               area={activeSearchArea}
               isDraggable={isEditingSearchArea}
