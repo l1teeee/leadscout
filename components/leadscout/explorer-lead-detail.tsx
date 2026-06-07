@@ -1,11 +1,13 @@
 "use client";
 
-import { X, Phone, Globe } from "lucide-react";
+import { useState } from "react";
+import { X, Phone, Globe, Sparkles } from "lucide-react";
 import { StatusBadge, PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { Button } from "@/components/ui/button";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { SCRAPING_ZONES } from "@/lib/explorer-data";
+import { analyzeLead } from "@/lib/api/explorer";
 import type { ExplorerLeadDetailProps } from "@/types/explorer";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -21,6 +23,36 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
   const tr = translations[lang].explorer.detail;
   const hasIssues = lead.issues.length > 0;
   const hasContact = Boolean(lead.phone || lead.website);
+
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  async function handleAnalyze() {
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    try {
+      const res = await analyzeLead({
+        name: lead.name,
+        category: lead.category,
+        location: lead.location,
+        phone: lead.phone,
+        website: lead.website,
+        score: lead.score,
+        issues: lead.issues,
+      });
+      setAnalysis(res.analysis);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("503") || msg.includes("not configurado") || msg.includes("not configured")) {
+        setAnalysisError(tr.aiAnalysis.noApiKey);
+      } else {
+        setAnalysisError(tr.aiAnalysis.error);
+      }
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
 
   return (
     <div
@@ -125,9 +157,75 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
             {lead.website && (
               <div className="pixel-inset flex items-center gap-2 px-3 py-2">
                 <Globe size={12} style={{ color: "var(--text)" }} />
-                <span className="text-sm" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                <span className="text-sm truncate" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                   {lead.website}
                 </span>
+              </div>
+            )}
+          </div>
+
+          {/* AI Analysis */}
+          <div className="border-t-2 border-[var(--border)] pt-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles size={13} style={{ color: "var(--pixel-highlight)" }} />
+              <p
+                className="retro pixel-text-xs uppercase font-bold"
+                style={{ color: "var(--text-2)" }}
+              >
+                {tr.aiAnalysis.title}
+              </p>
+            </div>
+
+            {!analysis && !isAnalyzing && (
+              <button
+                onClick={handleAnalyze}
+                className="w-full pixel-inset flex items-center justify-center gap-2 px-3 py-3 text-xs font-semibold transition-colors hover:bg-(--surface-2) cursor-pointer"
+                style={{ ...bodyTextStyle, color: "var(--text-2)" }}
+              >
+                <Sparkles size={11} />
+                {tr.aiAnalysis.cta}
+              </button>
+            )}
+
+            {isAnalyzing && (
+              <div className="pixel-inset flex items-center justify-center gap-2 px-3 py-4">
+                <div
+                  style={{
+                    width: 12,
+                    height: 12,
+                    background: "var(--text)",
+                    animation: "pixelSpin 1s steps(8, end) infinite",
+                  }}
+                />
+                <span className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+                  {tr.aiAnalysis.analyzing}
+                </span>
+              </div>
+            )}
+
+            {analysisError && (
+              <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
+                {analysisError}
+              </p>
+            )}
+
+            {analysis && (
+              <div className="space-y-3">
+                <div className="pixel-inset p-3 bg-surface">
+                  <p
+                    className="text-xs leading-relaxed whitespace-pre-line"
+                    style={{ ...bodyTextStyle, color: "var(--text)" }}
+                  >
+                    {analysis}
+                  </p>
+                </div>
+                <button
+                  onClick={handleAnalyze}
+                  className="text-xs font-semibold underline-offset-2 underline cursor-pointer"
+                  style={{ ...bodyTextStyle, color: "var(--text-3)" }}
+                >
+                  {tr.aiAnalysis.cta}
+                </button>
               </div>
             )}
           </div>

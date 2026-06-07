@@ -1,26 +1,55 @@
 "use client";
 
-import { CalendarClock, Filter, Globe2, Phone, Search, SlidersHorizontal } from "lucide-react";
-import { useLeads } from "@/lib/hooks/use-leads";
+import { useState, useEffect, useRef } from "react";
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarClock, Filter, Globe2, Phone, RefreshCcw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
+import { useLeads, PAGE_SIZE, type SortField } from "@/lib/hooks/use-leads";
 import { translations } from "@/lib/i18n";
 import type { Lead, LeadPriority, LeadStatus } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
 import { PriorityBadge, StatusBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
+import { analyzeLead } from "@/lib/api/explorer";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
+function useAnimatedNumber(target: number, duration = 450) {
+  const [display, setDisplay] = useState(target);
+  const fromRef = useRef(target);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const from = fromRef.current;
+    if (from === target) return;
+    fromRef.current = target;
+    const start = performance.now();
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      // ease-out cubic: fast start, smooth landing
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(from + (target - from) * eased));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration]);
+
+  return display;
+}
+
 function LeadMetric({ label, value, tone }: { label: string; value: string | number; tone?: string }) {
+  const isLoading = value === "...";
+  const animated = useAnimatedNumber(typeof value === "number" ? value : 0);
   return (
     <div className="pixel-card-sm bg-white p-4">
       <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
         {label}
       </p>
       <p className="retro mt-3 text-2xl font-black tabular-nums" style={{ color: tone ?? "var(--text)" }}>
-        {value}
+        {isLoading ? "..." : animated}
       </p>
     </div>
   );
@@ -29,6 +58,36 @@ function LeadMetric({ label, value, tone }: { label: string; value: string | num
 function LeadDetail({ lead }: { lead: Lead | null }) {
   const { lang } = useLanguage();
   const tr = translations[lang];
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  async function handleAnalyze() {
+    if (!lead) return;
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    try {
+      const res = await analyzeLead({
+        name: lead.name,
+        category: lead.category,
+        location: lead.location,
+        phone: lead.phone,
+        website: lead.website,
+        score: lead.score,
+        issues: lead.issues,
+      });
+      setAnalysis(res.analysis);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("503") || msg.includes("not configurado") || msg.includes("not configured")) {
+        setAnalysisError(tr.leads.detail.aiAnalysis.noApiKey);
+      } else {
+        setAnalysisError(tr.leads.detail.aiAnalysis.error);
+      }
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
 
   if (!lead) {
     return (
@@ -64,7 +123,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
         <PriorityBadge priority={lead.priority} />
       </div>
 
-      <div className="mt-5 pixel-inset bg-[var(--surface-2)] p-3">
+      <div className="mt-5 pixel-inset bg-(--surface-2) p-3">
         <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
           {tr.leads.detail.operationalScore}
         </p>
@@ -99,7 +158,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
           />
         )}
         {lead.phone && (
-          <div className="flex items-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2">
+          <div className="flex items-center gap-2 border-2 border-(--border) bg-surface px-3 py-2">
             <Phone size={14} />
             <span className="truncate" style={{ color: "var(--text-2)" }}>
               {lead.phone}
@@ -107,19 +166,81 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
           </div>
         )}
         {lead.website && (
-          <div className="flex items-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2">
+          <div className="flex items-center gap-2 border-2 border-(--border) bg-surface px-3 py-2">
             <Globe2 size={14} />
             <span className="truncate" style={{ color: "var(--text-2)" }}>
               {lead.website}
             </span>
           </div>
         )}
-        <div className="flex items-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2">
+        <div className="flex items-center gap-2 border-2 border-(--border) bg-surface px-3 py-2">
           <CalendarClock size={14} />
           <span className="truncate" style={{ color: "var(--text-2)" }}>
             {lead.lastContact ? `${tr.leads.detail.lastContact}: ${lead.lastContact}` : tr.leads.detail.pendingContact}
           </span>
         </div>
+      </div>
+
+      {/* AI Analysis */}
+      <div className="mt-5 border-t-2 border-(--border) pt-4">
+        <div className="mb-3 flex items-center gap-2">
+          <Sparkles size={12} style={{ color: "var(--pixel-highlight)" }} />
+          <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-2)" }}>
+            {tr.leads.detail.aiAnalysis.title}
+          </p>
+        </div>
+
+        {!analysis && !isAnalyzing && (
+          <button
+            type="button"
+            onClick={handleAnalyze}
+            className="w-full pixel-inset flex items-center justify-center gap-2 px-3 py-3 text-xs font-semibold transition-colors hover:bg-(--surface-2) cursor-pointer"
+            style={{ ...bodyTextStyle, color: "var(--text-2)" }}
+          >
+            <Sparkles size={11} />
+            {tr.leads.detail.aiAnalysis.cta}
+          </button>
+        )}
+
+        {isAnalyzing && (
+          <div className="pixel-inset flex items-center justify-center gap-2 px-3 py-3">
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: "var(--text)",
+                animation: "pixelSpin 1s steps(8, end) infinite",
+              }}
+            />
+            <span className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+              {tr.leads.detail.aiAnalysis.analyzing}
+            </span>
+          </div>
+        )}
+
+        {analysisError && (
+          <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
+            {analysisError}
+          </p>
+        )}
+
+        {analysis && (
+          <div className="space-y-2">
+            <div className="pixel-inset p-3">
+              <p className="text-xs leading-relaxed whitespace-pre-line" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                {analysis}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              className="text-xs font-semibold underline underline-offset-2 cursor-pointer"
+              style={{ ...bodyTextStyle, color: "var(--text-3)" }}
+            >
+              {tr.leads.detail.aiAnalysis.cta}
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );
@@ -130,17 +251,31 @@ export function Leads() {
   const tr = translations[lang];
   const {
     leads,
-    filtered,
     selected,
     loading,
     query, setQuery,
     status, setStatus,
     priority, setPriority,
     setSelectedId,
+    sortBy,
+    sortOrder,
+    toggleSort,
+    page, setPage,
+    total,
+    totalPages,
     highPriorityCount,
     noContactCount,
     avgScore,
+    refresh,
   } = useLeads();
+
+  const sortableHeaders: { label: string; field: SortField | null }[] = [
+    { label: tr.leads.tableHeaders[0], field: "name" },
+    { label: tr.leads.tableHeaders[1], field: "score" },
+    { label: tr.leads.tableHeaders[2], field: "status" },
+    { label: tr.leads.tableHeaders[3], field: "priority" },
+    { label: tr.leads.tableHeaders[4], field: null },
+  ];
 
   const statusOptions: { value: LeadStatus | ""; label: string }[] = [
     { value: "", label: tr.leads.filters.statusAll },
@@ -148,6 +283,7 @@ export function Leads() {
     { value: "contactado", label: tr.leadStatus.contactado },
     { value: "calificado", label: tr.leadStatus.calificado },
     { value: "perdido", label: tr.leadStatus.perdido },
+    { value: "desvinculado", label: tr.leadStatus.desvinculado },
   ];
   const priorityOptions: { value: LeadPriority | ""; label: string }[] = [
     { value: "", label: tr.leads.filters.priorityAll },
@@ -159,7 +295,7 @@ export function Leads() {
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <LeadMetric label={tr.leads.kpi.visible} value={loading ? "..." : filtered.length} />
+        <LeadMetric label={tr.leads.kpi.visible} value={loading ? "..." : total} />
         <LeadMetric label={tr.leads.kpi.highPriority} value={loading ? "..." : highPriorityCount} tone="var(--c-hi)" />
         <LeadMetric label={tr.leads.kpi.toContact} value={loading ? "..." : noContactCount} tone="var(--c-mid)" />
         <LeadMetric label={tr.leads.kpi.avgScore} value={loading ? "..." : avgScore} />
@@ -167,15 +303,31 @@ export function Leads() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="pixel-card-sm min-w-0 overflow-hidden bg-white">
-          <div className="border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-4">
+          <div className="border-b-2 border-(--border) bg-(--surface-2) p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  {tr.leads.eyebrow}
-                </p>
-                <h2 className="retro pixel-text-sm mt-1 uppercase" style={{ color: "var(--text)" }}>
-                  {tr.leads.title}
-                </h2>
+              <div className="flex items-center gap-3">
+                <div>
+                  <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
+                    {tr.leads.eyebrow}
+                  </p>
+                  <h2 className="retro pixel-text-sm mt-1 uppercase" style={{ color: "var(--text)" }}>
+                    {tr.leads.title}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={refresh}
+                  disabled={loading}
+                  title={tr.leads.refresh}
+                  className="flex items-center gap-1.5 border-2 border-(--border) bg-surface px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-(--surface-2) disabled:opacity-40"
+                  style={{ ...bodyTextStyle, color: "var(--text-2)" }}
+                >
+                  <RefreshCcw
+                    size={12}
+                    style={{ animation: loading ? "pixelSpin 0.8s steps(8, end) infinite" : "none" }}
+                  />
+                  {tr.leads.refresh}
+                </button>
               </div>
 
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(220px,1fr)_150px_150px]">
@@ -185,7 +337,7 @@ export function Leads() {
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder={tr.leads.searchPlaceholder}
-                    className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)]"
+                    className="h-9 w-full rounded-none border-2 border-(--border) bg-surface pl-9 pr-3 text-sm text-text placeholder:text-(--text-3)"
                     style={bodyTextStyle}
                   />
                 </label>
@@ -195,7 +347,7 @@ export function Leads() {
                   <select
                     value={status}
                     onChange={(event) => setStatus(event.target.value as LeadStatus | "")}
-                    className="h-9 w-full appearance-none rounded-none border-2 border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-xs font-semibold text-[var(--text)]"
+                    className="h-9 w-full appearance-none rounded-none border-2 border-(--border) bg-surface pl-9 pr-3 text-xs font-semibold text-text"
                     style={bodyTextStyle}
                   >
                     {statusOptions.map((option) => (
@@ -211,7 +363,7 @@ export function Leads() {
                   <select
                     value={priority}
                     onChange={(event) => setPriority(event.target.value as LeadPriority | "")}
-                    className="h-9 w-full appearance-none rounded-none border-2 border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-xs font-semibold text-[var(--text)]"
+                    className="h-9 w-full appearance-none rounded-none border-2 border-(--border) bg-surface pl-9 pr-3 text-xs font-semibold text-text"
                     style={bodyTextStyle}
                   >
                     {priorityOptions.map((option) => (
@@ -229,25 +381,41 @@ export function Leads() {
             <table className="w-full min-w-[840px] text-sm" style={bodyTextStyle}>
               <thead>
                 <tr className="bg-white">
-                  {tr.leads.tableHeaders.map((heading) => (
+                  {sortableHeaders.map(({ label, field }) => (
                     <th
-                      key={heading}
-                      className="retro border-b-2 border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase"
+                      key={label}
+                      className="retro border-b-2 border-(--border) px-4 py-3 text-left text-[10px] uppercase"
                       style={{ color: "var(--text-3)" }}
                     >
-                      {heading}
+                      {field ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(field)}
+                          className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity"
+                          style={{ color: sortBy === field ? "var(--text)" : "var(--text-3)" }}
+                        >
+                          {label}
+                          {sortBy === field ? (
+                            sortOrder === "asc" ? <ArrowUp size={10} /> : <ArrowDown size={10} />
+                          ) : (
+                            <ArrowUpDown size={10} style={{ opacity: 0.4 }} />
+                          )}
+                        </button>
+                      ) : (
+                        label
+                      )}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((lead) => {
+                {leads.map((lead) => {
                   const isSelected = selected?.id === lead.id;
                   return (
                     <tr
                       key={lead.id}
                       onClick={() => setSelectedId(lead.id)}
-                      className="cursor-pointer transition-colors hover:bg-[var(--surface-2)]"
+                      className="cursor-pointer transition-colors hover:bg-(--surface-2)"
                       style={{
                         background: isSelected ? "var(--surface-2)" : "var(--surface)",
                         borderBottom: "1px solid #E4E4E7",
@@ -282,16 +450,16 @@ export function Leads() {
             </table>
           </div>
 
-          {!loading && filtered.length === 0 && (
+          {!loading && leads.length === 0 && (
             <div className="p-8">
               <EmptyInsight
-                title={leads.length === 0 ? tr.leads.emptyWorkspace.title : tr.leads.emptyFiltered.title}
+                title={total === 0 ? tr.leads.emptyWorkspace.title : tr.leads.emptyFiltered.title}
                 description={
-                  leads.length === 0
+                  total === 0
                     ? tr.leads.emptyWorkspace.description
                     : tr.leads.emptyFiltered.description
                 }
-                action={leads.length === 0 ? tr.leads.emptyWorkspace.action : tr.leads.emptyFiltered.action}
+                action={total === 0 ? tr.leads.emptyWorkspace.action : tr.leads.emptyFiltered.action}
                 compact
               />
             </div>
@@ -302,6 +470,42 @@ export function Leads() {
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
                 {tr.leads.loading}
               </p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!loading && total > PAGE_SIZE && (
+            <div className="flex items-center justify-between border-t-2 border-(--border) bg-(--surface-2) px-4 py-3">
+              <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                {tr.leads.pagination.showing(
+                  page * PAGE_SIZE + 1,
+                  Math.min((page + 1) * PAGE_SIZE, total),
+                  total,
+                )}
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 0}
+                  className="retro pixel-text-xs border-2 border-(--border) px-3 py-1.5 uppercase transition-colors disabled:opacity-40 hover:bg-surface"
+                  style={{ color: "var(--text-2)" }}
+                >
+                  {tr.leads.pagination.prev}
+                </button>
+                <span className="retro pixel-text-xs" style={{ color: "var(--text)" }}>
+                  {tr.leads.pagination.page(page + 1, totalPages)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages - 1}
+                  className="retro pixel-text-xs border-2 border-(--border) px-3 py-1.5 uppercase transition-colors disabled:opacity-40 hover:bg-surface"
+                  style={{ color: "var(--text-2)" }}
+                >
+                  {tr.leads.pagination.next}
+                </button>
+              </div>
             </div>
           )}
         </section>

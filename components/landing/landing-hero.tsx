@@ -15,7 +15,7 @@ const workflowIcons = [MapPinned, Radar, CheckSquare, Rows3];
 export function LandingHero() {
   const { lang } = useLanguage();
   const tr = translations[lang].landing.hero;
-  const { ref: mockRef, isVisible: isMockVisible } = useIntersection<HTMLDivElement>();
+  const { ref: previewRef, isVisible: isPreviewVisible } = useIntersection<HTMLDivElement>();
 
   return (
     <section
@@ -43,7 +43,7 @@ export function LandingHero() {
               <ArrowRight size={16} />
             </Link>
             <Link
-              href="#demo"
+              href="#workflow-preview"
               className="lnd-btn-secondary retro pixel-text-sm inline-flex h-12 items-center justify-center px-5 font-bold active:translate-x-0.5 active:translate-y-0.5"
             >
               {tr.secondary}
@@ -53,9 +53,9 @@ export function LandingHero() {
         </div>
 
         <div
-          id="demo"
-          ref={mockRef}
-          className={`pixel-card reveal-left w-full min-w-0 p-4 sm:p-5 ${isMockVisible ? "is-visible" : ""}`}
+          id="hero-workflow"
+          ref={previewRef}
+          className={`pixel-card reveal-left w-full min-w-0 p-4 sm:p-5 ${isPreviewVisible ? "is-visible" : ""}`}
           style={{ background: "var(--surface)" }}
         >
           <div className="mb-4 flex items-center justify-between gap-3" style={{ borderBottom: "2px solid var(--border)", paddingBottom: "1rem" }}>
@@ -82,8 +82,8 @@ export function LandingHero() {
                 key={stat.label}
                 className="min-w-0"
                 style={{
-                  opacity: isMockVisible ? 1 : 0,
-                  transform: isMockVisible ? "translateY(0)" : "translateY(8px)",
+                  opacity: isPreviewVisible ? 1 : 0,
+                  transform: isPreviewVisible ? "translateY(0)" : "translateY(8px)",
                   transition: `opacity 240ms var(--ease-out) ${index * 60}ms, transform 240ms var(--ease-out) ${index * 60}ms`,
                 }}
               >
@@ -113,8 +113,8 @@ export function LandingHero() {
                     className="grid grid-cols-[2rem_1fr] items-start gap-3 py-3"
                     style={{
                       borderBottom: isLast ? "none" : "2px solid var(--surface-2)",
-                      opacity: isMockVisible ? 1 : 0,
-                      transform: isMockVisible ? "translateY(0)" : "translateY(10px)",
+                      opacity: isPreviewVisible ? 1 : 0,
+                      transform: isPreviewVisible ? "translateY(0)" : "translateY(10px)",
                       transition: `opacity 280ms var(--ease-out) ${index * 80}ms, transform 280ms var(--ease-out) ${index * 80}ms`,
                     }}
                   >

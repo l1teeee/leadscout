@@ -11,7 +11,7 @@ import type {
 
 export type Lang = "en" | "es";
 
-export const leadStatuses: LeadStatus[] = ["nuevo", "contactado", "calificado", "perdido"];
+export const leadStatuses: LeadStatus[] = ["nuevo", "contactado", "calificado", "perdido", "desvinculado"];
 export const leadPriorities: LeadPriority[] = ["alta", "media", "baja"];
 
 export const translations = {
@@ -104,12 +104,14 @@ export const translations = {
       contactado: "Contacted",
       calificado: "Qualified",
       perdido: "Lost",
+      desvinculado: "Unlinked",
     } satisfies Record<LeadStatus, string>,
     leadStatusPlural: {
       nuevo: "New",
       contactado: "Contacted",
       calificado: "Qualified",
       perdido: "Lost",
+      desvinculado: "Unlinked",
     } satisfies Record<LeadStatus, string>,
     leadPriority: {
       alta: "High",
@@ -201,7 +203,7 @@ export const translations = {
         description:
           "LeadScout helps you search businesses by zone, review available signals, save prospects, and organize follow-up from one workspace.",
         primary: "Create account",
-        secondary: "View demo",
+        secondary: "View workflow",
         weeklyPipeline: "Product flow",
         radar: "Prospecting workspace",
         active: "DEMO",
@@ -280,7 +282,7 @@ export const translations = {
           "Results show signals so your team can decide what to save.",
         ],
         localSearch: "Local search",
-        live: "DEMO",
+        live: "Live flow",
         category: "Category",
         restaurants: "Local businesses",
         radius: "Radius",
@@ -288,36 +290,19 @@ export const translations = {
         run: "Run",
         myLocation: "My location",
         results: "Results",
-        businessCount: "Example results",
+        businessCount: "Workspace results",
         map: {
-          eyebrow: "Explorer demo",
+          eyebrow: "Explorer preview",
           title: "Map search",
-          status: "Example view",
+          status: "Ready to search",
           query: "Local businesses near San Salvador",
           filterLabel: "Review filters",
           filters: ["Incomplete profile", "Visible location", "Follow-up"],
           mapLabel: "Search area",
           resultsLabel: "Signals to review",
-          results: [
-            {
-              name: "Local business",
-              description: "Available profile and location details.",
-              tag: "Review",
-              tone: "qualified" as const,
-            },
-            {
-              name: "Service provider",
-              description: "Useful candidate for follow-up.",
-              tag: "Save lead",
-              tone: "new" as const,
-            },
-            {
-              name: "Neighborhood store",
-              description: "Digital presence may need review.",
-              tag: "Check signals",
-              tone: "attention" as const,
-            },
-          ],
+          emptyTitle: "No businesses shown before a real search",
+          emptyDescription:
+            "When a workspace runs Explorer, returned businesses and available signals appear here.",
         },
       },
       leads: {
@@ -331,16 +316,13 @@ export const translations = {
           { title: "Next action", description: "Keep follow-up clear for the team." },
         ],
         columns: ["Business", "Signal", "Status", "Prior"],
-        rows: [
-          { business: "Business example A", signal: "Profile", status: "new", priority: "review" },
-          { business: "Business example B", signal: "Website", status: "contacted", priority: "medium" },
-          { business: "Business example C", signal: "Phone", status: "qualified", priority: "low" },
-          { business: "Business example D", signal: "Location", status: "new", priority: "medium" },
-        ],
+        emptyTitle: "Saved leads appear after your team keeps real results",
+        emptyDescription:
+          "This list stays empty until businesses are found through Explorer and saved in your workspace.",
         eyebrow: "LEAD REVIEW",
         title: "Turn map results into a workable prospect list",
         description:
-          "LeadScout does not need fake dashboards to explain the value: it helps you keep found businesses, available context, and next actions in one place.",
+          "LeadScout explains the value through the workflow: it helps you keep found businesses, available context, and next actions in one place.",
         reviewSignals: "Review signals",
         availableContact: "Available contact data",
         bullets: [
@@ -377,7 +359,7 @@ export const translations = {
       },
       proof: {
         eyebrow: "HONEST PRODUCT VIEW",
-        title: "No fake traction, just the workflow",
+        title: "Transparent product view",
         description:
           "The landing shows what the product does today without claiming a lead database size, score precision, or conversion lift.",
         items: [
@@ -562,6 +544,7 @@ export const translations = {
         avgScore: { label: "Average score", sub: "out of 100" },
       },
       recentLeads: "Recent leads",
+      refresh: "Refresh",
       tableHeaders: ["Business", "Category", "Score", "Status"],
       chart: {
         title: "Weekly activity",
@@ -576,6 +559,7 @@ export const translations = {
     leads: {
       eyebrow: "Commercial management",
       title: "Lead base",
+      refresh: "Refresh",
       searchPlaceholder: "Search business, category, or gap",
       loading: "Loading leads...",
       kpi: {
@@ -599,6 +583,13 @@ export const translations = {
         pendingContact: "Contact pending confirmation",
         contactEmpty: "We are still looking for reliable channels for this lead.",
         lastContact: "Last contact",
+        aiAnalysis: {
+          title: "AI Analysis",
+          cta: "Generate analysis",
+          analyzing: "Analyzing...",
+          error: "Could not generate analysis. Try again.",
+          noApiKey: "OpenAI not configured. Add OPENAI_API_KEY to the backend .env.",
+        },
       },
       filters: {
         statusAll: "All",
@@ -607,6 +598,12 @@ export const translations = {
       },
       tableHeaders: ["Business", "Score", "Status", "Priority", "Contact"],
       pending: "Pending",
+      pagination: {
+        page: (current: number, total: number) => `Page ${current} of ${total}`,
+        prev: "Previous",
+        next: "Next",
+        showing: (from: number, to: number, total: number) => `Showing ${from}–${to} of ${total}`,
+      },
       emptyWorkspace: {
         title: "There are no leads in your workspace yet",
         description: "Explore a zone to start filling your base. Businesses ready for review will appear soon.",
@@ -624,6 +621,7 @@ export const translations = {
         contactado: "Contacted",
         calificado: "Qualified",
         perdido: "Lost",
+        desvinculado: "Unlinked",
       } satisfies Record<LeadStatus, string>,
       gaps: "Gaps pending confirmation.",
       lastContact: "Contact",
@@ -639,7 +637,7 @@ export const translations = {
       kpi: {
         total: { label: "Total leads", sub: "Estimated workspace base" },
         contacted: { label: "Contacted", sub: "In commercial follow-up" },
-        conversion: { label: "Conversion", sub: "Qualified in sample" },
+        conversion: { label: "Conversion", sub: "Qualified leads" },
         critical: { label: "Critical", sub: "Score equal to or lower than 20" },
       },
       chart: {
@@ -649,7 +647,7 @@ export const translations = {
       sections: {
         pipeline: "Pipeline",
         conversionByStage: "Conversion by stage",
-        sample: "Sample",
+        workspaceLeads: "Workspace leads",
         quickRead: "Quick read",
         commercialHealth: "Commercial health",
         priority: "Priority",
@@ -660,6 +658,7 @@ export const translations = {
         contactado: "Contacted",
         calificado: "Qualified",
         perdido: "Lost",
+        desvinculado: "Unlinked",
       } satisfies Record<LeadStatus, string>,
       priorityLabels: {
         alta: "High",
@@ -779,6 +778,8 @@ export const translations = {
         fromZone: (zone: string) => `from ${zone}`,
         activeZone: "the active zone",
         infoAria: "More information",
+        selectZoneFirst: "Select a zone above before running a search.",
+        changeZone: "Change zone",
       },
       categoryModal: {
         eyebrow: "Scraping",
@@ -800,6 +801,16 @@ export const translations = {
         summary: (visible: number, total: number) => `${visible} visible / ${total} on map`,
         searchPlaceholder: "Search business, category, or zone...",
         filters: "Filters",
+        viewInMap: "Map",
+        tableView: "Table",
+        mapEyebrow: "Lead map",
+        mapTitle: "Captured leads map",
+        mapSummary: (count: number) => `${count} lead${count === 1 ? "" : "s"} with coordinates`,
+        mapCount: (count: number) => `${count} mapped`,
+        mapEmpty: {
+          title: "No mapped leads in this result",
+          description: "Leads without coordinates stay in the table until a location is available.",
+        },
         count: (count: number) => `${count} result${count === 1 ? "" : "s"}`,
         headers: ["Business", "Category", "Zone", "Score", "Priority", "Status"],
         empty: {
@@ -826,11 +837,21 @@ export const translations = {
         lastContact: "Last contact",
         markContacted: "Mark as contacted",
         history: "View history",
+        aiAnalysis: {
+          title: "AI Analysis",
+          eyebrow: "Powered by GPT-4o mini",
+          cta: "Generate analysis",
+          analyzing: "Analyzing...",
+          error: "Could not generate analysis. Try again.",
+          noApiKey: "OpenAI not configured. Add OPENAI_API_KEY to the backend .env.",
+        },
       },
       map: {
         eyebrow: "Search map",
         activeZone: (label: string) => `Active zone: ${label}`,
         undiscoveredHelp: "Gray points with ? are points of interest pending scan.",
+        noLocationTitle: "Set a zone first",
+        noLocationDescription: "Type a city in the panel on the left and select a suggestion to activate the map and run your first search.",
         score: "Score",
         done: "Done",
         editZone: "Edit zone",
@@ -839,11 +860,54 @@ export const translations = {
         searchingTitle: "Exploring zone",
         locatingDescription: "Taking approximate browser position",
         searchingDescription: "Detecting businesses near the active zone",
+        searchStageOrder: ["preparing", "searching", "collecting", "filtering", "validating", "saving", "refreshing"] as const,
+        searchStages: {
+          preparing: {
+            title: "Preparing search",
+            description: "Reading the active zone, radius, and category.",
+            short: "Preparing zone",
+          },
+          searching: {
+            title: "Searching map area",
+            description: "Sending the selected zone to the search service.",
+            short: "Searching",
+          },
+          collecting: {
+            title: "Getting results",
+            description: "Collecting candidate businesses returned for this area.",
+            short: "Getting results",
+          },
+          filtering: {
+            title: "Filtering by zone",
+            description: "Discarding businesses outside the selected radius.",
+            short: "Filtering zone",
+          },
+          validating: {
+            title: "Validating local businesses",
+            description: "Checking recognized brands before saving leads.",
+            short: "Validating locals",
+          },
+          saving: {
+            title: "Saving leads",
+            description: "Keeping eligible local businesses in your workspace.",
+            short: "Saving leads",
+          },
+          refreshing: {
+            title: "Updating results",
+            description: "Refreshing the map and results list.",
+            short: "Updating",
+          },
+        },
       },
       errors: {
         locationUnavailable: "Could not get the location.",
         searchFailed: "Error searching businesses.",
         timeout: "The search took more than 60 seconds. Try a smaller radius.",
+        openaiInvalidKey: "OpenAI rejected the backend API key. Update OPENAI_API_KEY in the backend .env and restart the backend.",
+        openaiMissingKey: "OpenAI is not configured. Add OPENAI_API_KEY to the backend .env.",
+        openaiQuota: "OpenAI rate limit or quota was reached. Check billing, quota, or retry later.",
+        openaiUnavailable: "OpenAI could not be reached. Check network or API availability.",
+        openaiModelUnavailable: "The configured OPENAI_MODEL is not available for this API key.",
         savedApproxZone: "My approximate zone",
         savedZone: "Saved zone",
         localBusinesses: "local businesses",
@@ -1054,12 +1118,14 @@ export const translations = {
       contactado: "Contactado",
       calificado: "Calificado",
       perdido: "Perdido",
+      desvinculado: "Desvinculado",
     } satisfies Record<LeadStatus, string>,
     leadStatusPlural: {
       nuevo: "Nuevos",
       contactado: "Contactados",
       calificado: "Calificados",
       perdido: "Perdidos",
+      desvinculado: "Desvinculados",
     } satisfies Record<LeadStatus, string>,
     leadPriority: {
       alta: "Alta",
@@ -1151,7 +1217,7 @@ export const translations = {
         description:
           "LeadScout te ayuda a buscar negocios por zona, revisar senales disponibles, guardar prospectos y organizar el seguimiento desde un workspace.",
         primary: "Crear cuenta",
-        secondary: "Ver demo",
+        secondary: "Ver flujo",
         weeklyPipeline: "Flujo del producto",
         radar: "Workspace de prospeccion",
         active: "DEMO",
@@ -1230,7 +1296,7 @@ export const translations = {
           "Resultados con senales para decidir que guardar.",
         ],
         localSearch: "Búsqueda local",
-        live: "DEMO",
+        live: "Flujo activo",
         category: "Categoría",
         restaurants: "Negocios locales",
         radius: "Radio",
@@ -1238,36 +1304,19 @@ export const translations = {
         run: "Ejecutar",
         myLocation: "Mi ubicación",
         results: "Resultados",
-        businessCount: "Resultados de ejemplo",
+        businessCount: "Resultados del workspace",
         map: {
-          eyebrow: "Demo Explorer",
+          eyebrow: "Vista Explorer",
           title: "Busqueda en mapa",
-          status: "Vista ejemplo",
+          status: "Listo para buscar",
           query: "Negocios locales cerca de San Salvador",
           filterLabel: "Filtros de revision",
           filters: ["Perfil incompleto", "Ubicacion visible", "Seguimiento"],
           mapLabel: "Area de busqueda",
           resultsLabel: "Senales para revisar",
-          results: [
-            {
-              name: "Negocio local",
-              description: "Detalles de perfil y ubicacion disponibles.",
-              tag: "Revisar",
-              tone: "qualified" as const,
-            },
-            {
-              name: "Proveedor de servicios",
-              description: "Candidato util para seguimiento.",
-              tag: "Guardar lead",
-              tone: "new" as const,
-            },
-            {
-              name: "Comercio de barrio",
-              description: "Presencia digital para revisar.",
-              tag: "Ver senales",
-              tone: "attention" as const,
-            },
-          ],
+          emptyTitle: "No se muestran negocios antes de una busqueda real",
+          emptyDescription:
+            "Cuando un workspace ejecuta Explorer, aca aparecen negocios encontrados y senales disponibles.",
         },
       },
       leads: {
@@ -1281,16 +1330,13 @@ export const translations = {
           { title: "Proxima accion", description: "Seguimiento claro para el equipo." },
         ],
         columns: ["Negocio", "Senal", "Estado", "Prior"],
-        rows: [
-          { business: "Negocio ejemplo A", signal: "Perfil", status: "nuevo", priority: "revisar" },
-          { business: "Negocio ejemplo B", signal: "Web", status: "contactado", priority: "media" },
-          { business: "Negocio ejemplo C", signal: "Telefono", status: "calificado", priority: "baja" },
-          { business: "Negocio ejemplo D", signal: "Ubicacion", status: "nuevo", priority: "media" },
-        ],
+        emptyTitle: "Los leads guardados aparecen despues de conservar resultados reales",
+        emptyDescription:
+          "Esta lista queda vacia hasta que encuentras negocios con Explorer y los guardas en tu workspace.",
         eyebrow: "REVISION DE LEADS",
         title: "Convierte resultados del mapa en una lista trabajable",
         description:
-          "LeadScout no necesita dashboards falsos para explicar el valor: te ayuda a mantener negocios encontrados, contexto disponible y proximas acciones en un solo lugar.",
+          "LeadScout explica el valor desde el flujo: te ayuda a mantener negocios encontrados, contexto disponible y proximas acciones en un solo lugar.",
         reviewSignals: "Revisar senales",
         availableContact: "Contacto disponible",
         bullets: [
@@ -1327,7 +1373,7 @@ export const translations = {
       },
       proof: {
         eyebrow: "VISTA HONESTA DEL PRODUCTO",
-        title: "Sin traccion falsa, solo el flujo",
+        title: "Vista transparente del producto",
         description:
           "La landing muestra lo que el producto hace hoy sin afirmar tamano de base de leads, precision del score o mejora de conversion.",
         items: [
@@ -1512,6 +1558,7 @@ export const translations = {
         avgScore: { label: "Score promedio", sub: "sobre 100" },
       },
       recentLeads: "Leads recientes",
+      refresh: "Actualizar",
       tableHeaders: ["Negocio", "Categoría", "Score", "Estado"],
       chart: {
         title: "Actividad semanal",
@@ -1526,6 +1573,7 @@ export const translations = {
     leads: {
       eyebrow: "Gestión comercial",
       title: "Base de leads",
+      refresh: "Actualizar",
       searchPlaceholder: "Buscar negocio, rubro o brecha",
       loading: "Cargando leads...",
       kpi: {
@@ -1549,6 +1597,13 @@ export const translations = {
         pendingContact: "Contacto pendiente por confirmar",
         contactEmpty: "Todavía estamos buscando canales confiables para este lead.",
         lastContact: "Último contacto",
+        aiAnalysis: {
+          title: "Análisis IA",
+          cta: "Generar análisis",
+          analyzing: "Analizando...",
+          error: "No se pudo generar el análisis. Intentá de nuevo.",
+          noApiKey: "OpenAI no configurado. Agregá OPENAI_API_KEY en el .env del backend.",
+        },
       },
       filters: {
         statusAll: "Todos",
@@ -1557,6 +1612,12 @@ export const translations = {
       },
       tableHeaders: ["Negocio", "Score", "Estado", "Prioridad", "Contacto"],
       pending: "Pendiente",
+      pagination: {
+        page: (current: number, total: number) => `Página ${current} de ${total}`,
+        prev: "Anterior",
+        next: "Siguiente",
+        showing: (from: number, to: number, total: number) => `Mostrando ${from}–${to} de ${total}`,
+      },
       emptyWorkspace: {
         title: "Aún no hay leads en tu workspace",
         description: "Explorá una zona para empezar a llenar tu base. Pronto aparecerán negocios listos para revisar.",
@@ -1574,6 +1635,7 @@ export const translations = {
         contactado: "Contactados",
         calificado: "Calificados",
         perdido: "Perdidos",
+        desvinculado: "Desvinculados",
       } satisfies Record<LeadStatus, string>,
       gaps: "Brechas por confirmar.",
       lastContact: "Contacto",
@@ -1589,7 +1651,7 @@ export const translations = {
       kpi: {
         total: { label: "Total leads", sub: "Base estimada del workspace" },
         contacted: { label: "Contactados", sub: "En seguimiento comercial" },
-        conversion: { label: "Conversión", sub: "Calificados en la muestra" },
+        conversion: { label: "Conversión", sub: "Leads calificados" },
         critical: { label: "Críticos", sub: "Score igual o menor a 20" },
       },
       chart: {
@@ -1599,7 +1661,7 @@ export const translations = {
       sections: {
         pipeline: "Pipeline",
         conversionByStage: "Conversión por etapa",
-        sample: "Muestra",
+        workspaceLeads: "Leads del workspace",
         quickRead: "Lectura rápida",
         commercialHealth: "Salud comercial",
         priority: "Prioridad",
@@ -1610,6 +1672,7 @@ export const translations = {
         contactado: "Contactados",
         calificado: "Calificados",
         perdido: "Perdidos",
+        desvinculado: "Desvinculados",
       } satisfies Record<LeadStatus, string>,
       priorityLabels: {
         alta: "Alta",
@@ -1729,6 +1792,8 @@ export const translations = {
         fromZone: (zone: string) => `desde ${zone}`,
         activeZone: "la zona activa",
         infoAria: "Más información",
+        selectZoneFirst: "Seleccioná una zona arriba antes de ejecutar la búsqueda.",
+        changeZone: "Cambiar zona",
       },
       categoryModal: {
         eyebrow: "Scraping",
@@ -1750,6 +1815,16 @@ export const translations = {
         summary: (visible: number, total: number) => `${visible} visibles / ${total} en mapa`,
         searchPlaceholder: "Buscar negocio, categoría o zona...",
         filters: "Filtros",
+        viewInMap: "Mapa",
+        tableView: "Tabla",
+        mapEyebrow: "Mapa de leads",
+        mapTitle: "Mapa de leads capturados",
+        mapSummary: (count: number) => `${count} lead${count !== 1 ? "s" : ""} con coordenadas`,
+        mapCount: (count: number) => `${count} mapeados`,
+        mapEmpty: {
+          title: "No hay leads mapeados en este resultado",
+          description: "Los leads sin coordenadas quedan en la tabla hasta que haya una ubicacion disponible.",
+        },
         count: (count: number) => `${count} resultado${count !== 1 ? "s" : ""}`,
         headers: ["Negocio", "Categoría", "Zona", "Score", "Prioridad", "Estado"],
         empty: {
@@ -1776,11 +1851,21 @@ export const translations = {
         lastContact: "Último contacto",
         markContacted: "Marcar como contactado",
         history: "Ver historial",
+        aiAnalysis: {
+          title: "Análisis IA",
+          eyebrow: "Generado por GPT-4o mini",
+          cta: "Generar análisis",
+          analyzing: "Analizando...",
+          error: "No se pudo generar el análisis. Intenta nuevamente.",
+          noApiKey: "OpenAI no configurado. Agrega OPENAI_API_KEY al .env del backend.",
+        },
       },
       map: {
         eyebrow: "Mapa de búsqueda",
         activeZone: (label: string) => `Zona activa: ${label}`,
         undiscoveredHelp: "Puntos grises con ? son puntos de interés pendientes de escaneo.",
+        noLocationTitle: "Definí una zona primero",
+        noLocationDescription: "Escribí una ciudad en el panel de la izquierda y seleccioná una sugerencia para activar el mapa y ejecutar tu primera búsqueda.",
         score: "Score",
         done: "Listo",
         editZone: "Editar zona",
@@ -1789,11 +1874,54 @@ export const translations = {
         searchingTitle: "Explorando zona",
         locatingDescription: "Tomando posición aproximada del navegador",
         searchingDescription: "Detectando negocios cerca de la zona activa",
+        searchStageOrder: ["preparing", "searching", "collecting", "filtering", "validating", "saving", "refreshing"] as const,
+        searchStages: {
+          preparing: {
+            title: "Preparando busqueda",
+            description: "Leyendo zona activa, radio y categoria.",
+            short: "Preparando zona",
+          },
+          searching: {
+            title: "Buscando en el mapa",
+            description: "Enviando la zona seleccionada al servicio de busqueda.",
+            short: "Buscando",
+          },
+          collecting: {
+            title: "Obteniendo resultados",
+            description: "Recibiendo negocios candidatos para esta area.",
+            short: "Obteniendo resultados",
+          },
+          filtering: {
+            title: "Filtrando por zona",
+            description: "Descartando negocios fuera del radio seleccionado.",
+            short: "Filtrando zona",
+          },
+          validating: {
+            title: "Validando negocios locales",
+            description: "Revisando marcas reconocidas antes de guardar leads.",
+            short: "Validando locales",
+          },
+          saving: {
+            title: "Guardando leads",
+            description: "Conservando negocios locales elegibles en tu workspace.",
+            short: "Guardando leads",
+          },
+          refreshing: {
+            title: "Actualizando resultados",
+            description: "Refrescando el mapa y la lista de resultados.",
+            short: "Actualizando",
+          },
+        },
       },
       errors: {
         locationUnavailable: "No se pudo obtener la ubicación.",
         searchFailed: "Error al buscar negocios.",
         timeout: "La búsqueda tardó más de 60 segundos. Intentá con un radio menor.",
+        openaiInvalidKey: "OpenAI rechazó la API key del backend. Actualizá OPENAI_API_KEY en el .env del backend y reiniciá el backend.",
+        openaiMissingKey: "OpenAI no está configurado. Agregá OPENAI_API_KEY al .env del backend.",
+        openaiQuota: "OpenAI llegó al límite o no tiene cuota disponible. Revisá billing, cuota o intentá más tarde.",
+        openaiUnavailable: "No se pudo conectar con OpenAI. Revisá red o disponibilidad de la API.",
+        openaiModelUnavailable: "El OPENAI_MODEL configurado no está disponible para esta API key.",
         savedApproxZone: "Mi zona aproximada",
         savedZone: "Zona guardada",
         localBusinesses: "negocios locales",

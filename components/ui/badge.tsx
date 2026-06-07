@@ -9,6 +9,7 @@ const STATUS_DOT: Record<LeadStatus, string> = {
   contactado: "bg-[var(--c-contacted)]",
   calificado: "bg-[var(--c-qualified)]",
   perdido: "bg-[var(--c-lost)]",
+  desvinculado: "bg-[var(--c-unlinked)]",
 };
 
 const PRIORITY_DOT: Record<LeadPriority, string> = {

@@ -65,7 +65,9 @@ export function ExplorerLocationPanel({
   searchRadius,
   onSearchRadiusChange,
   activeSearchArea,
+  hasLocation,
   onBrowserLocation,
+  onResetLocation,
   onSearch,
   isSearching,
   searchError,
@@ -80,7 +82,7 @@ export function ExplorerLocationPanel({
   return (
     <section className="pixel-card-sm min-h-0 overflow-auto bg-white p-4 xl:h-fit xl:max-h-full">
       <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center border-2 border-[var(--border)] bg-[var(--surface-2)]">
+        <div className="flex h-8 w-8 items-center justify-center border-2 border-(--border) bg-(--surface-2)">
           <MapPin size={15} />
         </div>
         <div>
@@ -102,7 +104,7 @@ export function ExplorerLocationPanel({
             type="button"
             onClick={onCategoryOpen}
             data-tour="explorer-category"
-            className="motion-retro-control flex min-h-12 w-full items-center justify-between rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-left shadow-[2px_2px_0_0_var(--pixel-shadow)] hover:bg-[var(--surface-2)]"
+            className="motion-retro-control flex min-h-12 w-full items-center justify-between rounded-none border-2 border-(--border) bg-surface px-3 py-2 text-left shadow-[2px_2px_0_0_var(--pixel-shadow)] hover:bg-(--surface-2)"
           >
             <div>
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
@@ -114,7 +116,7 @@ export function ExplorerLocationPanel({
             </div>
             <SlidersHorizontal size={15} style={{ color: "var(--text)" }} />
           </button>
-          <div className="mt-2 pixel-inset bg-[var(--surface-2)] px-3 py-2">
+          <div className="mt-2 pixel-inset bg-(--surface-2) px-3 py-2">
             <div className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--text-2)" }}>
               {visiblePointsCount > 0
                 ? tr.markers(visiblePointsCount)
@@ -139,16 +141,16 @@ export function ExplorerLocationPanel({
             value={locationQuery}
             onChange={(e) => onLocationQueryChange(e.target.value)}
             placeholder={tr.placeholder}
-            className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)]"
+            className="h-9 w-full rounded-none border-2 border-(--border) bg-surface px-3 text-sm text-text"
             style={bodyTextStyle}
           />
-          <div className="mt-2 max-h-36 overflow-auto pixel-inset bg-[var(--surface)]">
+          <div className="mt-2 max-h-36 overflow-auto pixel-inset bg-surface" suppressHydrationWarning>
             {placeSuggestions.map((place) => (
               <button
                 key={place.id}
                 type="button"
                 onClick={() => onSelectPlace(place)}
-                className="block w-full border-b border-[var(--border)] px-3 py-2 text-left text-xs font-semibold transition-colors last:border-b-0 hover:bg-[var(--surface-2)]"
+                className="block w-full border-b border-(--border) px-3 py-2 text-left text-xs font-semibold transition-colors last:border-b-0 hover:bg-(--surface-2)"
                 style={{ ...bodyTextStyle, color: "var(--text)" }}
               >
                 {place.label}
@@ -162,28 +164,47 @@ export function ExplorerLocationPanel({
           </div>
         </label>
 
-        <div data-tour="explorer-actions" className="grid grid-cols-2 gap-2 pt-1">
+        <div data-tour="explorer-actions" className="grid gap-2 pt-1">
           <Button
             variant="primary"
             size="sm"
             className="justify-center"
-            disabled={isSearching}
+            disabled={isSearching || !hasLocation}
+            title={!hasLocation ? tr.selectZoneFirst : undefined}
             onClick={onSearch}
           >
             <Play size={13} />
             {isSearching ? tr.running : tr.run}
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="justify-center"
-            disabled={isLocating}
-            onClick={onBrowserLocation}
-          >
-            <LocateFixed size={13} />
-            {isLocating ? tr.locating : tr.myLocation}
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="justify-center"
+              disabled={isLocating}
+              onClick={onBrowserLocation}
+            >
+              <LocateFixed size={13} />
+              {isLocating ? tr.locating : tr.myLocation}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="justify-center"
+              disabled={isSearching}
+              onClick={onResetLocation}
+            >
+              <MapPin size={13} />
+              {tr.changeZone}
+            </Button>
+          </div>
         </div>
+
+        {!hasLocation && (
+          <p className="text-xs font-semibold text-center" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+            {tr.selectZoneFirst}
+          </p>
+        )}
 
         {locationError && (
           <p className="text-xs font-semibold" style={{ color: "var(--c-hi)" }}>
@@ -193,14 +214,14 @@ export function ExplorerLocationPanel({
 
         {searchError && (
           <div
-            className="border-2 border-[var(--c-hi)] bg-[rgba(230,57,70,0.08)] px-3 py-2 text-xs font-semibold"
+            className="border-2 border-(--c-hi) bg-[rgba(230,57,70,0.08)] px-3 py-2 text-xs font-semibold"
             style={{ ...bodyTextStyle, color: "var(--c-hi)" }}
           >
             {searchError}
           </div>
         )}
 
-        <div data-tour="explorer-radius" className="border-t border-[var(--border)] pt-3">
+        <div data-tour="explorer-radius" className="border-t border-(--border) pt-3">
           <p className="retro pixel-text-xs uppercase flex items-center gap-1" style={{ color: "var(--text-3)" }}>
             {tr.rangeTitle}
             <InfoTooltip text={tr.rangeTooltip} />

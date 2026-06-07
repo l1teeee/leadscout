@@ -572,6 +572,7 @@ interface LayerMarkersProps {
   points: MapPoint[];
   selectedId?: string;
   onPointSelect?: (point: MapPoint) => void;
+  clustered?: boolean;
 }
 
 function toFeatureCollection(points: MapPoint[]): GeoJSON.FeatureCollection {
@@ -597,12 +598,15 @@ export function LayerMarkers({
   points,
   selectedId,
   onPointSelect,
+  clustered = false,
 }: LayerMarkersProps) {
   const { map, isLoaded } = useMap();
   const reactId = React.useId();
   const id = React.useMemo(() => reactId.replaceAll(":", ""), [reactId]);
   const sourceId = React.useMemo(() => `scraping-markers-source-${id}`, [id]);
   const layerId = React.useMemo(() => `scraping-markers-layer-${id}`, [id]);
+  const clusterLayerId = React.useMemo(() => `scraping-markers-clusters-${id}`, [id]);
+  const clusterCountLayerId = React.useMemo(() => `scraping-markers-cluster-count-${id}`, [id]);
   const selectedLayerId = React.useMemo(
     () => `scraping-markers-selected-${id}`,
     [id]
@@ -623,6 +627,53 @@ export function LayerMarkers({
         map.addSource(sourceId, {
           type: "geojson",
           data: toFeatureCollection(pointsRef.current),
+          cluster: clustered,
+          clusterMaxZoom: 15,
+          clusterRadius: 44,
+        });
+      }
+
+      if (clustered && !map.getLayer(clusterLayerId)) {
+        map.addLayer({
+          id: clusterLayerId,
+          type: "circle",
+          source: sourceId,
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-radius": [
+              "step",
+              ["get", "point_count"],
+              18,
+              6,
+              22,
+              14,
+              27,
+              30,
+              32,
+            ],
+            "circle-color": "#1C1917",
+            "circle-stroke-color": "#FFFFFF",
+            "circle-stroke-width": 3,
+          },
+        });
+      }
+
+      if (clustered && !map.getLayer(clusterCountLayerId)) {
+        map.addLayer({
+          id: clusterCountLayerId,
+          type: "symbol",
+          source: sourceId,
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": ["get", "point_count_abbreviated"],
+            "text-size": 12,
+            "text-allow-overlap": true,
+          },
+          paint: {
+            "text-color": "#FFFFFF",
+            "text-halo-color": "#1C1917",
+            "text-halo-width": 1,
+          },
         });
       }
 
@@ -631,6 +682,7 @@ export function LayerMarkers({
           id: layerId,
           type: "circle",
           source: sourceId,
+          filter: clustered ? ["!", ["has", "point_count"]] : ["all"],
           paint: {
             "circle-radius": 7,
             "circle-color": [
@@ -654,7 +706,9 @@ export function LayerMarkers({
           id: selectedLayerId,
           type: "circle",
           source: sourceId,
-          filter: ["==", ["get", "id"], ""],
+          filter: clustered
+            ? ["all", ["!", ["has", "point_count"]], ["==", ["get", "id"], ""]]
+            : ["==", ["get", "id"], ""],
           paint: {
             "circle-radius": 12,
             "circle-color": "rgba(255,255,255,0)",
@@ -678,6 +732,31 @@ export function LayerMarkers({
       if (point) onPointSelectRef.current?.(point);
     };
 
+    const handleClusterClick = async (
+      event: MapLibreGL.MapMouseEvent & {
+        features?: MapLibreGL.MapGeoJSONFeature[];
+      }
+    ) => {
+      const feature = event.features?.[0];
+      const clusterId = Number(feature?.properties?.cluster_id);
+      const coordinates =
+        feature?.geometry.type === "Point" ? feature.geometry.coordinates : null;
+      const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource | undefined;
+
+      if (!source || !Number.isFinite(clusterId) || !coordinates) return;
+
+      try {
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        map.easeTo({
+          center: [coordinates[0], coordinates[1]],
+          zoom,
+          duration: 300,
+        });
+      } catch {
+        // The cluster may disappear if the map zoom changes during the click.
+      }
+    };
+
     const handleEnter = () => {
       map.getCanvas().style.cursor = "pointer";
     };
@@ -689,22 +768,43 @@ export function LayerMarkers({
     map.on("click", layerId, handleClick);
     map.on("mouseenter", layerId, handleEnter);
     map.on("mouseleave", layerId, handleLeave);
+    if (clustered) {
+      map.on("click", clusterLayerId, handleClusterClick);
+      map.on("mouseenter", clusterLayerId, handleEnter);
+      map.on("mouseleave", clusterLayerId, handleLeave);
+    }
 
     return () => {
       map.off("click", layerId, handleClick);
       map.off("mouseenter", layerId, handleEnter);
       map.off("mouseleave", layerId, handleLeave);
+      if (clustered) {
+        map.off("click", clusterLayerId, handleClusterClick);
+        map.off("mouseenter", clusterLayerId, handleEnter);
+        map.off("mouseleave", clusterLayerId, handleLeave);
+      }
 
       try {
         if (!isUsableMap(map)) return;
         if (map.getLayer(selectedLayerId)) map.removeLayer(selectedLayerId);
         if (map.getLayer(layerId)) map.removeLayer(layerId);
+        if (map.getLayer(clusterCountLayerId)) map.removeLayer(clusterCountLayerId);
+        if (map.getLayer(clusterLayerId)) map.removeLayer(clusterLayerId);
         if (map.getSource(sourceId)) map.removeSource(sourceId);
       } catch {
         // MapLibre may already have removed layers during teardown.
       }
     };
-  }, [isLoaded, layerId, map, selectedLayerId, sourceId]);
+  }, [
+    clusterCountLayerId,
+    clustered,
+    clusterLayerId,
+    isLoaded,
+    layerId,
+    map,
+    selectedLayerId,
+    sourceId,
+  ]);
 
   React.useEffect(() => {
     if (!isUsableMap(map) || !isLoaded) return;
@@ -722,11 +822,16 @@ export function LayerMarkers({
 
     try {
       if (!map.getLayer(selectedLayerId)) return;
-      map.setFilter(selectedLayerId, ["==", ["get", "id"], selectedId ?? ""]);
+      map.setFilter(
+        selectedLayerId,
+        clustered
+          ? ["all", ["!", ["has", "point_count"]], ["==", ["get", "id"], selectedId ?? ""]]
+          : ["==", ["get", "id"], selectedId ?? ""]
+      );
     } catch {
       // Ignore stale MapLibre instances while filters/geolocation update.
     }
-  }, [isLoaded, map, selectedId, selectedLayerId]);
+  }, [clustered, isLoaded, map, selectedId, selectedLayerId]);
 
   return null;
 }

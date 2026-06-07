@@ -28,211 +28,8 @@ export const BUSINESS_CATEGORIES: BusinessCategory[] = [
   { id: "sports", label: "Deportes", match: ["Deportes"] },
 ];
 
-export const ARGENTINA_PLACES: PlaceSuggestion[] = [
-  // CABA — barrios
-  {
-    id: "palermo",
-    label: "Palermo, CABA",
-    municipality: "Palermo",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4228, -34.5886],
-  },
-  {
-    id: "recoleta",
-    label: "Recoleta, CABA",
-    municipality: "Recoleta",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.3940, -34.5874],
-  },
-  {
-    id: "san-telmo",
-    label: "San Telmo, CABA",
-    municipality: "San Telmo",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.3731, -34.6212],
-  },
-  {
-    id: "villa-crespo",
-    label: "Villa Crespo, CABA",
-    municipality: "Villa Crespo",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4392, -34.5978],
-  },
-  {
-    id: "belgrano",
-    label: "Belgrano, CABA",
-    municipality: "Belgrano",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4555, -34.5566],
-  },
-  {
-    id: "almagro",
-    label: "Almagro, CABA",
-    municipality: "Almagro",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4165, -34.6098],
-  },
-  {
-    id: "caballito",
-    label: "Caballito, CABA",
-    municipality: "Caballito",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4412, -34.6188],
-  },
-  {
-    id: "flores",
-    label: "Flores, CABA",
-    municipality: "Flores",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4620, -34.6353],
-  },
-  {
-    id: "boedo",
-    label: "Boedo, CABA",
-    municipality: "Boedo",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4180, -34.6276],
-  },
-  {
-    id: "nunez",
-    label: "Núñez, CABA",
-    municipality: "Núñez",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4614, -34.5431],
-  },
-  {
-    id: "villa-urquiza",
-    label: "Villa Urquiza, CABA",
-    municipality: "Villa Urquiza",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4891, -34.5721],
-  },
-  {
-    id: "chacarita",
-    label: "Chacarita, CABA",
-    municipality: "Chacarita",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4530, -34.5841],
-  },
-  {
-    id: "montserrat",
-    label: "Montserrat, CABA",
-    municipality: "Montserrat",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.3800, -34.6158],
-  },
-  {
-    id: "balvanera",
-    label: "Balvanera, CABA",
-    municipality: "Balvanera",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4080, -34.6107],
-  },
-  {
-    id: "villa-del-parque",
-    label: "Villa del Parque, CABA",
-    municipality: "Villa del Parque",
-    department: "Ciudad de Buenos Aires",
-    center: [-58.4972, -34.6031],
-  },
-  // GBA y ciudades del interior
-  {
-    id: "la-plata",
-    label: "La Plata, Buenos Aires",
-    municipality: "La Plata",
-    department: "Buenos Aires",
-    center: [-57.9536, -34.9205],
-  },
-  {
-    id: "mar-del-plata",
-    label: "Mar del Plata, Buenos Aires",
-    municipality: "Mar del Plata",
-    department: "Buenos Aires",
-    center: [-57.5575, -38.0023],
-  },
-  {
-    id: "rosario",
-    label: "Rosario, Santa Fe",
-    municipality: "Rosario",
-    department: "Santa Fe",
-    center: [-60.6505, -32.9442],
-  },
-  {
-    id: "cordoba",
-    label: "Córdoba, Córdoba",
-    municipality: "Córdoba",
-    department: "Córdoba",
-    center: [-64.1888, -31.4201],
-  },
-  {
-    id: "mendoza",
-    label: "Mendoza, Mendoza",
-    municipality: "Mendoza",
-    department: "Mendoza",
-    center: [-68.8272, -32.8908],
-  },
-  {
-    id: "tucuman",
-    label: "San Miguel de Tucumán, Tucumán",
-    municipality: "San Miguel de Tucumán",
-    department: "Tucumán",
-    center: [-65.2176, -26.8083],
-  },
-  {
-    id: "salta",
-    label: "Salta, Salta",
-    municipality: "Salta",
-    department: "Salta",
-    center: [-65.4117, -24.7829],
-  },
-  {
-    id: "santa-fe",
-    label: "Santa Fe, Santa Fe",
-    municipality: "Santa Fe",
-    department: "Santa Fe",
-    center: [-60.7000, -31.6333],
-  },
-  {
-    id: "bahia-blanca",
-    label: "Bahía Blanca, Buenos Aires",
-    municipality: "Bahía Blanca",
-    department: "Buenos Aires",
-    center: [-62.2663, -38.7183],
-  },
-  {
-    id: "neuquen",
-    label: "Neuquén, Neuquén",
-    municipality: "Neuquén",
-    department: "Neuquén",
-    center: [-68.0591, -38.9516],
-  },
-];
-
-function normalize(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function distanceKm(from: [number, number], to: [number, number]) {
-  const [lng1, lat1] = from;
-  const [lng2, lat2] = to;
-  const earthRadiusKm = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-
-  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
 export function getBusinessCategory(categoryId: string) {
-  return BUSINESS_CATEGORIES.find((category) => category.id === categoryId);
+  return BUSINESS_CATEGORIES.find((c) => c.id === categoryId);
 }
 
 export function categoryMatchesLead(categoryId: string, leadCategory: string) {
@@ -241,24 +38,76 @@ export function categoryMatchesLead(categoryId: string, leadCategory: string) {
   return category.match.includes(leadCategory);
 }
 
-export function suggestPlaces(query: string, limit = 5) {
-  const normalizedQuery = normalize(query);
-  if (!normalizedQuery) return ARGENTINA_PLACES.slice(0, limit);
-
-  return ARGENTINA_PLACES.filter((place) => {
-    const haystack = normalize(
-      `${place.label} ${place.municipality} ${place.department}`
-    );
-    return haystack.includes(normalizedQuery);
-  }).slice(0, limit);
+interface NominatimItem {
+  place_id: string;
+  lat: string;
+  lon: string;
+  display_name: string;
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    county?: string;
+    state?: string;
+    country?: string;
+  };
 }
 
-export function findNearestPlace(center: [number, number]) {
-  return ARGENTINA_PLACES.reduce((nearest, place) => {
-    const nearestDistance = distanceKm(center, nearest.center);
-    const placeDistance = distanceKm(center, place.center);
-    return placeDistance < nearestDistance ? place : nearest;
-  }, ARGENTINA_PLACES[0]);
+function nominatimToSuggestion(item: NominatimItem): PlaceSuggestion {
+  const addr = item.address ?? {};
+  const municipality =
+    addr.city || addr.town || addr.village || item.display_name.split(",")[0].trim();
+  const department = addr.state || addr.county || addr.country || "";
+  const parts = item.display_name.split(",").slice(0, 3).map((s) => s.trim());
+  return {
+    id: String(item.place_id),
+    label: parts.join(", "),
+    municipality,
+    department,
+    center: [parseFloat(item.lon), parseFloat(item.lat)],
+  };
+}
+
+/**
+ * Search Nominatim for place suggestions matching a free-text query.
+ * Returns an empty array if the query is too short or the request fails.
+ */
+export async function suggestPlaces(query: string, limit = 5): Promise<PlaceSuggestion[]> {
+  const q = query.trim();
+  if (q.length < 3) return [];
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=${limit}&addressdetails=1`;
+    const res = await fetch(url, {
+      headers: { "Accept-Language": "es", "User-Agent": "LeadScout-AI/1.0" },
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as NominatimItem[];
+    return data.map(nominatimToSuggestion);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Reverse-geocode a [lng, lat] center to a PlaceSuggestion using Nominatim.
+ */
+export async function findNearestPlace(
+  center: [number, number]
+): Promise<PlaceSuggestion | null> {
+  const [lng, lat] = center;
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+    const res = await fetch(url, {
+      headers: { "Accept-Language": "es", "User-Agent": "LeadScout-AI/1.0" },
+    });
+    if (!res.ok) return null;
+    const item = (await res.json()) as NominatimItem;
+    const suggestion = nominatimToSuggestion(item);
+    suggestion.center = center;
+    return suggestion;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -276,7 +125,11 @@ export async function geocodeCity(
       { headers: { "Accept-Language": "es", "User-Agent": "LeadScout-AI/1.0" } }
     );
     if (!res.ok) return null;
-    const data = await res.json() as Array<{ lat: string; lon: string; display_name: string }>;
+    const data = (await res.json()) as Array<{
+      lat: string;
+      lon: string;
+      display_name: string;
+    }>;
     if (!data.length) return null;
     const { lat, lon, display_name } = data[0];
     return {
@@ -296,18 +149,20 @@ export function getBrowserLocation(): Promise<BrowserLocationResult> {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const center: [number, number] = [
           position.coords.longitude,
           position.coords.latitude,
         ];
-        const nearestPlace = findNearestPlace(center);
+        const nearestPlace = await findNearestPlace(center);
 
         resolve({
           center,
           accuracy: position.coords.accuracy,
-          label: `Mi ubicación actual (${nearestPlace.municipality})`,
-          nearestPlace,
+          label: nearestPlace
+            ? `Mi ubicación actual (${nearestPlace.municipality})`
+            : `${center[1].toFixed(4)}, ${center[0].toFixed(4)}`,
+          nearestPlace: nearestPlace ?? undefined,
         });
       },
       (error) => {

@@ -24,6 +24,7 @@
   --c-contacted:  #00A86B;
   --c-qualified:  #3FAE2A;
   --c-lost:       #7A6B5D;
+  --c-unlinked:   #9CA3AF;
   --c-hi:         #E63946;
   --c-mid:        #9A4A00;
   --c-lo:         #C9B384;
@@ -98,14 +99,47 @@ input:focus, select:focus, button:focus-visible {
   0%, 100% { opacity: 0.38; transform: scale(0.92); }
   50% { opacity: 1; transform: scale(1); }
 }
+@keyframes pixelShimmer {
+  0%   { background-position: -400% 0; }
+  100% { background-position:  400% 0; }
+}
+
+.pixel-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--surface-2) 20%,
+    var(--surface)   45%,
+    var(--surface)   55%,
+    var(--surface-2) 80%,
+    var(--surface-2) 100%
+  );
+  background-size: 400% 100%;
+  animation: pixelShimmer 2s steps(10, end) infinite;
+}
 
 .animate-fade-up  { animation: fadeUp var(--motion-medium) var(--ease-out) both; }
 .animate-slide-in { animation: slideIn var(--motion-medium) var(--ease-out) both; }
 .animate-scale-in { animation: scaleIn var(--motion-medium) var(--ease-out) both; }
 .animate-exit     { animation: exitAnim 160ms var(--ease-out) both forwards; }
 
-/* Stagger — children of [data-stagger] enter sequentially */
+/* Stagger — children of [data-stagger] enter sequentially on mount */
 [data-stagger] > * {
+  animation: fadeUp var(--motion-medium) var(--ease-out) both;
+}
+
+[data-stagger] > *:nth-child(1) { animation-delay: 0ms; }
+[data-stagger] > *:nth-child(2) { animation-delay: 60ms; }
+[data-stagger] > *:nth-child(3) { animation-delay: 120ms; }
+[data-stagger] > *:nth-child(4) { animation-delay: 180ms; }
+[data-stagger] > *:nth-child(5) { animation-delay: 240ms; }
+[data-stagger] > *:nth-child(6) { animation-delay: 300ms; }
+
+/* Inside scroll-reveal wrappers: defer animation until section enters viewport */
+.reveal-up [data-stagger] > *,
+.reveal-left [data-stagger] > *,
+.reveal-right [data-stagger] > * {
+  animation: none;
   opacity: 0;
   transform: translateY(8px);
 }

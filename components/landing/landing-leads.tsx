@@ -8,18 +8,17 @@ import { translations } from "@/lib/i18n";
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
 const cardColors = ["var(--c-new)", "var(--c-hi)", "var(--c-qualified)", "var(--text)"];
-const priorityColors = ["var(--c-hi)", "var(--c-new)", "var(--c-qualified)", "var(--c-new)"];
 
 export function LandingLeads() {
   const { lang } = useLanguage();
   const tr = translations[lang].landing.leads;
-  const { ref: mockRef, isVisible: isMockVisible } = useIntersection<HTMLDivElement>();
+  const { ref: previewRef, isVisible: isPreviewVisible } = useIntersection<HTMLDivElement>();
   const { ref: textRef, isVisible: isTextVisible } = useIntersection<HTMLDivElement>();
 
   return (
     <section className="w-full px-4 py-16 sm:px-6 lg:px-8 lg:py-20" style={{ background: "var(--surface)" }}>
       <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
-        <div ref={mockRef} className={`pixel-card reveal-right w-full min-w-0 overflow-hidden p-4 sm:p-5 ${isMockVisible ? "is-visible" : ""}`}>
+        <div ref={previewRef} className={`pixel-card reveal-right w-full min-w-0 overflow-hidden p-4 sm:p-5 ${isPreviewVisible ? "is-visible" : ""}`}>
           <div className="flex items-center justify-between gap-3 pb-4" style={{ borderBottom: "2px solid var(--border)" }}>
             <div className="flex items-center gap-3">
               <span
@@ -83,32 +82,23 @@ export function LandingLeads() {
                 </tr>
               </thead>
               <tbody style={{ background: "var(--surface)", color: "var(--text)" }}>
-                {tr.rows.map((lead, i) => (
-                  <tr
-                    key={lead.business}
-                    className="lnd-row"
-                    style={{
-                      opacity: isMockVisible ? 1 : 0,
-                      transform: isMockVisible ? "translateX(0)" : "translateX(-10px)",
-                      transition: `opacity 280ms var(--ease-out) ${i * 80}ms, transform 280ms var(--ease-out) ${i * 80}ms`,
-                    }}
-                  >
-                    <td className="px-3 py-3 text-sm font-extrabold">{lead.business}</td>
-                    <td className="px-3 py-3">
-                      <span className="retro pixel-text-xs px-2 py-1" style={{ background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}>
-                        {lead.signal}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 text-xs font-bold uppercase" style={{ color: "var(--text-2)" }}>
-                      {lead.status}
-                    </td>
-                    <td className="px-3 py-3">
-                      <span className="text-xs font-extrabold uppercase" style={{ color: priorityColors[i] }}>
-                        {lead.priority}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                <tr
+                  className="lnd-row"
+                  style={{
+                    opacity: isPreviewVisible ? 1 : 0,
+                    transform: isPreviewVisible ? "translateX(0)" : "translateX(-10px)",
+                    transition: "opacity 280ms var(--ease-out), transform 280ms var(--ease-out)",
+                  }}
+                >
+                  <td className="px-3 py-7 text-center" colSpan={tr.columns.length}>
+                    <p className="text-sm font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
+                      {tr.emptyTitle}
+                    </p>
+                    <p className="mx-auto mt-2 max-w-md text-xs font-semibold leading-5" style={{ ...bodyFont, color: "var(--text-2)" }}>
+                      {tr.emptyDescription}
+                    </p>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

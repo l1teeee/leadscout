@@ -31,6 +31,27 @@ export interface ExplorerSearchResponse {
   saved_new: number;
 }
 
+export interface LeadAnalyzeRequest {
+  name: string;
+  category: string;
+  location: string;
+  phone?: string;
+  website?: string;
+  score: number;
+  issues: string[];
+}
+
+export interface LeadAnalyzeResponse {
+  analysis: string;
+}
+
+export async function analyzeLead(body: LeadAnalyzeRequest): Promise<LeadAnalyzeResponse> {
+  return apiFetch<LeadAnalyzeResponse>("/api/explorer/analyze", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
 export async function searchExplorer(body: ExplorerSearchRequest): Promise<ExplorerSearchResponse> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60_000);

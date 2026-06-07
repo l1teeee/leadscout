@@ -17,13 +17,13 @@ function getUserEmail() {
   return tokenUser?.email ?? "";
 }
 
-export function Topbar() {
+export function Topbar({ initialEmail }: { initialEmail?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const { lang, setLang } = useLanguage();
   const tr = translations[lang];
   const title = (tr.topbar.titles as Record<string, string>)[pathname] ?? "LeadScout";
-  const [userEmail] = useState(getUserEmail);
+  const [userEmail] = useState(initialEmail ?? getUserEmail);
   const [isPending, startTransition] = useTransition();
 
   const initials = userEmail ? userEmail.split("@")[0].slice(0, 2).toUpperCase() : "LS";

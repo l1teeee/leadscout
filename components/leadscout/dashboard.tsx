@@ -8,6 +8,7 @@ import { ScoreBar } from "@/components/ui/score-bar";
 import { ChartAreaStep } from "@/components/ui/8bit-chart-area-step";
 import { OnboardingTour } from "@/components/leadscout/onboarding-tour";
 import { EmptyInsight } from "@/components/ui/empty-insight";
+import { RefreshButton } from "@/components/leadscout/refresh-button";
 import type { KpiCardProps } from "@/types";
 
 const bodyTextStyle = {
@@ -53,7 +54,7 @@ export async function Dashboard() {
   const tr = translations[lang];
   const token = (await cookies()).get("ls_token")?.value;
   const [leads, summary] = await Promise.all([
-    getLeads({}, token).catch(() => []),
+    getLeads({}, token).then(r => r.leads).catch(() => []),
     getReportSummary(token).catch(() => EMPTY_SUMMARY),
   ]);
 
@@ -74,7 +75,7 @@ export async function Dashboard() {
       <div data-stagger className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(520px,0.9fr)]">
         <div data-tour="dashboard-leads" className="pixel-card-sm overflow-hidden bg-white">
           <div
-            className="bg-[#F4F4F5] px-5 py-3.5"
+            className="flex items-center justify-between bg-[#F4F4F5] px-5 py-3.5"
             style={{ borderBottom: "2px solid var(--pixel-border, #18181B)" }}
           >
             <h2
@@ -83,6 +84,7 @@ export async function Dashboard() {
             >
               {tr.dashboard.recentLeads}
             </h2>
+            <RefreshButton label={tr.dashboard.refresh} />
           </div>
 
           <div className="overflow-x-auto">

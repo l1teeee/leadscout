@@ -1,4 +1,4 @@
-export type LeadStatus = "nuevo" | "contactado" | "calificado" | "perdido";
+export type LeadStatus = "nuevo" | "contactado" | "calificado" | "perdido" | "desvinculado";
 export type LeadPriority = "alta" | "media" | "baja";
 
 export interface Lead {

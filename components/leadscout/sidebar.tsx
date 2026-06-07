@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3, Building2, Cable, LayoutDashboard, LogOut, Search, Send, Target, Settings, Zap,
@@ -99,11 +99,24 @@ function SidebarMenuSection({ section, pathname, isExpanded }: SidebarMenuSectio
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
+  const expandTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const sections = useSidebarSections();
   const { lang } = useLanguage();
   const tr = translations[lang];
+
+  function handleMouseEnter() {
+    expandTimer.current = setTimeout(() => setIsExpanded(true), 500);
+  }
+
+  function handleMouseLeave() {
+    if (expandTimer.current) {
+      clearTimeout(expandTimer.current);
+      expandTimer.current = null;
+    }
+    setIsExpanded(false);
+  }
 
   function handleSidebarLogout() {
     const token = getToken();
@@ -121,8 +134,8 @@ export function Sidebar() {
         isExpanded ? "w-[232px]" : "w-[58px]"
       )}
       style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div
         className={cn("h-[58px] flex items-center shrink-0", isExpanded ? "px-4 gap-2.5" : "justify-center px-0")}

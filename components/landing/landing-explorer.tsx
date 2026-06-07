@@ -12,11 +12,11 @@ export function LandingExplorer() {
   const { lang } = useLanguage();
   const tr = translations[lang].landing.explorer;
   const { ref: textRef, isVisible: isTextVisible } = useIntersection<HTMLDivElement>();
-  const { ref: mockRef, isVisible: isMockVisible } = useIntersection<HTMLDivElement>();
+  const { ref: previewRef, isVisible: isPreviewVisible } = useIntersection<HTMLDivElement>();
 
   return (
     <section
-      id="demo"
+      id="workflow-preview"
       className="w-full px-4 py-14 sm:px-6 lg:px-8 lg:py-16"
       style={{ background: "var(--bg)" }}
     >
@@ -54,7 +54,7 @@ export function LandingExplorer() {
           </ul>
         </div>
 
-        <div ref={mockRef} className={`reveal-left ${isMockVisible ? "is-visible" : ""}`}>
+        <div ref={previewRef} className={`reveal-left ${isPreviewVisible ? "is-visible" : ""}`}>
           <LandingMapSearch
             eyebrow={tr.map.eyebrow}
             title={tr.map.title}
@@ -64,7 +64,8 @@ export function LandingExplorer() {
             filters={tr.map.filters}
             mapLabel={tr.map.mapLabel}
             resultsLabel={tr.map.resultsLabel}
-            results={tr.map.results}
+            emptyTitle={tr.map.emptyTitle}
+            emptyDescription={tr.map.emptyDescription}
           >
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <button

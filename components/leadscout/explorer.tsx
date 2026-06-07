@@ -1,8 +1,10 @@
 "use client";
+import { useState } from "react";
 import { useExplorer } from "@/lib/hooks/use-explorer";
 import { ExplorerLocationPanel } from "./explorer-location-panel";
 import { ExplorerMapSection } from "./explorer-map-section";
 import { ExplorerResultsTable } from "./explorer-results-table";
+import { ExplorerResultsMap } from "./explorer-results-map";
 import { ExplorerLeadDetail } from "./explorer-lead-detail";
 import { ExplorerCategoryModal } from "./explorer-category-modal";
 import { ExplorerOnboardingTour } from "./explorer-onboarding-tour";
@@ -17,8 +19,11 @@ export function Explorer() {
     { id: "ubicacion", label: tr.tabs.ubicacion },
     { id: "resultados", label: tr.tabs.resultados },
   ];
+  const [resultsView, setResultsView] = useState<"table" | "map">("table");
   const {
     activeTab, setActiveTab,
+    hasLocation,
+    hasStoredLocation,
     locationQuery, selectedPlace, isLocating, locationError,
     searchRadius, setSearchRadius, isEditingSearchArea,
     selectedCategory, isCategoryModalOpen,
@@ -27,12 +32,12 @@ export function Explorer() {
     selected,
     placeSuggestions, visibleScrapingPoints,
     activeSelectedPoint, activeSearchArea, filtered,
-    isSearching, searchError,
+    isSearching, searchStage, searchError,
     selectScrapingPoint, selectPlace, selectCategory,
     handleBrowserLocation, moveSearchArea,
     handleLocationQueryChange, toggleEditArea,
     selectLead, openCategoryModal, closeCategoryModal,
-    triggerSearch,
+    triggerSearch, resetLocation,
   } = useExplorer();
 
   return (
@@ -80,13 +85,17 @@ export function Explorer() {
               searchRadius={searchRadius}
               onSearchRadiusChange={setSearchRadius}
               activeSearchArea={activeSearchArea}
+              hasLocation={hasLocation}
+              hasStoredLocation={hasStoredLocation}
               onBrowserLocation={handleBrowserLocation}
+              onResetLocation={resetLocation}
               onSearch={triggerSearch}
               isSearching={isSearching}
               searchError={searchError}
             />
             <ExplorerMapSection
               activeSearchArea={activeSearchArea}
+              hasLocation={hasLocation}
               isEditingSearchArea={isEditingSearchArea}
               onToggleEditArea={toggleEditArea}
               visibleScrapingPoints={visibleScrapingPoints}
@@ -95,21 +104,32 @@ export function Explorer() {
               onPointSelect={selectScrapingPoint}
               isLocating={isLocating}
               isSearching={isSearching}
+              searchStage={searchStage}
             />
           </div>
         )}
 
         {activeTab === "resultados" && (
-          <ExplorerResultsTable
-            filtered={filtered}
-            visibleCount={visibleScrapingPoints.length}
-            selected={selected}
-            onSelectLead={selectLead}
-            query={query}
-            onQueryChange={setQuery}
-            filterStatus={filterStatus}
-            onFilterStatusChange={setFilterStatus}
-          />
+          resultsView === "table" ? (
+            <ExplorerResultsTable
+              filtered={filtered}
+              visibleCount={visibleScrapingPoints.length}
+              selected={selected}
+              onSelectLead={selectLead}
+              query={query}
+              onQueryChange={setQuery}
+              filterStatus={filterStatus}
+              onFilterStatusChange={setFilterStatus}
+              onViewInMap={() => setResultsView("map")}
+            />
+          ) : (
+            <ExplorerResultsMap
+              leads={filtered}
+              selected={selected}
+              onSelectLead={selectLead}
+              onBackToTable={() => setResultsView("table")}
+            />
+          )
         )}
       </div>
 

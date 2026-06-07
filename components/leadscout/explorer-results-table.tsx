@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Map, Search, SlidersHorizontal } from "lucide-react";
 import { StatusBadge, PriorityBadge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export function ExplorerResultsTable({
   onQueryChange,
   filterStatus,
   onFilterStatusChange,
+  onViewInMap,
 }: ExplorerResultsTableProps) {
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.results;
@@ -36,6 +37,7 @@ export function ExplorerResultsTable({
     { value: "contactado", label: rootTr.leadStatus.contactado },
     { value: "calificado", label: rootTr.leadStatus.calificado },
     { value: "perdido", label: rootTr.leadStatus.perdido },
+    { value: "desvinculado", label: rootTr.leadStatus.desvinculado },
   ];
 
   return (
@@ -49,9 +51,20 @@ export function ExplorerResultsTable({
             {tr.title}
           </h2>
         </div>
-        <span data-tour="explorer-results-summary" className="retro pixel-text-xs" style={{ color: "var(--text-2)" }}>
-          {tr.summary(filtered.length, visibleCount)}
-        </span>
+        <div className="flex items-center gap-3">
+          <span data-tour="explorer-results-summary" className="retro pixel-text-xs" style={{ color: "var(--text-2)" }}>
+            {tr.summary(filtered.length, visibleCount)}
+          </span>
+          <button
+            type="button"
+            onClick={onViewInMap}
+            className="flex items-center gap-1.5 border-2 border-(--border) bg-white px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-(--surface-2)"
+            style={{ fontFamily: "var(--font-body), system-ui, sans-serif", color: "var(--text-2)" }}
+          >
+            <Map size={12} />
+            {tr.viewInMap}
+          </button>
+        </div>
       </div>
 
       <div className="shrink-0 p-3 flex items-center gap-3">

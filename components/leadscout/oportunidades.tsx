@@ -3,7 +3,6 @@ import { getLeads } from "@/lib/api/leads";
 import { PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
-import type { LeadStatus } from "@/lib/data";
 import { getLang } from "@/lib/get-lang";
 import { translations } from "@/lib/i18n";
 
@@ -11,13 +10,13 @@ const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
-const COLUMNS: LeadStatus[] = ["nuevo", "contactado", "calificado", "perdido"];
+const COLUMNS = ["nuevo", "contactado", "calificado", "perdido"] as const;
 
 export async function Oportunidades() {
   const lang = await getLang();
   const tr = translations[lang].oportunidades;
   const token = (await cookies()).get("ls_token")?.value;
-  const leads = await getLeads({}, token).catch(() => []);
+  const { leads } = await getLeads({}, token).catch(() => ({ leads: [] as import("@/lib/data").Lead[], total: 0 }));
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">

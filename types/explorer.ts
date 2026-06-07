@@ -8,6 +8,15 @@ export interface SearchBounds {
   northeast: { lat: number; lng: number };
 }
 
+export type ExplorerSearchStage =
+  | "preparing"
+  | "searching"
+  | "collecting"
+  | "filtering"
+  | "validating"
+  | "saving"
+  | "refreshing";
+
 export interface ExplorerLocationPanelProps {
   locationQuery: string;
   onLocationQueryChange: (q: string) => void;
@@ -22,7 +31,10 @@ export interface ExplorerLocationPanelProps {
   searchRadius: number;
   onSearchRadiusChange: (r: number) => void;
   activeSearchArea: SearchArea;
+  hasLocation: boolean;
+  hasStoredLocation: boolean;
   onBrowserLocation: () => void;
+  onResetLocation: () => void;
   onSearch: () => void;
   isSearching: boolean;
   searchError: string | null;
@@ -30,6 +42,7 @@ export interface ExplorerLocationPanelProps {
 
 export interface ExplorerMapSectionProps {
   activeSearchArea: SearchArea;
+  hasLocation: boolean;
   isEditingSearchArea: boolean;
   onToggleEditArea: () => void;
   visibleScrapingPoints: MapPoint[];
@@ -38,6 +51,7 @@ export interface ExplorerMapSectionProps {
   onPointSelect: (point: MapPoint) => void;
   isLocating: boolean;
   isSearching: boolean;
+  searchStage: ExplorerSearchStage | null;
 }
 
 export interface ExplorerResultsTableProps {
@@ -49,6 +63,14 @@ export interface ExplorerResultsTableProps {
   onQueryChange: (q: string) => void;
   filterStatus: LeadStatus | "";
   onFilterStatusChange: (s: LeadStatus | "") => void;
+  onViewInMap: () => void;
+}
+
+export interface ExplorerResultsMapProps {
+  leads: Lead[];
+  selected: Lead | null;
+  onSelectLead: (lead: Lead | null) => void;
+  onBackToTable: () => void;
 }
 
 export interface ExplorerLeadDetailProps {

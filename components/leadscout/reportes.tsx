@@ -17,6 +17,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
   contactado: "var(--c-contacted)",
   calificado: "var(--c-qualified)",
   perdido: "var(--c-lost)",
+  desvinculado: "var(--c-unlinked)",
 };
 
 function percent(value: number, total: number) {
@@ -125,15 +126,15 @@ export async function Reportes() {
   const tr = translations[lang].reportes;
   const token = (await cookies()).get("ls_token")?.value;
   const [leads, summary] = await Promise.all([
-    getLeads({}, token).catch(() => []),
+    getLeads({}, token).then(r => r.leads).catch(() => []),
     getReportSummary(token).catch(() => EMPTY_SUMMARY),
   ]);
 
-  const sampleTotal = leads.length;
+  const leadTotal = leads.length;
   const qualified = summary.by_status["calificado"] ?? 0;
   const contacted = (summary.by_status["contactado"] ?? 0) + qualified;
   const highRisk = leads.filter((l) => l.score <= 20).length;
-  const conversion = percent(qualified, sampleTotal);
+  const conversion = percent(qualified, leadTotal);
 
   const statusRows = (Object.keys(tr.statusLabels) as LeadStatus[]).map((status) => ({
     label: tr.statusLabels[status],
@@ -180,14 +181,14 @@ export async function Reportes() {
               </div>
               <div className="pixel-inset bg-[var(--surface-2)] px-3 py-2 text-right">
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                  {tr.sections.sample}
+                  {tr.sections.workspaceLeads}
                 </p>
                 <p className="retro pixel-text-sm tabular-nums" style={{ color: "var(--text)" }}>
-                  {sampleTotal}
+                  {leadTotal}
                 </p>
               </div>
             </div>
-            {sampleTotal === 0 ? (
+            {leadTotal === 0 ? (
               <EmptyInsight
                 title={tr.pipelineEmpty.title}
                 description={tr.pipelineEmpty.description}
@@ -198,7 +199,7 @@ export async function Reportes() {
             ) : (
               <div className="mt-5 space-y-4">
                 {statusRows.map((row) => (
-                  <FunnelRow key={row.label} label={row.label} value={row.value} total={sampleTotal} color={row.color} />
+                  <FunnelRow key={row.label} label={row.label} value={row.value} total={leadTotal} color={row.color} />
                 ))}
               </div>
             )}
@@ -221,7 +222,7 @@ export async function Reportes() {
               </div>
             </div>
             <div className="mt-4 grid gap-3">
-              {sampleTotal === 0 ? (
+              {leadTotal === 0 ? (
                 <EmptyInsight
                   title={tr.noActivity.title}
                   description={tr.noActivity.description}
