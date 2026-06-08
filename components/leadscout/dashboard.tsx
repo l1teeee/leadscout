@@ -293,7 +293,12 @@ export async function Dashboard() {
           <DashboardQuickWins
             leads={quickWins}
             priorityLabels={tr.leadPriority}
-            copy={{ ...tr.dashboard.quickWins, readyLabel: tr.dashboard.quickWins.ready(quickWins.length) }}
+            copy={{
+              title: tr.dashboard.quickWins.title,
+              description: tr.dashboard.quickWins.description,
+              readyLabel: tr.dashboard.quickWins.ready(quickWins.length),
+              empty: tr.dashboard.quickWins.empty,
+            }}
           />
 
           <PriorityBar
