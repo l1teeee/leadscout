@@ -905,6 +905,14 @@ export const translations = {
           businessInfo: "Business info",
           reanalyze: "Re-analyze",
           unavailable: "Not available",
+          chat: {
+            title: "Ask the AI",
+            placeholder: "Ask something about this business...",
+            send: "Send",
+            empty: "Ask the AI a question about this lead.",
+            thinking: "Thinking...",
+            error: "Could not get a response. Try again.",
+          },
         },
       },
       map: {
@@ -1982,6 +1990,14 @@ export const translations = {
           businessInfo: "Información del negocio",
           reanalyze: "Re-analizar",
           unavailable: "No disponible",
+          chat: {
+            title: "Consultar a la IA",
+            placeholder: "Pregunta algo sobre este negocio...",
+            send: "Enviar",
+            empty: "Hacele una pregunta a la IA sobre este lead.",
+            thinking: "Pensando...",
+            error: "No se pudo obtener respuesta. Intentá de nuevo.",
+          },
         },
       },
       map: {
