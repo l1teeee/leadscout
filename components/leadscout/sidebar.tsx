@@ -1,11 +1,10 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3, Building2, Cable, LayoutDashboard, LogOut, Search, Send, Target, Settings, Zap,
 } from "lucide-react";
-import { logoutAction } from "@/app/actions/auth-actions";
 import { logout } from "@/lib/api/auth";
 import { clearToken, getToken } from "@/lib/auth";
 import type { SidebarNavItemProps, SidebarMenuSectionProps, SidebarSection } from "@/types";
@@ -98,7 +97,6 @@ function SidebarMenuSection({ section, pathname, isExpanded }: SidebarMenuSectio
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isLoggingOut, startLogoutTransition] = useTransition();
   const expandTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -122,9 +120,7 @@ export function Sidebar() {
     const token = getToken();
     if (token) logout(token).catch(() => {});
     clearToken();
-    startLogoutTransition(async () => {
-      await logoutAction();
-    });
+    window.location.href = "/api/auth/force-logout";
   }
 
   return (
@@ -207,16 +203,14 @@ export function Sidebar() {
         </button>
         <button
           onClick={handleSidebarLogout}
-          disabled={isLoggingOut}
           title={tr.topbar.signOut}
           aria-label={tr.topbar.signOut}
           className={cn(
             "mt-0.5 w-full flex items-center py-2 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer",
             isExpanded ? "gap-2.5 px-2.5" : "justify-center px-0"
           )}
-          style={{ ...bodyFont, color: isLoggingOut ? "#71717A" : "#E63946", border: "2px solid transparent" }}
+          style={{ ...bodyFont, color: "#E63946", border: "2px solid transparent" }}
           onMouseEnter={(e) => {
-            if (isLoggingOut) return;
             (e.currentTarget as HTMLElement).style.background = "#2A1B12";
           }}
           onMouseLeave={(e) => {
@@ -224,7 +218,7 @@ export function Sidebar() {
           }}
         >
           <LogOut size={15} strokeWidth={2} />
-          {isExpanded && <span className="truncate">{isLoggingOut ? tr.nav.signingOut : tr.topbar.signOut}</span>}
+          {isExpanded && <span className="truncate">{tr.topbar.signOut}</span>}
         </button>
       </div>
     </aside>

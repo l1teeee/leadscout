@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Building2, LogOut, Settings, UserRound } from "lucide-react";
-import { logoutAction } from "@/app/actions/auth-actions";
 import { logout } from "@/lib/api/auth";
 import { clearToken, getToken, parseTokenUser } from "@/lib/auth";
 import { useLanguage } from "@/contexts/language-context";
@@ -21,18 +20,13 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
   const { lang } = useLanguage();
   const tr = translations[lang];
   const [userEmail] = useState(initialEmail ?? getUserEmail);
-  const [isPending, startTransition] = useTransition();
   const initials = userEmail ? userEmail.split("@")[0].slice(0, 2).toUpperCase() : "LS";
 
   function handleSignOut() {
     const token = getToken();
-    if (token) {
-      logout(token).catch(() => {});
-    }
+    if (token) logout(token).catch(() => {});
     clearToken();
-    startTransition(async () => {
-      await logoutAction();
-    });
+    window.location.href = "/api/auth/force-logout";
   }
 
   return (
@@ -97,7 +91,6 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
 
           <DropdownMenu.Item
             onSelect={handleSignOut}
-            disabled={isPending}
             className="flex cursor-pointer items-center gap-2 border-2 border-transparent px-3 py-2 text-sm font-bold outline-none hover:border-[var(--border)] hover:bg-[var(--surface-2)]"
             style={{ color: "var(--c-hi)" }}
           >
