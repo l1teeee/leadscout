@@ -9,5 +9,5 @@ export default function IntegrationsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <PageError module="Integraciones" message={error.message} onRetry={reset} />;
+  return <PageError moduleKey="integrations" message={error.message} onRetry={reset} />;
 }

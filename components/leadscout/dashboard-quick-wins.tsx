@@ -17,9 +17,18 @@ function getScoreBadgeStyle(score: number) {
 interface Props {
   leads: Lead[];
   priorityLabels: Record<string, string>;
+  copy: {
+    title: string;
+    description: string;
+    ready: (count: number) => string;
+    empty: {
+      title: string;
+      description: string;
+    };
+  };
 }
 
-export function DashboardQuickWins({ leads, priorityLabels }: Props) {
+export function DashboardQuickWins({ leads, priorityLabels, copy }: Props) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   return (
@@ -28,15 +37,15 @@ export function DashboardQuickWins({ leads, priorityLabels }: Props) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="retro pixel-text-xs uppercase" style={{ color: "var(--text)" }}>
-              QUICK WINS
+              {copy.title}
             </h2>
             <p className="mt-2 text-sm font-medium" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-              Leads de alto score sin contactar
+              {copy.description}
             </p>
           </div>
           {leads.length > 0 && (
             <p className="text-xs font-bold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
-              {leads.length} oportunidades listas
+              {copy.ready(leads.length)}
             </p>
           )}
         </div>
@@ -72,8 +81,8 @@ export function DashboardQuickWins({ leads, priorityLabels }: Props) {
           ))}
           {leads.length === 0 && (
             <EmptyInsight
-              title="Sin quick wins"
-              description="No hay leads nuevos con score alto por ahora."
+              title={copy.empty.title}
+              description={copy.empty.description}
               compact
             />
           )}

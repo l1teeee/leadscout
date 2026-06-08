@@ -29,7 +29,7 @@ export function LandingNavbar() {
             <Zap size={13} color="#17110D" strokeWidth={2.5} />
           </div>
           <span className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>
-            LeadScout
+            ScoutIA
           </span>
         </Link>
 

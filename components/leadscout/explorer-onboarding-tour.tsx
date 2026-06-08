@@ -15,7 +15,11 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
   const tr = translations[lang].explorer.tours;
 
   useEffect(() => {
-    if (sessionStorage.getItem("leadscout_explorer_tour_pending") !== "1") return;
+    const hasPendingTour =
+      sessionStorage.getItem("scoutia_explorer_tour_pending") === "1" ||
+      sessionStorage.getItem("leadscout_explorer_tour_pending") === "1";
+
+    if (!hasPendingTour) return;
 
     const startResultsTour = () => {
       setActiveTab("resultados");
@@ -29,7 +33,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
           nextBtnText: tr.next,
           prevBtnText: tr.prev,
           doneBtnText: tr.doneDashboard,
-          popoverClass: "leadscout-driver-popover",
+          popoverClass: "scoutia-driver-popover",
           steps: [
             {
               element: "[data-tour='explorer-tab-resultados']",
@@ -78,6 +82,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
             },
           ],
           onDestroyed: () => {
+            sessionStorage.removeItem("scoutia_explorer_tour_pending");
             sessionStorage.removeItem("leadscout_explorer_tour_pending");
           },
         });
@@ -97,7 +102,7 @@ export function ExplorerOnboardingTour({ setActiveTab }: ExplorerOnboardingTourP
         nextBtnText: tr.next,
         prevBtnText: tr.prev,
         doneBtnText: tr.doneExplorer,
-        popoverClass: "leadscout-driver-popover",
+        popoverClass: "scoutia-driver-popover",
         steps: [
           {
             element: "[data-tour='explorer-tabs']",

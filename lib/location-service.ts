@@ -81,7 +81,7 @@ export async function suggestPlaces(query: string, limit = 5): Promise<PlaceSugg
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=${limit}&addressdetails=1`;
     const res = await fetch(url, {
-      headers: { "Accept-Language": "es", "User-Agent": "LeadScout-AI/1.0" },
+      headers: { "Accept-Language": "es", "User-Agent": "ScoutIA/1.0" },
     });
     if (!res.ok) return [];
     const data = (await res.json()) as NominatimItem[];
@@ -101,7 +101,7 @@ export async function findNearestPlace(
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
     const res = await fetch(url, {
-      headers: { "Accept-Language": "es", "User-Agent": "LeadScout-AI/1.0" },
+      headers: { "Accept-Language": "es", "User-Agent": "ScoutIA/1.0" },
     });
     if (!res.ok) return null;
     const item = (await res.json()) as NominatimItem;
@@ -125,7 +125,7 @@ export async function geocodeCity(
     const q = encodeURIComponent(`${city}, ${country}`);
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&addressdetails=0`,
-      { headers: { "Accept-Language": "es", "User-Agent": "LeadScout-AI/1.0" } }
+      { headers: { "Accept-Language": "es", "User-Agent": "ScoutIA/1.0" } }
     );
     if (!res.ok) return null;
     const data = (await res.json()) as Array<{

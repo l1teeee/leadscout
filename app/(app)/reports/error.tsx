@@ -9,5 +9,5 @@ export default function ReportsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <PageError module="Reportes" message={error.message} onRetry={reset} />;
+  return <PageError moduleKey="reports" message={error.message} onRetry={reset} />;
 }

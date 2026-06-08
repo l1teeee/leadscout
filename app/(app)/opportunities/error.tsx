@@ -9,5 +9,5 @@ export default function OpportunitiesError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <PageError module="Oportunidades" message={error.message} onRetry={reset} />;
+  return <PageError moduleKey="opportunities" message={error.message} onRetry={reset} />;
 }

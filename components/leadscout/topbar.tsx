@@ -7,19 +7,25 @@ import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
+function UserMenuLoading() {
+  const { lang } = useLanguage();
+
+  return (
+    <button
+      className="ml-1 flex h-8 items-center gap-2 rounded-none border-2 border-[var(--border)] bg-[var(--pixel-highlight)] px-2 shadow-[2px_2px_0_0_var(--pixel-shadow)]"
+      aria-label={translations[lang].topbar.userMenu}
+    >
+      <span className="text-xs font-extrabold tracking-normal text-[var(--text)]" style={bodyFont}>
+        LS
+      </span>
+    </button>
+  );
+}
+
 const UserMenu = dynamic(
   () => import("./user-menu").then((mod) => mod.UserMenu),
   {
-    loading: () => (
-      <button
-        className="ml-1 flex h-8 items-center gap-2 rounded-none border-2 border-[var(--border)] bg-[var(--pixel-highlight)] px-2 shadow-[2px_2px_0_0_var(--pixel-shadow)]"
-        aria-label="User menu"
-      >
-        <span className="text-xs font-extrabold tracking-normal text-[var(--text)]" style={bodyFont}>
-          LS
-        </span>
-      </button>
-    ),
+    loading: () => <UserMenuLoading />,
   }
 );
 
@@ -28,7 +34,7 @@ export function Topbar({ initialEmail }: { initialEmail?: string }) {
   const router = useRouter();
   const { lang, setLang } = useLanguage();
   const tr = translations[lang];
-  const title = (tr.topbar.titles as Record<string, string>)[pathname] ?? "LeadScout";
+  const title = (tr.topbar.titles as Record<string, string>)[pathname] ?? "ScoutIA";
 
   return (
     <header

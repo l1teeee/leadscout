@@ -9,5 +9,5 @@ export default function SettingsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <PageError module="Configuración" message={error.message} onRetry={reset} />;
+  return <PageError moduleKey="settings" message={error.message} onRetry={reset} />;
 }

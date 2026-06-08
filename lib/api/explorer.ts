@@ -32,6 +32,7 @@ export interface ExplorerSearchResponse {
 }
 
 export interface LeadAnalyzeRequest {
+  lead_id?: string;
   name: string;
   category: string;
   location: string;
@@ -39,6 +40,7 @@ export interface LeadAnalyzeRequest {
   website?: string;
   score: number;
   issues: string[];
+  force_refresh?: boolean;
 }
 
 export interface LeadAnalyzeResponse {

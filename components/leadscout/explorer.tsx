@@ -12,16 +12,22 @@ import type { ExplorerTab } from "@/types";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 
+function ExplorerMapLoading() {
+  const { lang } = useLanguage();
+
+  return (
+    <div className="pixel-card-sm flex min-h-0 flex-1 items-center justify-center bg-white p-5">
+      <span className="retro pixel-text-xs uppercase text-(--text-3)">
+        {translations[lang].common.mapLoading}
+      </span>
+    </div>
+  );
+}
+
 const ExplorerResultsMap = dynamic(
   () => import("./explorer-results-map").then((mod) => mod.ExplorerResultsMap),
   {
-    loading: () => (
-      <div className="pixel-card-sm flex min-h-0 flex-1 items-center justify-center bg-white p-5">
-        <span className="retro pixel-text-xs uppercase text-(--text-3)">
-          Cargando mapa
-        </span>
-      </div>
-    ),
+    loading: () => <ExplorerMapLoading />,
   }
 );
 

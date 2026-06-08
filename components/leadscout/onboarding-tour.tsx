@@ -12,7 +12,11 @@ export function OnboardingTour() {
   const tr = translations[lang].explorer.tours;
 
   useEffect(() => {
-    if (sessionStorage.getItem("leadscout_onboarding_pending") !== "1") return;
+    const hasPendingTour =
+      sessionStorage.getItem("scoutia_onboarding_pending") === "1" ||
+      sessionStorage.getItem("leadscout_onboarding_pending") === "1";
+
+    if (!hasPendingTour) return;
 
     const timer = window.setTimeout(async () => {
       const { driver } = await import("driver.js");
@@ -23,7 +27,7 @@ export function OnboardingTour() {
         nextBtnText: tr.next,
         prevBtnText: tr.prev,
         doneBtnText: tr.doneDashboard,
-        popoverClass: "leadscout-driver-popover",
+        popoverClass: "scoutia-driver-popover",
         steps: [
           {
             element: "[data-tour='dashboard-kpis']",
@@ -99,8 +103,9 @@ export function OnboardingTour() {
           },
         ],
         onDestroyed: () => {
+          sessionStorage.removeItem("scoutia_onboarding_pending");
           sessionStorage.removeItem("leadscout_onboarding_pending");
-          sessionStorage.setItem("leadscout_explorer_tour_pending", "1");
+          sessionStorage.setItem("scoutia_explorer_tour_pending", "1");
           router.push("/explorer");
         },
       });

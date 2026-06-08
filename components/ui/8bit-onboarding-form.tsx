@@ -158,7 +158,7 @@ export default function OnboardingForm() {
       setIsSubmitting(false);
       return;
     }
-    sessionStorage.setItem("leadscout_onboarding_pending", "1");
+    sessionStorage.setItem("scoutia_onboarding_pending", "1");
     setIsExiting(true);
     setTimeout(() => {
       router.replace("/dashboard");
@@ -214,7 +214,7 @@ export default function OnboardingForm() {
               <Zap size={15} color="#17110D" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>LeadScout</p>
+              <p className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>ScoutIA</p>
               <p className="retro pixel-text-xs mt-1.5" style={{ color: "#A1A1AA" }}>{tr.header}</p>
             </div>
           </div>

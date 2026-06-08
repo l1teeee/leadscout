@@ -85,7 +85,7 @@ export default function RegisterForm({ className }: { className?: string }) {
       }
       window.clearInterval(progressTimer);
       setLoadingProgress(100);
-      sessionStorage.setItem("leadscout_onboarding_pending", "1");
+      sessionStorage.setItem("scoutia_onboarding_pending", "1");
       await wait(650);
       setSuccess(true);
       setTimeout(() => { router.replace("/onboarding"); router.refresh(); }, 1200);

@@ -13,7 +13,7 @@ import {
 import { StatusBadge, PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBig, ScoreBar } from "@/components/ui/score-bar";
 import { analyzeLead } from "@/lib/api/explorer";
-import { updateLead } from "@/lib/api/leads";
+import { markLeadViewed, updateLead } from "@/lib/api/leads";
 import type { Lead } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -42,7 +42,6 @@ export function ExplorerAnalysisModal({
 }: ExplorerAnalysisModalProps) {
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.detail;
-  const isSpanish = lang === "es";
   const [analysis, setAnalysis] = useState<string | null>(lead.ai_analysis ?? null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -54,22 +53,22 @@ export function ExplorerAnalysisModal({
     setAnalysis(lead.ai_analysis ?? null);
     setAnalysisError(null);
     setShowMore(false);
-  }, [lead.id, lead.ai_analysis, isOpen]);
+    if (!lead.is_viewed) {
+      markLeadViewed(lead.id).catch(() => {});
+    }
+  }, [lead.id, lead.ai_analysis, lead.is_viewed, isOpen]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!isOpen) return null;
 
-  const showMoreText = isSpanish ? "Ver mas detalles" : "Show more details";
-  const showLessText = isSpanish ? "Ver menos" : "Show less";
-  const businessInfoText = isSpanish ? "Informacion del negocio" : "Business info";
-  const reAnalyzeText = isSpanish ? "Re-analizar" : "Re-analyze";
-  const unavailableText = isSpanish ? "No disponible" : "Not available";
+  const modalTr = tr.analysisModal;
 
   async function handleAnalyze() {
     setIsAnalyzing(true);
     setAnalysisError(null);
     try {
       const res = await analyzeLead({
+        lead_id: lead.id,
         name: lead.name,
         category: lead.category,
         location: lead.location,
@@ -77,6 +76,7 @@ export function ExplorerAnalysisModal({
         website: lead.website,
         score: lead.score,
         issues: lead.issues,
+        force_refresh: Boolean(analysis),
       });
       setAnalysis(res.analysis);
       updateLead(lead.id, { ai_analysis: res.analysis }).catch(() => {});
@@ -112,7 +112,7 @@ export function ExplorerAnalysisModal({
                 className="retro pixel-text-xs uppercase"
                 style={{ color: "var(--text-3)" }}
               >
-                AI ANALYSIS
+                {tr.aiAnalysis.title}
               </p>
               <h2
                 id="analysis-dialog-title"
@@ -133,7 +133,7 @@ export function ExplorerAnalysisModal({
                 className="retro pixel-text-sm border-2 border-[var(--border)] px-2 py-1 uppercase shadow-[1px_1px_0_0_var(--pixel-shadow)]"
                 style={getScoreBadgeStyle(lead.score)}
               >
-                SCORE {lead.score}/100
+                {translations[lang].common.score} {lead.score}/100
               </span>
               <button
                 type="button"
@@ -154,7 +154,7 @@ export function ExplorerAnalysisModal({
                 className="retro pixel-text-xs uppercase font-bold"
                 style={{ color: "var(--text-3)" }}
               >
-                {businessInfoText}
+                {modalTr.businessInfo}
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <Phone size={12} style={{ color: "var(--text)" }} />
@@ -162,7 +162,7 @@ export function ExplorerAnalysisModal({
                   className="truncate text-xs font-semibold"
                   style={{ ...bodyTextStyle, color: "var(--text)" }}
                 >
-                  {lead.phone ?? unavailableText}
+                  {lead.phone ?? modalTr.unavailable}
                 </span>
               </div>
             </div>
@@ -171,7 +171,7 @@ export function ExplorerAnalysisModal({
                 className="retro pixel-text-xs uppercase font-bold"
                 style={{ color: "var(--text-3)" }}
               >
-                Website
+                {tr.website}
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <Globe size={12} style={{ color: "var(--text)" }} />
@@ -179,7 +179,7 @@ export function ExplorerAnalysisModal({
                   className="truncate text-xs font-semibold"
                   style={{ ...bodyTextStyle, color: "var(--text)" }}
                 >
-                  {lead.website ?? unavailableText}
+                  {lead.website ?? modalTr.unavailable}
                 </span>
               </div>
             </div>
@@ -267,7 +267,7 @@ export function ExplorerAnalysisModal({
                   style={{ ...bodyTextStyle, color: "var(--text-3)" }}
                 >
                   <RefreshCw size={12} />
-                  {reAnalyzeText}
+                  {modalTr.reanalyze}
                 </button>
               </div>
             )}
@@ -281,7 +281,7 @@ export function ExplorerAnalysisModal({
               style={{ ...bodyTextStyle, color: "var(--text-2)" }}
             >
               <span className="retro pixel-text-xs uppercase">
-                {showMore ? showLessText : showMoreText}
+                {showMore ? modalTr.showLess : modalTr.showMore}
               </span>
               {showMore ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
@@ -323,7 +323,7 @@ export function ExplorerAnalysisModal({
                       className="retro pixel-text-xs uppercase font-bold mb-1"
                       style={{ color: "var(--text-2)" }}
                     >
-                      Address
+                      {tr.address}
                     </p>
                     <p className="text-sm" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                       {lead.address}

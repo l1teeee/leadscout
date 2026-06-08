@@ -100,7 +100,13 @@ export function useLeads(): UseLeadsReturn {
     setSelectedId(null);
   }
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const fetchLeads = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
@@ -112,7 +118,8 @@ export function useLeads(): UseLeadsReturn {
         sort_order: sortOrder,
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
-      });
+      }, controller.signal);
+      if (controller.signal.aborted) return;
       setLeads(result.leads);
       setTotal(result.total);
       // keep selection if it's still on this page, else select first
@@ -120,13 +127,18 @@ export function useLeads(): UseLeadsReturn {
         result.leads.find((l) => l.id === prev)?.id ?? result.leads[0]?.id ?? null,
       );
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setError(parseApiError(err));
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [debouncedQuery, status, priority, sortBy, sortOrder, page]);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
+
+  useEffect(() => {
+    return () => { abortRef.current?.abort(); };
+  }, []);
 
   const selected = leads.find((l) => l.id === selectedId) ?? leads[0] ?? null;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

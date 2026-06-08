@@ -31,7 +31,7 @@ export function LandingFooter() {
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="retro pixel-text-sm leading-none" style={{ color: "#FFFFFF" }}>
-              LeadScout AI
+              ScoutIA
             </span>
             <span className="retro pixel-text-xs leading-none" style={{ color: "#A1A1AA" }}>
               © {new Date().getFullYear()}

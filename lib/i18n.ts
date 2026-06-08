@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   LeadAssignmentMode,
   SecurityLevel,
   SubscriptionPlan,
@@ -15,8 +15,8 @@ export type { Lang } from "@/lib/i18n-types";
 export const translations = {
   en: {
     common: {
-      appName: "LeadScout",
-      appNameAi: "LeadScout AI",
+      appName: "ScoutIA",
+      appNameAi: "ScoutIA",
       email: "Email",
       password: "Password",
       confirm: "Confirm",
@@ -58,6 +58,14 @@ export const translations = {
         description: "When you run your first search, you will see leads detected by day here.",
         action: "Explore a zone to activate weekly activity",
       },
+      pageError: {
+        title: "Error loading",
+        retry: "Retry",
+      },
+    },
+    seo: {
+      title: "ScoutIA",
+      description: "Commercial intelligence to detect businesses with digital gaps",
     },
     nav: {
       sections: { main: "Main", operations: "Operations", system: "System" },
@@ -71,7 +79,7 @@ export const translations = {
         integrations: "Integrations",
         settings: "Settings",
       },
-      landingLabel: "Go to LeadScout landing",
+      landingLabel: "Go to ScoutIA landing",
       signingOut: "Signing out...",
     },
     topbar: {
@@ -194,12 +202,12 @@ export const translations = {
     },
     queue: "Queue",
     landing: {
-      nav: { login: "Log in", start: "Start free", aria: "LeadScout landing" },
+      nav: { login: "Log in", start: "Start free", aria: "ScoutIA landing" },
       hero: {
         eyebrow: "Local prospecting workspace",
         title: "FIND YOUR NEXT CUSTOMERS",
         description:
-          "LeadScout helps you search businesses by zone, review available signals, save prospects, and organize follow-up from one workspace.",
+          "ScoutIA helps you search businesses by zone, review available signals, save prospects, and organize follow-up from one workspace.",
         primary: "Create account",
         secondary: "View workflow",
         weeklyPipeline: "Product flow",
@@ -320,7 +328,7 @@ export const translations = {
         eyebrow: "LEAD REVIEW",
         title: "Turn map results into a workable prospect list",
         description:
-          "LeadScout explains the value through the workflow: it helps you keep found businesses, available context, and next actions in one place.",
+          "ScoutIA explains the value through the workflow: it helps you keep found businesses, available context, and next actions in one place.",
         reviewSignals: "Review signals",
         availableContact: "Available contact data",
         bullets: [
@@ -464,7 +472,7 @@ export const translations = {
         personalTitle: "We want to know you",
         personalSubtitle: "Tell us a bit about yourself to personalize your experience.",
         companyTitle: "Your company",
-        companySubtitle: "Let's configure your LeadScout workspace.",
+        companySubtitle: "Let's configure your ScoutIA workspace.",
         fullName: "Full name *",
         fullNamePlaceholder: "Ex: Maria Lopez",
         role: "Position or role",
@@ -538,8 +546,37 @@ export const translations = {
       kpi: {
         totalLeads: { label: "Total leads", sub: "in database" },
         thisWeek: { label: "This week", sub: "detected" },
-        contacted: { label: "Contacted", sub: "in follow-up" },
+        highPriority: { label: "High priority", sub: "needs attention" },
         avgScore: { label: "Average score", sub: "out of 100" },
+        qualified: { label: "Qualified", sub: "ready to close" },
+        noContact: { label: "Not contacted", sub: "pending" },
+      },
+      priority: {
+        title: "Priority",
+        labels: {
+          alta: "High",
+          media: "Medium",
+          baja: "Low",
+        } satisfies Record<LeadPriority, string>,
+      },
+      quickWins: {
+        title: "Quick wins",
+        description: "High-score leads without contact",
+        ready: (count: number) => `${count} ready opportunit${count === 1 ? "y" : "ies"}`,
+        empty: {
+          title: "No quick wins",
+          description: "There are no new high-score leads for now.",
+        },
+      },
+      categories: {
+        title: "Top categories",
+        used: "Used",
+        empty: "Empty",
+        usage: (used: number, empty: number) => `${used} used / ${empty} empty`,
+        emptyState: {
+          title: "No categories",
+          description: "There are not enough categories to show yet.",
+        },
       },
       recentLeads: "Recent leads",
       refresh: "Refresh",
@@ -595,6 +632,7 @@ export const translations = {
         placeholder: "Search business, category, or gap",
       },
       tableHeaders: ["Business", "Score", "Status", "Priority", "Contact"],
+      newBadge: "New",
       pending: "Pending",
       pagination: {
         page: (current: number, total: number) => `Page ${current} of ${total}`,
@@ -625,6 +663,13 @@ export const translations = {
       lastContact: "Contact",
       issuesPending: "Gaps pending confirmation.",
       contact: "Contact",
+      sortAria: "Sort column",
+      sortLabels: {
+        score_desc: "Highest score",
+        score_asc: "Lowest score",
+        priority: "Priority",
+        name: "A-Z",
+      },
       empty: {
         title: "This stage is ready",
         description: "When you classify leads, they will appear here to keep commercial progress clear.",
@@ -686,6 +731,10 @@ export const translations = {
     },
     settings: {
       save: "Save changes",
+      saveStatus: {
+        ok: "OK",
+        error: "Error",
+      },
       currentUser: "Current user",
       account: "Account",
       role: "Role",
@@ -828,13 +877,20 @@ export const translations = {
           description: "When clear digital gaps are detected, they will appear here to prioritize this business.",
         },
         contact: "Contact",
+        copyPhone: "Copy phone",
+        copyWebsite: "Copy website",
+        viewInMaps: "View in Google Maps",
         contactEmpty: {
           title: "Contact pending confirmation",
           description: "We will keep exploring sources to find phone, website, or reliable channels.",
         },
         lastContact: "Last contact",
         markContacted: "Mark as contacted",
+        markingContacted: "Marking...",
+        contacted: "Contacted",
         history: "View history",
+        website: "Website",
+        address: "Address",
         aiAnalysis: {
           title: "AI Analysis",
           eyebrow: "Powered by GPT-4o mini",
@@ -842,6 +898,13 @@ export const translations = {
           analyzing: "Analyzing...",
           error: "Could not generate analysis. Try again.",
           noApiKey: "OpenAI not configured. Add OPENAI_API_KEY to the backend .env.",
+        },
+        analysisModal: {
+          showMore: "Show more details",
+          showLess: "Show less",
+          businessInfo: "Business info",
+          reanalyze: "Re-analyze",
+          unavailable: "Not available",
         },
       },
       map: {
@@ -1023,14 +1086,14 @@ export const translations = {
       cta: "Back home",
       publicTitle: "This room does not exist",
       publicDescription: "The page you are looking for does not exist. Go back home to resume.",
-      appDescription: "This page does not exist in LeadScout. Go back to the dashboard.",
+      appDescription: "This page does not exist in ScoutIA. Go back to the dashboard.",
       dashboardCta: "Go to Dashboard",
     },
   },
   es: {
     common: {
-      appName: "LeadScout",
-      appNameAi: "LeadScout AI",
+      appName: "ScoutIA",
+      appNameAi: "ScoutIA",
       email: "Email",
       password: "Contraseña",
       confirm: "Confirmar",
@@ -1072,6 +1135,14 @@ export const translations = {
         description: "Cuando ejecutes tu primera búsqueda, acá verás los leads detectados por día.",
         action: "Explorá una zona para activar la actividad semanal",
       },
+      pageError: {
+        title: "Error al cargar",
+        retry: "Reintentar",
+      },
+    },
+    seo: {
+      title: "ScoutIA",
+      description: "Inteligencia comercial para detectar negocios con brechas digitales",
     },
     nav: {
       sections: { main: "Principal", operations: "Operación", system: "Sistema" },
@@ -1085,7 +1156,7 @@ export const translations = {
         integrations: "Integraciones",
         settings: "Configuración",
       },
-      landingLabel: "Ir a la landing de LeadScout",
+      landingLabel: "Ir a la landing de ScoutIA",
       signingOut: "Saliendo...",
     },
     topbar: {
@@ -1137,7 +1208,7 @@ export const translations = {
         revision: "En revisión",
       } satisfies Record<WorkspaceStatus, string>,
       teamRole: {
-        owner: "Owner",
+        owner: "Propietario",
         admin: "Admin",
         ventas: "Ventas",
         analista: "Analista",
@@ -1208,12 +1279,12 @@ export const translations = {
     },
     queue: "Cola",
     landing: {
-      nav: { login: "Iniciar sesión", start: "Comenzar gratis", aria: "LeadScout landing" },
+      nav: { login: "Iniciar sesión", start: "Comenzar gratis", aria: "Landing de ScoutIA" },
       hero: {
         eyebrow: "Workspace de prospeccion local",
         title: "ENCONTRA TUS PROXIMOS CLIENTES",
         description:
-          "LeadScout te ayuda a buscar negocios por zona, revisar senales disponibles, guardar prospectos y organizar el seguimiento desde un workspace.",
+          "ScoutIA te ayuda a buscar negocios por zona, revisar senales disponibles, guardar prospectos y organizar el seguimiento desde un workspace.",
         primary: "Crear cuenta",
         secondary: "Ver flujo",
         weeklyPipeline: "Flujo del producto",
@@ -1334,7 +1405,7 @@ export const translations = {
         eyebrow: "REVISION DE LEADS",
         title: "Convierte resultados del mapa en una lista trabajable",
         description:
-          "LeadScout explica el valor desde el flujo: te ayuda a mantener negocios encontrados, contexto disponible y proximas acciones en un solo lugar.",
+          "ScoutIA explica el valor desde el flujo: te ayuda a mantener negocios encontrados, contexto disponible y proximas acciones en un solo lugar.",
         reviewSignals: "Revisar senales",
         availableContact: "Contacto disponible",
         bullets: [
@@ -1402,7 +1473,7 @@ export const translations = {
         login: "Iniciar sesión",
         privacy: "Privacidad",
         terms: "Términos",
-        credit: "developed by",
+        credit: "desarrollado por",
       },
     },
     auth: {
@@ -1432,7 +1503,7 @@ export const translations = {
         tips: [
           "Creando credenciales seguras...",
           "Preparando la configuración inicial...",
-          "Validando permisos de owner...",
+          "Validando permisos de propietario...",
           "Iniciando sesión automáticamente...",
         ],
         passwordRules: [
@@ -1478,7 +1549,7 @@ export const translations = {
         personalTitle: "Queremos conocerte",
         personalSubtitle: "Contanos un poco sobre vos para personalizar tu experiencia.",
         companyTitle: "Tu empresa",
-        companySubtitle: "Configuremos tu espacio de trabajo en LeadScout.",
+        companySubtitle: "Configuremos tu espacio de trabajo en ScoutIA.",
         fullName: "Nombre completo *",
         fullNamePlaceholder: "Ej: María López",
         role: "Cargo o rol",
@@ -1552,8 +1623,37 @@ export const translations = {
       kpi: {
         totalLeads: { label: "Total leads", sub: "en base de datos" },
         thisWeek: { label: "Esta semana", sub: "detectados" },
-        contacted: { label: "Contactados", sub: "en seguimiento" },
+        highPriority: { label: "Alta prioridad", sub: "requieren atención" },
         avgScore: { label: "Score promedio", sub: "sobre 100" },
+        qualified: { label: "Calificados", sub: "listos para cerrar" },
+        noContact: { label: "Sin contactar", sub: "pendientes" },
+      },
+      priority: {
+        title: "Prioridad",
+        labels: {
+          alta: "Alta",
+          media: "Media",
+          baja: "Baja",
+        } satisfies Record<LeadPriority, string>,
+      },
+      quickWins: {
+        title: "Quick wins",
+        description: "Leads de alto score sin contactar",
+        ready: (count: number) => `${count} oportunidades listas`,
+        empty: {
+          title: "Sin quick wins",
+          description: "No hay leads nuevos con score alto por ahora.",
+        },
+      },
+      categories: {
+        title: "Categorías top",
+        used: "Usado",
+        empty: "Vacío",
+        usage: (used: number, empty: number) => `${used} usado / ${empty} vacío`,
+        emptyState: {
+          title: "Sin categorías",
+          description: "Aún no hay categorías suficientes para mostrar.",
+        },
       },
       recentLeads: "Leads recientes",
       refresh: "Actualizar",
@@ -1609,6 +1709,7 @@ export const translations = {
         placeholder: "Buscar negocio, rubro o brecha",
       },
       tableHeaders: ["Negocio", "Score", "Estado", "Prioridad", "Contacto"],
+      newBadge: "Nuevo",
       pending: "Pendiente",
       pagination: {
         page: (current: number, total: number) => `Página ${current} de ${total}`,
@@ -1639,6 +1740,13 @@ export const translations = {
       lastContact: "Contacto",
       issuesPending: "Brechas por confirmar.",
       contact: "Contacto",
+      sortAria: "Ordenar columna",
+      sortLabels: {
+        score_desc: "Mayor puntaje",
+        score_asc: "Menor puntaje",
+        priority: "Prioridad",
+        name: "A-Z",
+      },
       empty: {
         title: "Esta etapa está lista",
         description: "Cuando clasifiques leads, aparecerán acá para mantener claro el avance comercial.",
@@ -1700,6 +1808,10 @@ export const translations = {
     },
     settings: {
       save: "Guardar cambios",
+      saveStatus: {
+        ok: "OK",
+        error: "Error",
+      },
       currentUser: "Usuario actual",
       account: "Cuenta",
       role: "Rol",
@@ -1842,13 +1954,20 @@ export const translations = {
           description: "Cuando detectemos brechas digitales claras, aparecerán acá para priorizar este negocio.",
         },
         contact: "Contacto",
+        copyPhone: "Copiar teléfono",
+        copyWebsite: "Copiar sitio web",
+        viewInMaps: "Ver en Google Maps",
         contactEmpty: {
           title: "Contacto por confirmar",
           description: "Seguiremos explorando fuentes para encontrar teléfono, sitio web o canales confiables.",
         },
         lastContact: "Último contacto",
         markContacted: "Marcar como contactado",
+        markingContacted: "Marcando...",
+        contacted: "Contactado",
         history: "Ver historial",
+        website: "Sitio web",
+        address: "Dirección",
         aiAnalysis: {
           title: "Análisis IA",
           eyebrow: "Generado por GPT-4o mini",
@@ -1856,6 +1975,13 @@ export const translations = {
           analyzing: "Analizando...",
           error: "No se pudo generar el análisis. Intenta nuevamente.",
           noApiKey: "OpenAI no configurado. Agrega OPENAI_API_KEY al .env del backend.",
+        },
+        analysisModal: {
+          showMore: "Ver más detalles",
+          showLess: "Ver menos",
+          businessInfo: "Información del negocio",
+          reanalyze: "Re-analizar",
+          unavailable: "No disponible",
         },
       },
       map: {
@@ -2037,7 +2163,7 @@ export const translations = {
       cta: "Volver al inicio",
       publicTitle: "Esta sala no existe",
       publicDescription: "La página que buscás no existe. Volvé al inicio para retomar el camino.",
-      appDescription: "La página que buscás no existe en LeadScout. Volvé al dashboard.",
+      appDescription: "La página que buscás no existe en ScoutIA. Volvé al dashboard.",
       dashboardCta: "Ir al Dashboard",
     },
   },

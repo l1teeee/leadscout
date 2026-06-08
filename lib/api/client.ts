@@ -4,8 +4,8 @@ import { AppError } from "@/lib/api/errors";
 
 const BROWSER_API_PATH = "/backend";
 
-// Guard against multiple simultaneous 401 responses each triggering a redirect
-let _redirectingToLogin = false;
+let _loginRedirectAt = 0;
+const LOGIN_REDIRECT_COOLDOWN_MS = 5_000;
 
 function resolveBaseUrl(): string {
   return typeof window === "undefined" ? env.apiUrl : BROWSER_API_PATH;
@@ -26,10 +26,11 @@ function handleAuthRedirects(
   detail: string,
 ): void {
   if (typeof window === "undefined") return;
-  if (_redirectingToLogin) return;
   const isAuthEndpoint = path === "/api/auth/login" || path === "/api/auth/register";
   if (status === 401 && !isAuthEndpoint) {
-    _redirectingToLogin = true;
+    const now = Date.now();
+    if (now - _loginRedirectAt < LOGIN_REDIRECT_COOLDOWN_MS) return;
+    _loginRedirectAt = now;
     clearToken();
     window.location.href = "/login";
     return;

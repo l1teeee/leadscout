@@ -73,7 +73,7 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
             </div>
             <div className="mt-3 flex items-center gap-2 text-xs font-semibold" style={{ color: "var(--text-2)" }}>
               <Building2 size={13} />
-              <span className="truncate">LeadScout AI</span>
+              <span className="truncate">ScoutIA</span>
             </div>
           </div>
 
@@ -90,7 +90,7 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
 
           <DropdownMenu.Item className="flex cursor-default items-center gap-2 border-2 border-transparent px-3 py-2 text-sm font-semibold outline-none" style={{ color: "var(--text-3)" }}>
             <UserRound size={14} />
-            LeadScout AI
+            ScoutIA
           </DropdownMenu.Item>
 
           <DropdownMenu.Separator className="my-2 h-0.5 bg-[var(--border)]" />

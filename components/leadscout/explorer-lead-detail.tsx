@@ -175,7 +175,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                   <button
                     onClick={() => copyToClipboard(lead.phone!, "phone")}
                     className="flex h-5 w-5 items-center justify-center rounded-none border border-(--border) bg-surface transition-transform hover:bg-(--pixel-highlight) active:translate-x-px active:translate-y-px"
-                    aria-label="Copy phone"
+                    aria-label={tr.copyPhone}
                   >
                     {copiedField === "phone" ? <Check size={10} style={{ color: "var(--text)" }} /> : <Copy size={10} style={{ color: "var(--text-2)" }} />}
                   </button>
@@ -190,7 +190,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                   <button
                     onClick={() => copyToClipboard(lead.website!, "website")}
                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-none border border-(--border) bg-surface transition-transform hover:bg-(--pixel-highlight) active:translate-x-px active:translate-y-px"
-                    aria-label="Copy website"
+                    aria-label={tr.copyWebsite}
                   >
                     {copiedField === "website" ? <Check size={10} style={{ color: "var(--text)" }} /> : <Copy size={10} style={{ color: "var(--text-2)" }} />}
                   </button>
@@ -205,7 +205,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                 >
                   <MapPin size={12} style={{ color: "var(--text)" }} />
                   <span className="text-sm font-semibold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    Ver en Google Maps
+                    {tr.viewInMaps}
                   </span>
                 </a>
               )}
@@ -246,11 +246,11 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                 className={`${pixelButtonClass} h-10 w-full justify-center`}
               >
                 {isUpdating ? (
-                  "Marcando..."
+                  tr.markingContacted
                 ) : updated ? (
                   <>
                     <Check size={13} />
-                    Contactado
+                    {tr.contacted}
                   </>
                 ) : (
                   tr.markContacted

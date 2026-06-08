@@ -3,6 +3,7 @@ import { Inter, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/language-context";
 import { getLang } from "@/lib/get-lang";
+import { translations } from "@/lib/i18n";
 
 const bodyFont = Inter({
   subsets: ["latin"],
@@ -17,10 +18,25 @@ const pixelFont = Press_Start_2P({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "LeadScout AI",
-  description: "Inteligencia comercial para detectar negocios con brechas digitales",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  const seo = translations[lang].seo;
+
+  return {
+    metadataBase: new URL("https://scoutia.dev"),
+    title: seo.title,
+    description: seo.description,
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      url: "https://scoutia.dev",
+      siteName: seo.title,
+    },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const initialLang = await getLang();

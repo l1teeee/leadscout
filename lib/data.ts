@@ -18,6 +18,7 @@ export interface Lead {
   latitude?: number;
   longitude?: number;
   ai_analysis?: string;
+  is_viewed: boolean;
 }
 
 // Data now comes from the backend API via lib/api/leads.ts

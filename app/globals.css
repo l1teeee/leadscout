@@ -223,7 +223,7 @@ input:focus, select:focus, button:focus-visible {
   line-height: 1.7;
 }
 
-.leadscout-driver-popover {
+.scoutia-driver-popover {
   border: 2px solid var(--border) !important;
   border-radius: 0 !important;
   box-shadow: 3px 3px 0 var(--pixel-shadow) !important;
@@ -231,20 +231,20 @@ input:focus, select:focus, button:focus-visible {
   font-family: var(--font-body), system-ui, sans-serif !important;
 }
 
-.leadscout-driver-popover .driver-popover-title {
+.scoutia-driver-popover .driver-popover-title {
   font-family: var(--font-body), system-ui, sans-serif !important;
   font-size: 14px !important;
   font-weight: 800 !important;
 }
 
-.leadscout-driver-popover .driver-popover-description {
+.scoutia-driver-popover .driver-popover-description {
   color: var(--text-2) !important;
   font-size: 13px !important;
   font-weight: 600 !important;
   line-height: 1.5 !important;
 }
 
-.leadscout-driver-popover .driver-popover-footer button {
+.scoutia-driver-popover .driver-popover-footer button {
   border: 2px solid var(--border) !important;
   border-radius: 0 !important;
   box-shadow: 2px 2px 0 var(--pixel-shadow) !important;

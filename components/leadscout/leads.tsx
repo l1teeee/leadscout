@@ -11,6 +11,7 @@ import { PriorityBadge, StatusBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { analyzeLead } from "@/lib/api/explorer";
+import { markLeadViewed, updateLead } from "@/lib/api/leads";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -59,9 +60,17 @@ function LeadMetric({ label, value, tone }: { label: string; value: string | num
 function LeadDetail({ lead }: { lead: Lead | null }) {
   const { lang } = useLanguage();
   const tr = translations[lang];
-  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<string | null>(lead?.ai_analysis ?? null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    setAnalysis(lead?.ai_analysis ?? null);
+    setAnalysisError(null);
+    setIsAnalyzing(false);
+  }, [lead?.id, lead?.ai_analysis]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   async function handleAnalyze() {
     if (!lead) return;
@@ -69,6 +78,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
     setAnalysisError(null);
     try {
       const res = await analyzeLead({
+        lead_id: lead.id,
         name: lead.name,
         category: lead.category,
         location: lead.location,
@@ -76,8 +86,10 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
         website: lead.website,
         score: lead.score,
         issues: lead.issues,
+        force_refresh: Boolean(analysis),
       });
       setAnalysis(res.analysis);
+      updateLead(lead.id, { ai_analysis: res.analysis }).catch(() => {});
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
       if (msg.includes("503") || msg.includes("not configurado") || msg.includes("not configured")) {
@@ -238,6 +250,7 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
               className="text-xs font-semibold underline underline-offset-2 cursor-pointer"
               style={{ ...bodyTextStyle, color: "var(--text-3)" }}
             >
+              <RefreshCcw size={12} />
               {tr.leads.detail.aiAnalysis.cta}
             </button>
           </div>
@@ -251,6 +264,7 @@ export function Leads() {
   const { lang } = useLanguage();
   const tr = translations[lang];
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [locallyViewed, setLocallyViewed] = useState<Set<string>>(new Set());
   const {
     leads,
     selected,
@@ -419,6 +433,10 @@ export function Leads() {
                       onClick={() => {
                         setSelectedId(lead.id);
                         setSelectedLead(lead);
+                        if (!lead.is_viewed && !locallyViewed.has(lead.id)) {
+                          setLocallyViewed(prev => new Set(prev).add(lead.id));
+                          markLeadViewed(lead.id).catch(() => {});
+                        }
                       }}
                       className="cursor-pointer transition-colors hover:bg-(--surface-2)"
                       style={{
@@ -430,6 +448,11 @@ export function Leads() {
                         <p className="font-bold" style={{ color: "var(--text)" }}>
                           {lead.name}
                         </p>
+                        {!lead.is_viewed && !locallyViewed.has(lead.id) && (
+                          <span className="retro pixel-text-xs ml-1 border border-[var(--c-new)] px-1 py-0.5 uppercase" style={{ color: "var(--c-new)", fontSize: "8px" }}>
+                            {tr.leads.newBadge}
+                          </span>
+                        )}
                         <p className="mt-1 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
                           {lead.category} / {lead.location}
                         </p>

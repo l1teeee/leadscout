@@ -31,7 +31,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             className="retro pixel-text-sm leading-none"
             style={{ color: "#FFFFFF" }}
           >
-            LeadScout
+            ScoutIA
           </span>
         </Link>
         <button

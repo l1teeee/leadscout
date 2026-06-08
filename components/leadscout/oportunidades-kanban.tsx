@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext,
   DragOverlay,
@@ -31,13 +32,6 @@ type SortKey = "score_desc" | "score_asc" | "priority" | "name";
 
 const PRIORITY_ORDER: Record<string, number> = { alta: 0, media: 1, baja: 2 };
 
-const SORT_LABELS: Record<SortKey, string> = {
-  score_desc: "Mayor puntaje",
-  score_asc: "Menor puntaje",
-  priority: "Prioridad",
-  name: "A-Z",
-};
-
 function sortLeads(leads: Lead[], sort: SortKey): Lead[] {
   return [...leads].sort((a, b) => {
     switch (sort) {
@@ -51,6 +45,50 @@ function sortLeads(leads: Lead[], sort: SortKey): Lead[] {
 
 interface OportunidadesKanbanProps {
   initialLeads: Lead[];
+}
+
+function LeadDetailPortal({
+  lead,
+  onClose,
+}: {
+  lead: Lead | null;
+  onClose: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!lead) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [lead]);
+
+  if (!mounted || !lead) return null;
+
+  return createPortal(
+    <>
+      <div
+        className="fixed z-40 bg-black/30 backdrop-blur-[1px]"
+        style={{ left: 58, top: 58, right: 0, bottom: 0 }}
+        onClick={onClose}
+      />
+      <div
+        className="fixed right-0 z-50 flex"
+        style={{ top: 58, bottom: 0 }}
+      >
+        <ExplorerLeadDetail lead={lead} onClose={onClose} />
+      </div>
+    </>,
+    document.body
+  );
 }
 
 interface CardContentProps {
@@ -152,6 +190,7 @@ function KanbanColumn({ col, leads, sort, onSortChange, onLeadClick, tr }: Kanba
   const [menuOpen, setMenuOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const sortedLeads = sortLeads(leads, sort);
+  const sortLabels = tr.sortLabels;
 
   function handleSortSelect(key: SortKey) {
     setMenuOpen(false);
@@ -198,10 +237,10 @@ function KanbanColumn({ col, leads, sort, onSortChange, onLeadClick, tr }: Kanba
             onClick={() => setMenuOpen((v) => !v)}
             className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold transition-colors hover:bg-[#F4F4F5]"
             style={{ ...bodyTextStyle, color: "var(--text-3)", border: "1px solid var(--border)" }}
-            title="Ordenar columna"
+            title={tr.sortAria}
           >
             <ArrowUpDown size={10} />
-            <span className="hidden sm:inline">{SORT_LABELS[sort]}</span>
+            <span className="hidden sm:inline">{sortLabels[sort]}</span>
           </button>
 
           {menuOpen && (
@@ -214,7 +253,7 @@ function KanbanColumn({ col, leads, sort, onSortChange, onLeadClick, tr }: Kanba
                   boxShadow: "3px 3px 0 var(--pixel-shadow, #18181B)",
                 }}
               >
-                {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
+                {(Object.keys(sortLabels) as SortKey[]).map((key) => (
                   <button
                     key={key}
                     onClick={() => handleSortSelect(key)}
@@ -225,7 +264,7 @@ function KanbanColumn({ col, leads, sort, onSortChange, onLeadClick, tr }: Kanba
                       background: sort === key ? "#f0fdf4" : "transparent",
                     }}
                   >
-                    {SORT_LABELS[key]}
+                    {sortLabels[key]}
                   </button>
                 ))}
               </div>
@@ -360,18 +399,7 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
       </DragOverlay>
     </DndContext>
 
-    {/* Lead detail panel */}
-    {selectedLead && (
-      <>
-        <div
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]"
-          onClick={() => setSelectedLead(null)}
-        />
-        <div className="fixed inset-y-0 right-0 z-50 flex">
-          <ExplorerLeadDetail lead={selectedLead} onClose={() => setSelectedLead(null)} />
-        </div>
-      </>
-    )}
+    <LeadDetailPortal lead={selectedLead} onClose={() => setSelectedLead(null)} />
     </>
   );
 }

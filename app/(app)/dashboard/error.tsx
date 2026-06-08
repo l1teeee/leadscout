@@ -9,5 +9,5 @@ export default function DashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <PageError module="Dashboard" message={error.message} onRetry={reset} />;
+  return <PageError moduleKey="dashboard" message={error.message} onRetry={reset} />;
 }

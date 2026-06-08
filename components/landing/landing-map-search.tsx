@@ -3,10 +3,12 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { ListFilter, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import {
-  Map as LeadScoutMap,
+  Map as ScoutIAMap,
   SearchAreaLayer,
   type SearchArea,
 } from "@/components/ui/mapcn-layer-markers";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/lib/i18n";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
@@ -28,29 +30,41 @@ type LandingMapSearchProps = {
 const sanSalvadorCenter: [number, number] = [-89.2182, 13.6929];
 
 export function LandingMapSearch({
-  eyebrow = "Map search",
-  title = "Busqueda local en mapa",
-  status = "Explorando zona",
-  query = "Cafeterias cerca de oficinas",
-  filterLabel = "Filtros cualitativos",
-  filters = ["Perfil incompleto", "Buena ubicacion", "Seguimiento"],
-  mapLabel = "Vista de mapa",
-  resultsLabel = "Senales encontradas",
-  emptyTitle = "No saved preview data",
-  emptyDescription = "Results appear here after a real search runs inside a workspace.",
+  eyebrow,
+  title,
+  status,
+  query,
+  filterLabel,
+  filters,
+  mapLabel,
+  resultsLabel,
+  emptyTitle,
+  emptyDescription,
   className = "",
   children,
 }: LandingMapSearchProps) {
-  const [activeFilters, setActiveFilters] = useState<readonly string[]>(() => filters.slice(0, 1));
+  const { lang } = useLanguage();
+  const defaults = translations[lang].landing.explorer.map;
+  const displayEyebrow = eyebrow ?? defaults.eyebrow;
+  const displayTitle = title ?? defaults.title;
+  const displayStatus = status ?? defaults.status;
+  const displayQuery = query ?? defaults.query;
+  const displayFilterLabel = filterLabel ?? defaults.filterLabel;
+  const displayFilters = filters ?? defaults.filters;
+  const displayMapLabel = mapLabel ?? defaults.mapLabel;
+  const displayResultsLabel = resultsLabel ?? defaults.resultsLabel;
+  const displayEmptyTitle = emptyTitle ?? defaults.emptyTitle;
+  const displayEmptyDescription = emptyDescription ?? defaults.emptyDescription;
+  const [activeFilters, setActiveFilters] = useState<readonly string[]>(() => displayFilters.slice(0, 1));
 
   const activeFilterSet = useMemo(() => new Set(activeFilters), [activeFilters]);
   const activeSearchArea = useMemo<SearchArea>(
     () => ({
       center: sanSalvadorCenter,
       radiusKm: 1.25,
-      label: mapLabel,
+      label: displayMapLabel,
     }),
-    [mapLabel]
+    [displayMapLabel]
   );
 
   function toggleFilter(filter: string) {
@@ -64,7 +78,7 @@ export function LandingMapSearch({
   return (
     <figure
       className={`pixel-card w-full min-w-0 overflow-hidden p-3 sm:p-4 ${className}`}
-      aria-label={title}
+      aria-label={displayTitle}
       style={{ background: "var(--surface)" }}
     >
       <div className="flex items-center justify-between gap-3 pb-3" style={{ borderBottom: "2px solid var(--border)" }}>
@@ -77,10 +91,10 @@ export function LandingMapSearch({
           </span>
           <div className="min-w-0">
             <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-              {eyebrow}
+              {displayEyebrow}
             </p>
             <h3 className="retro pixel-text-sm mt-2 truncate uppercase" style={{ color: "var(--text)" }}>
-              {title}
+              {displayTitle}
             </h3>
           </div>
         </div>
@@ -88,7 +102,7 @@ export function LandingMapSearch({
           className="retro pixel-text-xs shrink-0 px-2 py-1 text-center uppercase"
           style={{ background: "var(--surface-2)", border: "2px solid var(--border)", color: "var(--text)" }}
         >
-          {status}
+          {displayStatus}
         </span>
       </div>
 
@@ -100,7 +114,7 @@ export function LandingMapSearch({
           >
             <Search size={16} className="shrink-0" style={{ color: "var(--text-2)" }} />
             <span className="min-w-0 truncate text-sm font-extrabold" style={{ ...bodyFont, color: "var(--text)" }}>
-              {query}
+              {displayQuery}
             </span>
           </div>
 
@@ -110,14 +124,14 @@ export function LandingMapSearch({
               border: "2px solid var(--border)",
             }}
           >
-            <LeadScoutMap center={sanSalvadorCenter} zoom={12.2}>
+            <ScoutIAMap center={sanSalvadorCenter} zoom={12.2}>
               <SearchAreaLayer area={activeSearchArea} />
-            </LeadScoutMap>
+            </ScoutIAMap>
             <figcaption
               className="retro pixel-text-xs absolute bottom-3 left-3 z-10 px-2 py-1 uppercase"
               style={{ background: "var(--surface)", border: "2px solid var(--border)", color: "var(--text-2)" }}
             >
-              {mapLabel}
+              {displayMapLabel}
             </figcaption>
           </div>
         </div>
@@ -127,10 +141,10 @@ export function LandingMapSearch({
             <div className="p-2.5" style={{ background: "var(--surface-2)", border: "2px solid var(--border)" }}>
               <div className="flex items-center gap-2" style={{ color: "var(--text)" }}>
                 <SlidersHorizontal size={15} />
-                <p className="retro pixel-text-xs uppercase">{filterLabel}</p>
+                <p className="retro pixel-text-xs uppercase">{displayFilterLabel}</p>
               </div>
               <div className="mt-2.5 flex flex-wrap gap-2">
-                {filters.map((filter) => {
+                {displayFilters.map((filter) => {
                   const isActive = activeFilterSet.has(filter);
 
                   return (
@@ -160,17 +174,17 @@ export function LandingMapSearch({
             <div className="p-2.5" style={{ background: "var(--bg)", border: "2px solid var(--border)" }}>
               <div className="mb-2.5 flex items-center gap-2" style={{ color: "var(--text)" }}>
                 <ListFilter size={15} />
-                <p className="retro pixel-text-xs uppercase">{resultsLabel}</p>
+                <p className="retro pixel-text-xs uppercase">{displayResultsLabel}</p>
               </div>
               <div
                 className="p-3"
                 style={{ background: "var(--surface)", border: "2px solid var(--border)" }}
               >
                 <p className="text-sm font-extrabold leading-5" style={{ ...bodyFont, color: "var(--text)" }}>
-                  {emptyTitle}
+                  {displayEmptyTitle}
                 </p>
                 <p className="mt-2 text-xs font-semibold leading-5" style={{ ...bodyFont, color: "var(--text-2)" }}>
-                  {emptyDescription}
+                  {displayEmptyDescription}
                 </p>
               </div>
             </div>

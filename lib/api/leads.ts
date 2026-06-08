@@ -22,6 +22,7 @@ interface ApiLead {
   source: string;
   last_contact: string | null;
   ai_analysis: string | null;
+  is_viewed: boolean;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -48,6 +49,7 @@ function adapt(a: ApiLead): Lead {
     website: a.website ?? undefined,
     lastContact: a.last_contact ?? undefined,
     ai_analysis: a.ai_analysis ?? undefined,
+    is_viewed: a.is_viewed,
   };
 }
 
@@ -69,7 +71,7 @@ export interface LeadListResult {
   total: number;
 }
 
-export async function getLeads(filters: LeadFilters = {}, token?: string): Promise<LeadListResult> {
+export async function getLeads(filters: LeadFilters = {}, signal?: AbortSignal, token?: string): Promise<LeadListResult> {
   const params = new URLSearchParams();
   if (filters.q) params.set("q", filters.q);
   if (filters.status) params.set("status", filters.status);
@@ -86,6 +88,7 @@ export async function getLeads(filters: LeadFilters = {}, token?: string): Promi
   if (filters.offset != null) params.set("offset", String(filters.offset));
   const qs = params.toString();
   const res = await apiFetch<LeadListResponse>(`/api/leads${qs ? `?${qs}` : ""}`, {
+    signal,
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   return { leads: res.data.map(adapt), total: res.total };
@@ -102,5 +105,12 @@ export async function updateLead(id: string, data: Record<string, unknown>): Pro
   await apiFetch(`/api/leads/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
+  });
+}
+
+export async function markLeadViewed(id: string): Promise<void> {
+  await apiFetch(`/api/leads/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_viewed: true }),
   });
 }

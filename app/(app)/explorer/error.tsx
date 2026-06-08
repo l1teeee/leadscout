@@ -9,5 +9,5 @@ export default function ExplorerError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <PageError module="Explorer" message={error.message} onRetry={reset} />;
+  return <PageError moduleKey="explorer" message={error.message} onRetry={reset} />;
 }

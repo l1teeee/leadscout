@@ -9,5 +9,5 @@ export default function LeadsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <PageError module="Leads" message={error.message} onRetry={reset} />;
+  return <PageError moduleKey="leads" message={error.message} onRetry={reset} />;
 }

@@ -21,7 +21,7 @@ Package manager is **pnpm** (not npm/yarn).
 
 Typed access via `lib/env.ts`. No `NEXT_PUBLIC_` vars are needed — the `/backend/*` rewrite proxy handles all client→server communication, so the raw backend URL is never exposed to browsers.
 
-**For production:** set `API_URL` to the deployed FastAPI URL (e.g. `https://api.leadscout.io`).
+**For production:** set `API_URL` to the deployed FastAPI URL (e.g. `https://api.scoutia.dev`).
 
 ## Architecture
 

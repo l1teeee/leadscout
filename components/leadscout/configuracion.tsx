@@ -55,8 +55,8 @@ function initials(name: string) {
     .join("");
 }
 
-function compactDate(value?: string) {
-  if (!value) return "Pendiente";
+function compactDate(value: string | undefined, pendingLabel: string) {
+  if (!value) return pendingLabel;
   return value.split("T")[0] ?? value;
 }
 
@@ -211,7 +211,7 @@ export function Configuracion() {
                 onClick={save}
                 className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-60"
               >
-                {saving ? "..." : saveStatus === "ok" ? "OK" : saveStatus === "error" ? "Error" : settings.save}
+                {saving ? "..." : saveStatus === "ok" ? settings.saveStatus.ok : saveStatus === "error" ? settings.saveStatus.error : settings.save}
               </button>
             </div>
           </div>
@@ -304,7 +304,7 @@ export function Configuracion() {
                         </span>
                       </td>
                       <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
-                        {compactDate(member.lastActiveAt)}
+                        {compactDate(member.lastActiveAt, settings.pending)}
                       </td>
                     </tr>
                   ))}

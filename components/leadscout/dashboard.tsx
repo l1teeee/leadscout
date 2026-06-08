@@ -83,15 +83,19 @@ function KpiCard({
 
 function PriorityBar({
   by_priority,
+  labels,
+  title,
   className = "",
 }: {
   by_priority: Record<string, number>;
+  labels: Record<string, string>;
+  title: string;
   className?: string;
 }) {
   const priorities = [
-    { key: "alta", label: "Alta", color: "#E63946" },
-    { key: "media", label: "Media", color: "#F4A261" },
-    { key: "baja", label: "Baja", color: "#3FAE2A" },
+    { key: "alta", color: "#E63946" },
+    { key: "media", color: "#F4A261" },
+    { key: "baja", color: "#3FAE2A" },
   ];
   const priorityTotal =
     (by_priority.alta ?? 0) + (by_priority.media ?? 0) + (by_priority.baja ?? 0);
@@ -102,7 +106,7 @@ function PriorityBar({
         className="retro pixel-text-xs uppercase"
         style={{ color: "var(--text)" }}
       >
-        PRIORIDAD
+        {title}
       </h2>
       <div className="mt-4 flex h-8 overflow-hidden border-2 border-(--border) bg-(--surface-2)">
         {priorities.map((priority) => {
@@ -139,7 +143,7 @@ function PriorityBar({
                   className="text-xs font-medium"
                   style={{ ...bodyTextStyle, color: "var(--text-3)" }}
                 >
-                  {priority.label}
+                  {labels[priority.key] ?? priority.key}
                 </p>
               </div>
             </div>
@@ -153,10 +157,21 @@ function PriorityBar({
 function CategoryUsagePanel({
   categories,
   maxCount,
+  copy,
   className = "",
 }: {
   categories: [string, number][];
   maxCount: number;
+  copy: {
+    title: string;
+    used: string;
+    empty: string;
+    usage: (used: number, empty: number) => string;
+    emptyState: {
+      title: string;
+      description: string;
+    };
+  };
   className?: string;
 }) {
   return (
@@ -166,7 +181,7 @@ function CategoryUsagePanel({
           className="retro pixel-text-xs uppercase"
           style={{ color: "var(--text)" }}
         >
-          CATEGORÍAS TOP
+          {copy.title}
         </h2>
 
         {categories.length > 0 && (
@@ -176,11 +191,11 @@ function CategoryUsagePanel({
           >
             <span className="flex items-center gap-1.5" style={{ color: "var(--text-2)" }}>
               <span className="h-2.5 w-2.5 border border-(--border) bg-[#3FAE2A]" />
-              Usado
+              {copy.used}
             </span>
             <span className="flex items-center gap-1.5" style={{ color: "var(--text-3)" }}>
               <span className="h-2.5 w-2.5 border border-(--border) bg-(--surface-2)" />
-              Vacío
+              {copy.empty}
             </span>
           </div>
         )}
@@ -204,7 +219,7 @@ function CategoryUsagePanel({
                   className="shrink-0 text-xs font-bold tabular-nums"
                   style={{ ...bodyTextStyle, color: "var(--text-2)" }}
                 >
-                  {count} usado / {emptyCount} vacío
+                  {copy.usage(count, emptyCount)}
                 </p>
               </div>
               <div className="flex h-6 overflow-hidden border-2 border-(--border) bg-(--surface-2)">
@@ -230,8 +245,8 @@ function CategoryUsagePanel({
 
         {categories.length === 0 && (
           <EmptyInsight
-            title="Sin categorías"
-            description="Aún no hay categorías suficientes para mostrar."
+            title={copy.emptyState.title}
+            description={copy.emptyState.description}
             compact
           />
         )}
@@ -265,25 +280,31 @@ export async function Dashboard() {
       <OnboardingTour />
 
       <div data-tour="dashboard-kpis" data-stagger className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-        <KpiCard label="Total Leads" value={summary.total_leads} sub="en base de datos" tone="neutral" />
-        <KpiCard label="Esta Semana" value={summary.new_this_week} sub="detectados" tone="info" />
-        <KpiCard label="Alta Prioridad" value={summary.by_priority?.alta ?? 0} sub="requieren atención" tone="warning" />
-        <KpiCard label="Score Promedio" value={summary.avg_score} sub="sobre 100" tone="score" />
-        <KpiCard label="Calificados" value={summary.by_status?.calificado ?? 0} sub="listos para cerrar" tone="success" />
-        <KpiCard label="Sin Contactar" value={summary.total_leads - summary.contacted} sub="pendientes" tone="pending" />
+        <KpiCard label={tr.dashboard.kpi.totalLeads.label} value={summary.total_leads} sub={tr.dashboard.kpi.totalLeads.sub} tone="neutral" />
+        <KpiCard label={tr.dashboard.kpi.thisWeek.label} value={summary.new_this_week} sub={tr.dashboard.kpi.thisWeek.sub} tone="info" />
+        <KpiCard label={tr.dashboard.kpi.highPriority.label} value={summary.by_priority?.alta ?? 0} sub={tr.dashboard.kpi.highPriority.sub} tone="warning" />
+        <KpiCard label={tr.dashboard.kpi.avgScore.label} value={summary.avg_score} sub={tr.dashboard.kpi.avgScore.sub} tone="score" />
+        <KpiCard label={tr.dashboard.kpi.qualified.label} value={summary.by_status?.calificado ?? 0} sub={tr.dashboard.kpi.qualified.sub} tone="success" />
+        <KpiCard label={tr.dashboard.kpi.noContact.label} value={summary.total_leads - summary.contacted} sub={tr.dashboard.kpi.noContact.sub} tone="pending" />
       </div>
 
       <div data-stagger className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
         <div className="space-y-5">
-          <DashboardQuickWins leads={quickWins} priorityLabels={tr.leadPriority} />
+          <DashboardQuickWins leads={quickWins} priorityLabels={tr.leadPriority} copy={tr.dashboard.quickWins} />
 
-          <PriorityBar by_priority={summary.by_priority} className="min-h-[150px]" />
+          <PriorityBar
+            by_priority={summary.by_priority}
+            labels={tr.dashboard.priority.labels}
+            title={tr.dashboard.priority.title}
+            className="min-h-[150px]"
+          />
         </div>
 
         <div className="space-y-5">
           <CategoryUsagePanel
             categories={topCategories}
             maxCount={maxCategoryCount}
+            copy={tr.dashboard.categories}
             className="min-h-[150px]"
           />
 

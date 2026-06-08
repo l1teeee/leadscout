@@ -146,7 +146,7 @@ export function Sidebar() {
           onClick={() => router.push("/landing")}
           className={cn("flex items-center rounded-none text-left", isExpanded ? "gap-2.5" : "justify-center")}
           aria-label={tr.nav.landingLabel}
-          title="LeadScout"
+          title="ScoutIA"
         >
           <span
             className="w-8 h-8 rounded-none flex items-center justify-center shrink-0"
@@ -159,7 +159,7 @@ export function Sidebar() {
               className="truncate text-sm font-extrabold tracking-normal text-[#FFFFFF]"
               style={bodyFont}
             >
-              LeadScout
+              ScoutIA
             </span>
           )}
         </button>
