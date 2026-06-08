@@ -664,6 +664,8 @@ export const translations = {
       issuesPending: "Gaps pending confirmation.",
       contact: "Contact",
       sortAria: "Sort column",
+      searchPlaceholder: "Search by name, category or location...",
+      noResults: "No leads match your search.",
       sortLabels: {
         score_desc: "Highest score",
         score_asc: "Lowest score",
@@ -1749,6 +1751,8 @@ export const translations = {
       issuesPending: "Brechas por confirmar.",
       contact: "Contacto",
       sortAria: "Ordenar columna",
+      searchPlaceholder: "Buscar por nombre, rubro o ubicación...",
+      noResults: "Ningún lead coincide con tu búsqueda.",
       sortLabels: {
         score_desc: "Mayor puntaje",
         score_asc: "Menor puntaje",

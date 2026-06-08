@@ -14,7 +14,7 @@ import {
   type DragStartEvent,
   type Modifier,
 } from "@dnd-kit/core";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Search, X } from "lucide-react";
 import { PriorityBadge, Tag } from "@/components/ui/badge";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { ScoreBar } from "@/components/ui/score-bar";
@@ -300,6 +300,7 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [query, setQuery] = useState("");
   const [columnSorts, setColumnSorts] = useState<Record<LeadStatus, SortKey>>({
     nuevo: "score_desc",
     contactado: "score_desc",
@@ -316,6 +317,17 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
   );
 
   const activeLead = activeId ? leads.find((l) => l.id === activeId) : undefined;
+
+  const filteredLeads = query.trim()
+    ? leads.filter((l) => {
+        const q = query.toLowerCase();
+        return (
+          l.name.toLowerCase().includes(q) ||
+          l.category.toLowerCase().includes(q) ||
+          l.location.toLowerCase().includes(q)
+        );
+      })
+    : leads;
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
@@ -364,12 +376,47 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
     <>
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="w-full animate-in fade-in duration-300 p-4 sm:p-6 lg:p-8">
+        {/* Search bar */}
+        <div className="mb-5">
+          <label className="relative block max-w-sm">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+              size={14}
+              style={{ color: "var(--text-3)" }}
+            />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={tr.searchPlaceholder}
+              className="h-9 w-full rounded-none border-2 border-(--border) bg-surface pl-9 pr-8 text-sm text-text placeholder:text-(--text-3) outline-none focus:border-(--pixel-highlight)"
+              style={bodyTextStyle}
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center border border-(--border) bg-surface hover:bg-(--surface-2)"
+                aria-label="Clear search"
+              >
+                <X size={10} style={{ color: "var(--text-3)" }} />
+              </button>
+            )}
+          </label>
+          {query && (
+            <p className="mt-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+              {filteredLeads.length === 0
+                ? tr.noResults
+                : `${filteredLeads.length} lead${filteredLeads.length !== 1 ? "s" : ""}`}
+            </p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           {COLUMNS.map((col) => (
             <KanbanColumn
               key={col}
               col={col}
-              leads={leads.filter((l) => l.status === col)}
+              leads={filteredLeads.filter((l) => l.status === col)}
               sort={columnSorts[col]}
               onSortChange={(s) => setColumnSorts((prev) => ({ ...prev, [col]: s }))}
               onLeadClick={setSelectedLead}
