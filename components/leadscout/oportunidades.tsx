@@ -5,7 +5,7 @@ import type { Lead } from "@/lib/data";
 
 export async function Oportunidades() {
   const token = (await cookies()).get("ls_token")?.value;
-  const { leads } = await getLeads({ limit: 200 }, token).catch(() => ({ leads: [] as Lead[], total: 0 }));
+  const { leads } = await getLeads({ limit: 200 }, undefined, token).catch(() => ({ leads: [] as Lead[], total: 0 }));
 
   return <OportunidadesKanban initialLeads={leads} />;
 }

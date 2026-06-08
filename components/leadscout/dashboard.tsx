@@ -260,7 +260,7 @@ export async function Dashboard() {
   const tr = translations[lang];
   const token = (await cookies()).get("ls_token")?.value;
   const [leads, summary] = await Promise.all([
-    getLeads({}, token).then(r => r.leads).catch(() => []),
+    getLeads({}, undefined, token).then(r => r.leads).catch(() => []),
     getReportSummary(token).catch(() => EMPTY_SUMMARY),
   ]);
 
