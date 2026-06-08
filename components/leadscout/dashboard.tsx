@@ -290,7 +290,11 @@ export async function Dashboard() {
 
       <div data-stagger className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
         <div className="space-y-5">
-          <DashboardQuickWins leads={quickWins} priorityLabels={tr.leadPriority} copy={tr.dashboard.quickWins} />
+          <DashboardQuickWins
+            leads={quickWins}
+            priorityLabels={tr.leadPriority}
+            copy={{ ...tr.dashboard.quickWins, readyLabel: tr.dashboard.quickWins.ready(quickWins.length) }}
+          />
 
           <PriorityBar
             by_priority={summary.by_priority}

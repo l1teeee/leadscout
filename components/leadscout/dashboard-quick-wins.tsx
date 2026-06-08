@@ -20,7 +20,7 @@ interface Props {
   copy: {
     title: string;
     description: string;
-    ready: (count: number) => string;
+    readyLabel: string;
     empty: {
       title: string;
       description: string;
@@ -45,7 +45,7 @@ export function DashboardQuickWins({ leads, priorityLabels, copy }: Props) {
           </div>
           {leads.length > 0 && (
             <p className="text-xs font-bold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
-              {copy.ready(leads.length)}
+              {copy.readyLabel}
             </p>
           )}
         </div>
