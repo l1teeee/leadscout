@@ -2,6 +2,8 @@ import { apiFetch } from "./client";
 import { getUserSignature, getToken, parseTokenUser } from "@/lib/auth";
 import { buildContextString } from "@/lib/ai-context";
 
+export const EXPLORER_SEARCH_TIMEOUT_MS = 180_000;
+
 export interface ExplorerSearchRequest {
   query: string;
   location: string;
@@ -91,7 +93,7 @@ export async function askLeadQuestion(body: LeadChatRequest): Promise<LeadChatRe
 
 export async function searchExplorer(body: ExplorerSearchRequest): Promise<ExplorerSearchResponse> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60_000);
+  const timeout = setTimeout(() => controller.abort(), EXPLORER_SEARCH_TIMEOUT_MS);
 
   const sig = getUserSignature();
   const userId = (() => {

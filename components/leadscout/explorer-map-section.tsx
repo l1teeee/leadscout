@@ -147,36 +147,44 @@ export function ExplorerMapSection({
               </div>
 
               {isSearching && (
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {tr.searchStageOrder.map((stage, index) => {
-                    const isActive = stage === searchStage;
-                    const isComplete = currentStageIndex > index;
-                    const stageText = tr.searchStages[stage].short;
+                <>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {tr.searchStageOrder.map((stage, index) => {
+                      const isActive = stage === searchStage;
+                      const isComplete = currentStageIndex > index;
+                      const stageText = tr.searchStages[stage].short;
 
-                    return (
-                      <div key={stage} className="flex min-w-0 items-center gap-2">
-                        <span
-                          className="block h-2.5 w-2.5 shrink-0 border"
-                          style={{
-                            background: isActive || isComplete ? "var(--c-qualified)" : "var(--surface-2)",
-                            borderColor: "var(--border)",
-                            boxShadow: isActive ? "0 0 0 2px rgba(47, 178, 38, 0.18)" : "none",
-                          }}
-                        />
-                        <span
-                          className="truncate text-[11px] font-bold uppercase"
-                          style={{
-                            ...bodyFont,
-                            color: isActive ? "var(--text)" : "var(--text-3)",
-                            letterSpacing: 0,
-                          }}
-                        >
-                          {stageText}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                      return (
+                        <div key={stage} className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="block h-2.5 w-2.5 shrink-0 border"
+                            style={{
+                              background: isActive || isComplete ? "var(--c-qualified)" : "var(--surface-2)",
+                              borderColor: "var(--border)",
+                              boxShadow: isActive ? "0 0 0 2px rgba(47, 178, 38, 0.18)" : "none",
+                            }}
+                          />
+                          <span
+                            className="truncate text-[11px] font-bold uppercase"
+                            style={{
+                              ...bodyFont,
+                              color: isActive ? "var(--text)" : "var(--text-3)",
+                              letterSpacing: 0,
+                            }}
+                          >
+                            {stageText}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div
+                    className="mt-3 border-2 border-(--border) bg-(--surface-2) px-3 py-2 text-xs font-semibold leading-relaxed"
+                    style={{ ...bodyFont, color: "var(--text-2)" }}
+                  >
+                    {tr.renderWarmupNote}
+                  </div>
+                </>
               )}
             </div>
           </div>

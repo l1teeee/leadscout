@@ -4,6 +4,7 @@ import type { Lead, LeadStatus } from "@/lib/data";
 import { getLeads, MAX_LEADS_LIMIT } from "@/lib/api/leads";
 import { getMe, updateApproximateLocation } from "@/lib/api/auth";
 import { searchExplorer } from "@/lib/api/explorer";
+import { AppError } from "@/lib/api/errors";
 import {
   BUSINESS_CATEGORIES,
   categoryMatchesLead,
@@ -33,6 +34,7 @@ const SEARCH_PROGRESS_STAGES: ExplorerSearchStage[] = [
   "validating",
   "saving",
 ];
+const SEARCH_STAGE_INTERVAL_MS = 4_500;
 
 interface ExplorerPrefs {
   searchRadius?: number;
@@ -129,7 +131,7 @@ export function useExplorer() {
         stageIndex = Math.min(stageIndex + 1, SEARCH_PROGRESS_STAGES.length - 1);
         return SEARCH_PROGRESS_STAGES[stageIndex];
       });
-    }, 1600);
+    }, SEARCH_STAGE_INTERVAL_MS);
 
     return () => window.clearInterval(timer);
   }, [isSearching]);
@@ -374,10 +376,27 @@ export function useExplorer() {
     setIsCategoryModalOpen(false);
   }
 
-  function getSearchErrorMessage(message: string): string {
+  function getSearchErrorMessage(error: unknown): string {
+    const message = error instanceof Error ? error.message : "";
     if (message === "EXPLORER_SEARCH_TIMEOUT") return tr.timeout;
+    if (error instanceof AppError) {
+      if (error.status === 404) return tr.backendNotFound;
+    }
 
     const normalized = message.toLowerCase();
+    if (
+      normalized.includes("api 404") ||
+      (normalized.includes("not found") && normalized.includes("/api/explorer/search"))
+    ) {
+      return tr.backendNotFound;
+    }
+    if (
+      normalized.includes("failed to fetch") ||
+      normalized.includes("networkerror") ||
+      normalized.includes("load failed")
+    ) {
+      return tr.backendUnavailable;
+    }
     if (
       normalized.includes("openai_api_key is invalid") ||
       normalized.includes("401") ||
@@ -403,6 +422,12 @@ export function useExplorer() {
     }
     if (normalized.includes("could not reach openai")) {
       return tr.openaiUnavailable;
+    }
+    if (
+      error instanceof AppError &&
+      (error.status === 502 || error.status === 503 || error.status === 504)
+    ) {
+      return tr.backendUnavailable;
     }
 
     return message || tr.searchFailed;
@@ -437,8 +462,7 @@ export function useExplorer() {
         return Array.from(map.values());
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "";
-      setSearchError(getSearchErrorMessage(message));
+      setSearchError(getSearchErrorMessage(err));
     } finally {
       setIsSearching(false);
       setSearchStage(null);

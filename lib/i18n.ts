@@ -952,6 +952,7 @@ export const translations = {
         searchingTitle: "Exploring zone",
         locatingDescription: "Taking approximate browser position",
         searchingDescription: "Detecting businesses near the active zone",
+        renderWarmupNote: "Render free can take longer while the backend wakes up. Keep this screen open; we will wait up to 3 minutes.",
         searchStageOrder: ["preparing", "searching", "collecting", "filtering", "validating", "saving", "refreshing"] as const,
         searchStages: {
           preparing: {
@@ -994,7 +995,9 @@ export const translations = {
       errors: {
         locationUnavailable: "Could not get the location.",
         searchFailed: "Error searching businesses.",
-        timeout: "The search took more than 60 seconds. Try a smaller radius.",
+        timeout: "The search took more than 3 minutes. Try a smaller radius or run it again in a moment.",
+        backendNotFound: "The search service did not respond at the expected route (404). Wait a moment and try again; if it repeats, check the backend URL.",
+        backendUnavailable: "The search service did not respond. On Render free, the first wake-up can take a bit; wait a moment and try again.",
         openaiInvalidKey: "OpenAI rejected the backend API key. Update OPENAI_API_KEY in the backend .env and restart the backend.",
         openaiMissingKey: "OpenAI is not configured. Add OPENAI_API_KEY to the backend .env.",
         openaiQuota: "OpenAI rate limit or quota was reached. Check billing, quota, or retry later.",
@@ -2060,6 +2063,7 @@ export const translations = {
         searchingTitle: "Explorando zona",
         locatingDescription: "Tomando posición aproximada del navegador",
         searchingDescription: "Detectando negocios cerca de la zona activa",
+        renderWarmupNote: "En Render free el backend puede tardar mientras despierta. Mantené esta pantalla abierta; vamos a esperar hasta 3 minutos.",
         searchStageOrder: ["preparing", "searching", "collecting", "filtering", "validating", "saving", "refreshing"] as const,
         searchStages: {
           preparing: {
@@ -2102,7 +2106,9 @@ export const translations = {
       errors: {
         locationUnavailable: "No se pudo obtener la ubicación.",
         searchFailed: "Error al buscar negocios.",
-        timeout: "La búsqueda tardó más de 60 segundos. Intentá con un radio menor.",
+        timeout: "La búsqueda tardó más de 3 minutos. Intentá con un radio menor o volvé a ejecutarla en un momento.",
+        backendNotFound: "El servicio de búsqueda no respondió en la ruta esperada (404). Esperá un momento e intentá de nuevo; si se repite, revisá la URL del backend.",
+        backendUnavailable: "El servicio de búsqueda no respondió. En Render free el primer arranque puede tardar un poco; esperá un momento e intentá de nuevo.",
         openaiInvalidKey: "OpenAI rechazó la API key del backend. Actualizá OPENAI_API_KEY en el .env del backend y reiniciá el backend.",
         openaiMissingKey: "OpenAI no está configurado. Agregá OPENAI_API_KEY al .env del backend.",
         openaiQuota: "OpenAI llegó al límite o no tiene cuota disponible. Revisá billing, cuota o intentá más tarde.",
