@@ -1,5 +1,6 @@
 import { apiFetch } from "./client";
 import { getUserSignature, getToken, parseTokenUser } from "@/lib/auth";
+import { buildContextString } from "@/lib/ai-context";
 
 export interface ExplorerSearchRequest {
   query: string;
@@ -31,6 +32,11 @@ export interface ExplorerSearchResponse {
   saved_new: number;
 }
 
+export interface SocialProfile {
+  platform: string;
+  url: string;
+}
+
 export interface LeadAnalyzeRequest {
   lead_id?: string;
   name: string;
@@ -41,10 +47,12 @@ export interface LeadAnalyzeRequest {
   score: number;
   issues: string[];
   force_refresh?: boolean;
+  business_context?: string;
 }
 
 export interface LeadAnalyzeResponse {
   analysis: string;
+  social_profiles?: SocialProfile[];
 }
 
 export interface LeadChatRequest {
@@ -58,6 +66,7 @@ export interface LeadChatRequest {
   issues: string[];
   analysis?: string;
   question: string;
+  business_context?: string;
 }
 
 export interface LeadChatResponse {
@@ -65,16 +74,18 @@ export interface LeadChatResponse {
 }
 
 export async function analyzeLead(body: LeadAnalyzeRequest): Promise<LeadAnalyzeResponse> {
+  const business_context = body.business_context ?? (buildContextString() || undefined);
   return apiFetch<LeadAnalyzeResponse>("/api/explorer/analyze", {
     method: "POST",
-    body: JSON.stringify(body),
+    body: JSON.stringify({ ...body, business_context }),
   });
 }
 
 export async function askLeadQuestion(body: LeadChatRequest): Promise<LeadChatResponse> {
+  const business_context = body.business_context ?? (buildContextString() || undefined);
   return apiFetch<LeadChatResponse>("/api/explorer/chat", {
     method: "POST",
-    body: JSON.stringify(body),
+    body: JSON.stringify({ ...body, business_context }),
   });
 }
 

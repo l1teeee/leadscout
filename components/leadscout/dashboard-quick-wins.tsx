@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { EmptyInsight } from "@/components/ui/empty-insight";
-import { ExplorerLeadDetail } from "@/components/leadscout/explorer-lead-detail";
 import type { Lead } from "@/lib/data";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
@@ -29,7 +28,7 @@ interface Props {
 }
 
 export function DashboardQuickWins({ leads, priorityLabels, copy }: Props) {
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const router = useRouter();
 
   return (
     <>
@@ -64,7 +63,7 @@ export function DashboardQuickWins({ leads, priorityLabels, copy }: Props) {
               </span>
               <div className="min-w-0 flex-1">
                 <button
-                  onClick={() => setSelectedLead(lead)}
+                  onClick={() => router.push(`/leads?q=${encodeURIComponent(lead.name)}`)}
                   className="truncate font-bold text-left w-full cursor-pointer hover:underline underline-offset-2"
                   style={{ ...bodyTextStyle, color: "var(--text)" }}
                 >
@@ -88,21 +87,6 @@ export function DashboardQuickWins({ leads, priorityLabels, copy }: Props) {
           )}
         </div>
       </section>
-
-      {selectedLead && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/30"
-            onClick={() => setSelectedLead(null)}
-          />
-          <div className="fixed inset-y-0 right-0 z-50 flex">
-            <ExplorerLeadDetail
-              lead={selectedLead}
-              onClose={() => setSelectedLead(null)}
-            />
-          </div>
-        </>
-      )}
     </>
   );
 }

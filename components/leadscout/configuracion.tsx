@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Activity,
   BadgeCheck,
@@ -12,9 +13,11 @@ import {
   MapPin,
   ShieldCheck,
   SlidersHorizontal,
+  Sparkles,
   UserRound,
   UsersRound,
 } from "lucide-react";
+import { getAiContext, setAiContext } from "@/lib/ai-context";
 import { Switch } from "@/components/ui/8bit-switch";
 import { Tag } from "@/components/ui/badge";
 import {
@@ -156,6 +159,84 @@ function UsageRow({ label, value, limit }: { label: string; value: number; limit
   );
 }
 
+function AiContextSection({
+  copy,
+}: {
+  copy: {
+    eyebrow: string;
+    title: string;
+    helper: string;
+    businessLabel: string;
+    businessPlaceholder: string;
+    constraintsLabel: string;
+    constraintsPlaceholder: string;
+    save: string;
+    saved: string;
+  };
+}) {
+  const [business, setBusiness] = useState("");
+  const [constraints, setConstraints] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const c = getAiContext();
+    setBusiness(c.businessContext);
+    setConstraints(c.constraints);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  function handleSave() {
+    setAiContext({ businessContext: business, constraints });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  }
+
+  return (
+    <section className="pixel-card-sm bg-white p-5">
+      <SectionHeader eyebrow={copy.eyebrow} title={copy.title} icon={Sparkles} />
+      <p className="mb-4 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+        {copy.helper}
+      </p>
+      <div className="grid gap-4">
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
+            {copy.businessLabel}
+          </span>
+          <textarea
+            value={business}
+            onChange={(e) => setBusiness(e.target.value)}
+            placeholder={copy.businessPlaceholder}
+            rows={3}
+            className="w-full resize-y rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] focus:border-[var(--text)] focus:outline-none"
+            style={bodyTextStyle}
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
+            {copy.constraintsLabel}
+          </span>
+          <textarea
+            value={constraints}
+            onChange={(e) => setConstraints(e.target.value)}
+            placeholder={copy.constraintsPlaceholder}
+            rows={3}
+            className="w-full resize-y rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] focus:border-[var(--text)] focus:outline-none"
+            style={bodyTextStyle}
+          />
+        </label>
+        <button
+          type="button"
+          onClick={handleSave}
+          className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 self-start border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--pixel-shadow)]"
+        >
+          {saved ? copy.saved : copy.save}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export function Configuracion() {
   const { lang } = useLanguage();
   const tr = translations[lang];
@@ -256,6 +337,8 @@ export function Configuracion() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
+          <AiContextSection copy={settings.aiContext} />
+
           <section className="pixel-card-sm bg-white p-5">
             <SectionHeader eyebrow={settings.sections.operation} title={settings.sections.preferences} icon={SlidersHorizontal} />
             <div className="grid gap-3 md:grid-cols-2">

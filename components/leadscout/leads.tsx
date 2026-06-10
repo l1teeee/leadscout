@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarClock, Filter, Globe2, Phone, RefreshCcw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff, Filter, Globe2, Phone, RefreshCcw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useLeads, PAGE_SIZE, type SortField } from "@/lib/hooks/use-leads";
 import { translations } from "@/lib/i18n";
 import type { Lead, LeadPriority, LeadStatus } from "@/lib/data";
@@ -12,6 +12,7 @@ import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { analyzeLead } from "@/lib/api/explorer";
 import { markLeadViewed, updateLead } from "@/lib/api/leads";
+import { safeHref } from "@/lib/utils";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -181,17 +182,23 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
         {lead.website && (
           <div className="flex items-center gap-2 border-2 border-(--border) bg-surface px-3 py-2">
             <Globe2 size={14} />
-            <span className="truncate" style={{ color: "var(--text-2)" }}>
-              {lead.website}
-            </span>
+            {safeHref(lead.website) ? (
+              <a
+                href={safeHref(lead.website)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate underline underline-offset-2 hover:opacity-70"
+                style={{ color: "var(--text-2)" }}
+              >
+                {lead.website}
+              </a>
+            ) : (
+              <span className="truncate" style={{ color: "var(--text-2)" }}>
+                {lead.website}
+              </span>
+            )}
           </div>
         )}
-        <div className="flex items-center gap-2 border-2 border-(--border) bg-surface px-3 py-2">
-          <CalendarClock size={14} />
-          <span className="truncate" style={{ color: "var(--text-2)" }}>
-            {lead.lastContact ? `${tr.leads.detail.lastContact}: ${lead.lastContact}` : tr.leads.detail.pendingContact}
-          </span>
-        </div>
       </div>
 
       {/* AI Analysis */}
@@ -265,6 +272,7 @@ export function Leads() {
   const tr = translations[lang];
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [locallyViewed, setLocallyViewed] = useState<Set<string>>(new Set());
+  const [showHidden, setShowHidden] = useState(false);
   const {
     leads,
     selected,
@@ -283,7 +291,17 @@ export function Leads() {
     noContactCount,
     avgScore,
     refresh,
+    hiddenLeads,
+    hideLead,
+    unhideLead,
   } = useLeads();
+
+  // Honor ?q= coming from the dashboard quick-wins navigation (client-only, no Suspense needed).
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) setQuery(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sortableHeaders: { label: string; field: SortField | null }[] = [
     { label: tr.leads.tableHeaders[0], field: "name" },
@@ -343,6 +361,20 @@ export function Leads() {
                     style={{ animation: loading ? "pixelSpin 0.8s steps(8, end) infinite" : "none" }}
                   />
                   {tr.leads.refresh}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowHidden((v) => !v)}
+                  className="flex items-center gap-1.5 border-2 border-(--border) bg-surface px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-(--surface-2)"
+                  style={{ ...bodyTextStyle, color: "var(--text-2)" }}
+                >
+                  {showHidden ? <EyeOff size={12} /> : <Eye size={12} />}
+                  {tr.leads.hidden.toggle}
+                  {hiddenLeads.length > 0 && (
+                    <span className="retro pixel-text-xs border border-(--border) px-1" style={{ color: "var(--text-3)" }}>
+                      {hiddenLeads.length}
+                    </span>
+                  )}
                 </button>
               </div>
 
@@ -466,10 +498,20 @@ export function Leads() {
                       <td className="px-4 py-3">
                         <PriorityBadge priority={lead.priority} />
                       </td>
-                      <td className="px-4 py-3">
-                        <p className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-                          {lead.lastContact ?? tr.leads.pending}
-                        </p>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            hideLead(lead);
+                            if (selectedLead?.id === lead.id) setSelectedLead(null);
+                          }}
+                          title={tr.leads.hide}
+                          aria-label={tr.leads.hide}
+                          className="inline-flex h-7 w-7 items-center justify-center border-2 border-(--border) bg-surface text-text transition-colors hover:bg-(--surface-2)"
+                        >
+                          <EyeOff size={13} />
+                        </button>
                       </td>
                     </tr>
                   );
@@ -536,6 +578,45 @@ export function Leads() {
               </div>
             </div>
           )}
+          {showHidden && (
+            <div className="border-t-2 border-(--border) bg-(--surface-2) p-4">
+              <p className="retro pixel-text-xs uppercase mb-3" style={{ color: "var(--text-3)" }}>
+                {tr.leads.hidden.title}
+              </p>
+              {hiddenLeads.length === 0 ? (
+                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                  {tr.leads.hidden.empty}
+                </p>
+              ) : (
+                <div className="grid gap-2">
+                  {hiddenLeads.map((h) => (
+                    <div
+                      key={h.id}
+                      className="flex items-center justify-between gap-3 border-2 border-(--border) bg-surface px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                          {h.name}
+                        </p>
+                        <p className="truncate text-xs font-semibold" style={{ color: "var(--text-3)" }}>
+                          {h.category} / {h.location}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => unhideLead(h.id)}
+                        className="retro pixel-text-xs flex shrink-0 items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-2.5 py-1.5 uppercase transition-transform active:translate-x-px active:translate-y-px"
+                        style={{ color: "var(--text)" }}
+                      >
+                        <Eye size={12} />
+                        {tr.leads.hidden.restore}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         <LeadDetail lead={selected} />
@@ -545,7 +626,14 @@ export function Leads() {
         <>
           <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" onClick={() => setSelectedLead(null)} />
           <div className="fixed inset-y-0 right-0 z-50 flex">
-            <ExplorerLeadDetail lead={selectedLead} onClose={() => setSelectedLead(null)} />
+            <ExplorerLeadDetail
+              lead={selectedLead}
+              onClose={() => setSelectedLead(null)}
+              onHide={() => {
+                hideLead(selectedLead);
+                setSelectedLead(null);
+              }}
+            />
           </div>
         </>
       )}

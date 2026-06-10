@@ -5,6 +5,12 @@ import { apiFetch } from "@/lib/api/client";
 import { getLeads } from "@/lib/api/leads";
 import { parseApiError } from "@/lib/api/errors";
 import type { Lead, LeadStatus, LeadPriority } from "@/lib/data";
+import {
+  getHiddenLeads,
+  hideLead as persistHide,
+  unhideLead as persistUnhide,
+  type HiddenLeadRecord,
+} from "@/lib/hidden-leads";
 
 interface WorkspaceStats {
   total: number;
@@ -41,10 +47,14 @@ export interface UseLeadsReturn {
   noContactCount: number;
   avgScore: number;
   refresh: () => void;
+  hiddenLeads: HiddenLeadRecord[];
+  hideLead: (lead: Lead) => void;
+  unhideLead: (id: string) => void;
 }
 
 export function useLeads(): UseLeadsReturn {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [hiddenRecords, setHiddenRecords] = useState<HiddenLeadRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +63,31 @@ export function useLeads(): UseLeadsReturn {
   useEffect(() => {
     apiFetch<WorkspaceStats>("/api/leads/stats").then(setWsStats).catch(() => {});
   }, []);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    setHiddenRecords(getHiddenLeads());
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const hiddenIds = new Set(hiddenRecords.map((r) => r.id));
+
+  function hideLead(lead: Lead) {
+    persistHide({
+      id: lead.id,
+      name: lead.name,
+      category: lead.category,
+      location: lead.location,
+      score: lead.score,
+      priority: lead.priority,
+    });
+    setHiddenRecords(getHiddenLeads());
+  }
+
+  function unhideLead(id: string) {
+    persistUnhide(id);
+    setHiddenRecords(getHiddenLeads());
+  }
 
   // raw query (typed) vs debounced (sent to API)
   const [query, setQueryState] = useState("");
@@ -140,7 +175,8 @@ export function useLeads(): UseLeadsReturn {
     return () => { abortRef.current?.abort(); };
   }, []);
 
-  const selected = leads.find((l) => l.id === selectedId) ?? leads[0] ?? null;
+  const visibleLeads = leads.filter((l) => !hiddenIds.has(l.id));
+  const selected = visibleLeads.find((l) => l.id === selectedId) ?? visibleLeads[0] ?? null;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const highPriorityCount = wsStats.total > 0 ? wsStats.high_priority_count : leads.filter((l) => l.priority === "alta").length;
@@ -148,7 +184,7 @@ export function useLeads(): UseLeadsReturn {
   const avgScore = wsStats.total > 0 ? wsStats.avg_score : (leads.length ? Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length) : 0);
 
   return {
-    leads,
+    leads: visibleLeads,
     selected,
     loading,
     error,
@@ -171,5 +207,8 @@ export function useLeads(): UseLeadsReturn {
     noContactCount,
     avgScore,
     refresh: fetchLeads,
+    hiddenLeads: hiddenRecords,
+    hideLead,
+    unhideLead,
   };
 }

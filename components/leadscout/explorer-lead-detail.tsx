@@ -1,27 +1,59 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Phone, Globe, Sparkles, Copy, Check, MapPin } from "lucide-react";
+import { X, Phone, Globe, Sparkles, Copy, Check, MapPin, EyeOff, ExternalLink } from "lucide-react";
 import { StatusBadge, PriorityBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { Button } from "@/components/ui/button";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { SCRAPING_ZONES } from "@/lib/explorer-data";
-import { updateLead, updateLeadStatus } from "@/lib/api/leads";
+import { updateLeadStatus } from "@/lib/api/leads";
 import type { ExplorerLeadDetailProps } from "@/types/explorer";
+import type { SocialProfile } from "@/lib/api/explorer";
 import { ExplorerAnalysisModal } from "./explorer-analysis-modal";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { safeHref } from "@/lib/utils";
+import { hideLead as persistHideLead } from "@/lib/hidden-leads";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
+
+const SOCIAL_HOSTS: [string, string][] = [
+  ["facebook", "facebook.com"],
+  ["facebook", "fb.com"],
+  ["instagram", "instagram.com"],
+  ["linkedin", "linkedin.com"],
+  ["tiktok", "tiktok.com"],
+  ["x", "x.com"],
+  ["x", "twitter.com"],
+  ["youtube", "youtube.com"],
+  ["youtube", "youtu.be"],
+  ["whatsapp", "wa.me"],
+  ["whatsapp", "whatsapp.com"],
+];
+
+function classifySocial(url?: string | null): string | null {
+  if (!url) return null;
+  try {
+    let host = new URL(url, "https://placeholder.invalid").hostname.toLowerCase();
+    if (host.startsWith("www.")) host = host.slice(4);
+    for (const [platform, domain] of SOCIAL_HOSTS) {
+      if (host === domain || host.endsWith(`.${domain}`)) return platform;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 const pixelBadgeClass =
   "retro rounded-none border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 pixel-text-xs text-text shadow-none";
 const pixelButtonClass =
   "retro rounded-none border-2 border-[var(--border)] pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px active:shadow-none";
 
-export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
+export function ExplorerLeadDetail({ lead, onClose, onHide }: ExplorerLeadDetailProps & { onHide?: () => void }) {
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.detail;
+  const [socialProfiles, setSocialProfiles] = useState<SocialProfile[]>([]);
   const hasIssues = lead.issues.length > 0;
   const hasContact = Boolean(lead.phone || lead.website);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
@@ -43,14 +75,27 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
       if (cancelled) return;
       setIsUpdating(false);
       setUpdated(false);
+      setSocialProfiles([]);
     });
     return () => {
       cancelled = true;
     };
   }, [lead.id]);
 
-  async function handleLastContactChange(value: string) {
-    updateLead(lead.id, { last_contact: value || null }).catch(() => {});
+  function handleHide() {
+    if (onHide) {
+      onHide();
+      return;
+    }
+    persistHideLead({
+      id: lead.id,
+      name: lead.name,
+      category: lead.category,
+      location: lead.location,
+      score: lead.score,
+      priority: lead.priority,
+    });
+    onClose();
   }
 
   async function handleMarkContacted() {
@@ -71,6 +116,21 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 1500);
     }).catch(() => {});
+  }
+
+  const websiteSocial = classifySocial(lead.website);
+  const showWebsite = Boolean(lead.website && !websiteSocial);
+  const socialLinks: SocialProfile[] = [];
+  const seenSocial = new Set<string>();
+  if (lead.website && websiteSocial) {
+    socialLinks.push({ platform: websiteSocial, url: lead.website });
+    seenSocial.add(lead.website);
+  }
+  for (const p of socialProfiles) {
+    if (!seenSocial.has(p.url)) {
+      socialLinks.push(p);
+      seenSocial.add(p.url);
+    }
   }
 
   return (
@@ -181,12 +241,25 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                   </button>
                 </div>
               )}
-              {lead.website && (
+              {showWebsite && (
                 <div className="pixel-inset flex items-center gap-2 px-3 py-2">
                   <Globe size={12} style={{ color: "var(--text)" }} />
-                  <span className="flex-1 min-w-0 text-sm truncate" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    {lead.website}
-                  </span>
+                  {safeHref(lead.website) ? (
+                    <a
+                      href={safeHref(lead.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 min-w-0 truncate text-sm underline underline-offset-2 hover:opacity-70"
+                      style={{ ...bodyTextStyle, color: "var(--text)" }}
+                      title={tr.openSite}
+                    >
+                      {lead.website}
+                    </a>
+                  ) : (
+                    <span className="flex-1 min-w-0 truncate text-sm" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                      {lead.website}
+                    </span>
+                  )}
                   <button
                     onClick={() => copyToClipboard(lead.website!, "website")}
                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-none border border-(--border) bg-surface transition-transform hover:bg-(--pixel-highlight) active:translate-x-px active:translate-y-px"
@@ -211,6 +284,38 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               )}
             </div>
 
+            {socialLinks.length > 0 && (
+              <div className="border-t-2 border-(--border) pt-5">
+                <p
+                  className="retro pixel-text-xs uppercase font-bold mb-2"
+                  style={{ color: "var(--text-2)" }}
+                >
+                  {tr.socialMedia}
+                </p>
+                <div className="grid gap-2">
+                  {socialLinks.map((p) => (
+                    <a
+                      key={p.url}
+                      href={safeHref(p.url) ?? undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pixel-inset flex items-center gap-2 px-3 py-2 transition-colors hover:bg-(--surface-2)"
+                      title={tr.openProfile}
+                    >
+                      <Globe size={12} style={{ color: "var(--text)" }} />
+                      <span
+                        className="flex-1 min-w-0 truncate text-sm capitalize"
+                        style={{ ...bodyTextStyle, color: "var(--text)" }}
+                      >
+                        {p.platform}
+                      </span>
+                      <ExternalLink size={12} style={{ color: "var(--text-2)" }} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="border-t-2 border-[var(--border)] pt-5">
               <button
                 onClick={() => setIsAnalysisModalOpen(true)}
@@ -220,22 +325,6 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
                 <Sparkles size={11} />
                 <span className="retro pixel-text-xs uppercase">{tr.aiAnalysis.title}</span>
               </button>
-            </div>
-
-            <div className="border-t-2 border-(--border) pt-5">
-              <p
-                className="retro pixel-text-xs uppercase font-bold mb-2"
-                style={{ color: "var(--text-2)" }}
-              >
-                {tr.lastContact}
-              </p>
-              <input
-                type="date"
-                defaultValue={lead.lastContact ?? ""}
-                onChange={(e) => handleLastContactChange(e.target.value)}
-                className="pixel-inset w-full px-3 py-2 text-sm bg-surface border-0 outline-none"
-                style={{ ...bodyTextStyle, color: "var(--text)" }}
-              />
             </div>
 
             <div className="flex flex-col gap-3 border-t-2 border-[var(--border)] pt-5">
@@ -262,6 +351,14 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
               >
                 {tr.history}
               </Button>
+              <button
+                type="button"
+                onClick={handleHide}
+                className={`${pixelButtonClass} flex h-10 w-full items-center justify-center gap-2 bg-surface text-text hover:bg-(--pixel-highlight)`}
+              >
+                <EyeOff size={13} />
+                {translations[lang].leads.hide}
+              </button>
             </div>
           </div>
         </div>
@@ -270,6 +367,7 @@ export function ExplorerLeadDetail({ lead, onClose }: ExplorerLeadDetailProps) {
         lead={lead}
         isOpen={isAnalysisModalOpen}
         onClose={() => setIsAnalysisModalOpen(false)}
+        onSocialProfiles={setSocialProfiles}
       />
     </>
   );

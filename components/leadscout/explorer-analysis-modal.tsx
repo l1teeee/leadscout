@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { ScoreBig, ScoreBar } from "@/components/ui/score-bar";
-import { analyzeLead, askLeadQuestion } from "@/lib/api/explorer";
+import { analyzeLead, askLeadQuestion, type SocialProfile } from "@/lib/api/explorer";
 import { markLeadViewed, updateLead } from "@/lib/api/leads";
 import type { Lead } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
@@ -21,6 +21,7 @@ interface ExplorerAnalysisModalProps {
   lead: Lead;
   isOpen: boolean;
   onClose: () => void;
+  onSocialProfiles?: (profiles: SocialProfile[]) => void;
 }
 
 interface ChatMessage {
@@ -41,6 +42,7 @@ export function ExplorerAnalysisModal({
   lead,
   isOpen,
   onClose,
+  onSocialProfiles,
 }: ExplorerAnalysisModalProps) {
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.detail;
@@ -95,6 +97,7 @@ export function ExplorerAnalysisModal({
         force_refresh: Boolean(analysis),
       });
       setAnalysis(res.analysis);
+      if (res.social_profiles?.length) onSocialProfiles?.(res.social_profiles);
       updateLead(lead.id, { ai_analysis: res.analysis }).catch(() => {});
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
@@ -155,8 +158,8 @@ export function ExplorerAnalysisModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="analysis-dialog-title"
-        className="pixel-card-sm flex w-full max-w-2xl animate-fade-up flex-col"
-        style={{ height: "min(88vh, 760px)" }}
+        className="pixel-card-sm flex w-full max-w-4xl animate-fade-up flex-col"
+        style={{ height: "min(88vh, 720px)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -202,8 +205,11 @@ export function ExplorerAnalysisModal({
           </div>
         </div>
 
+        {/* Body: analysis (left column) + chat (right column) */}
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+
         {/* Analysis area - scrollable */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4" style={{ minHeight: 0 }}>
+        <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
           {/* Business info grid */}
           <div className="pixel-inset grid gap-3 p-4 sm:grid-cols-3">
             <div className="min-w-0">
@@ -313,8 +319,8 @@ export function ExplorerAnalysisModal({
           </div>
         </div>
 
-        {/* Chat section - fixed at bottom */}
-        <div className="shrink-0 border-t-2 border-(--border)" style={{ height: 260 }}>
+        {/* Chat section - right column on desktop, bottom on mobile */}
+        <div className="flex h-70 w-full shrink-0 flex-col border-t-2 border-(--border) md:h-auto md:w-80 md:border-l-2 md:border-t-0">
           <div className="flex h-full flex-col">
             {/* Chat header */}
             <div
@@ -406,6 +412,7 @@ export function ExplorerAnalysisModal({
               </button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
