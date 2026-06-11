@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff, Filter, Globe2, Phone, RefreshCcw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useLeads, PAGE_SIZE, type SortField } from "@/lib/hooks/use-leads";
 import { translations } from "@/lib/i18n";
 import type { Lead, LeadPriority, LeadStatus } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
 import { ExplorerLeadDetail } from "@/components/leadscout/explorer-lead-detail";
+import { ExplorerAnalysisModal } from "./explorer-analysis-modal";
 import { PriorityBadge, StatusBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
-import { analyzeLead } from "@/lib/api/explorer";
-import { markLeadViewed, updateLead } from "@/lib/api/leads";
+import { markLeadViewed } from "@/lib/api/leads";
 import { safeHref } from "@/lib/utils";
 
 const bodyTextStyle = {
@@ -58,50 +59,9 @@ function LeadMetric({ label, value, tone }: { label: string; value: string | num
   );
 }
 
-function LeadDetail({ lead }: { lead: Lead | null }) {
+function LeadDetail({ lead, onAnalyze }: { lead: Lead | null; onAnalyze: () => void }) {
   const { lang } = useLanguage();
   const tr = translations[lang];
-  const [analysis, setAnalysis] = useState<string | null>(lead?.ai_analysis ?? null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    setAnalysis(lead?.ai_analysis ?? null);
-    setAnalysisError(null);
-    setIsAnalyzing(false);
-  }, [lead?.id, lead?.ai_analysis]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  async function handleAnalyze() {
-    if (!lead) return;
-    setIsAnalyzing(true);
-    setAnalysisError(null);
-    try {
-      const res = await analyzeLead({
-        lead_id: lead.id,
-        name: lead.name,
-        category: lead.category,
-        location: lead.location,
-        phone: lead.phone,
-        website: lead.website,
-        score: lead.score,
-        issues: lead.issues,
-        force_refresh: Boolean(analysis),
-      });
-      setAnalysis(res.analysis);
-      updateLead(lead.id, { ai_analysis: res.analysis }).catch(() => {});
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "";
-      if (msg.includes("503") || msg.includes("not configurado") || msg.includes("not configured")) {
-        setAnalysisError(tr.leads.detail.aiAnalysis.noApiKey);
-      } else {
-        setAnalysisError(tr.leads.detail.aiAnalysis.error);
-      }
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }
 
   if (!lead) {
     return (
@@ -203,65 +163,15 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
 
       {/* AI Analysis */}
       <div className="mt-5 border-t-2 border-(--border) pt-4">
-        <div className="mb-3 flex items-center gap-2">
-          <Sparkles size={12} style={{ color: "var(--pixel-highlight)" }} />
-          <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-2)" }}>
-            {tr.leads.detail.aiAnalysis.title}
-          </p>
-        </div>
-
-        {!analysis && !isAnalyzing && (
-          <button
-            type="button"
-            onClick={handleAnalyze}
-            className="w-full pixel-inset flex items-center justify-center gap-2 px-3 py-3 text-xs font-semibold transition-colors hover:bg-(--surface-2) cursor-pointer"
-            style={{ ...bodyTextStyle, color: "var(--text-2)" }}
-          >
-            <Sparkles size={11} />
-            {tr.leads.detail.aiAnalysis.cta}
-          </button>
-        )}
-
-        {isAnalyzing && (
-          <div className="pixel-inset flex items-center justify-center gap-2 px-3 py-3">
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: "var(--text)",
-                animation: "pixelSpin 1s steps(8, end) infinite",
-              }}
-            />
-            <span className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
-              {tr.leads.detail.aiAnalysis.analyzing}
-            </span>
-          </div>
-        )}
-
-        {analysisError && (
-          <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
-            {analysisError}
-          </p>
-        )}
-
-        {analysis && (
-          <div className="space-y-2">
-            <div className="pixel-inset p-3">
-              <p className="text-xs leading-relaxed whitespace-pre-line" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                {analysis}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={handleAnalyze}
-              className="text-xs font-semibold underline underline-offset-2 cursor-pointer"
-              style={{ ...bodyTextStyle, color: "var(--text-3)" }}
-            >
-              <RefreshCcw size={12} />
-              {tr.leads.detail.aiAnalysis.cta}
-            </button>
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={onAnalyze}
+          className="w-full pixel-inset flex items-center justify-center gap-2 px-3 py-3 text-xs font-semibold transition-colors hover:bg-(--surface-2) cursor-pointer"
+          style={{ ...bodyTextStyle, color: "var(--text-2)" }}
+        >
+          <Sparkles size={11} />
+          <span className="retro pixel-text-xs uppercase">{tr.leads.detail.aiAnalysis.title}</span>
+        </button>
       </div>
     </aside>
   );
@@ -270,7 +180,9 @@ function LeadDetail({ lead }: { lead: Lead | null }) {
 export function Leads() {
   const { lang } = useLanguage();
   const tr = translations[lang];
+  const searchParams = useSearchParams();
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [analysisLead, setAnalysisLead] = useState<Lead | null>(null);
   const [locallyViewed, setLocallyViewed] = useState<Set<string>>(new Set());
   const [showHidden, setShowHidden] = useState(false);
   const {
@@ -295,13 +207,14 @@ export function Leads() {
     hideLead,
     unhideLead,
   } = useLeads();
+  const qParam = searchParams.get("q") ?? "";
+  const appliedQ = useRef<string | null>(null);
 
-  // Honor ?q= coming from the dashboard quick-wins navigation (client-only, no Suspense needed).
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get("q");
-    if (q) setQuery(q);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (appliedQ.current === qParam) return;
+    appliedQ.current = qParam;
+    setQuery(qParam);
+  }, [qParam, setQuery]);
 
   const sortableHeaders: { label: string; field: SortField | null }[] = [
     { label: tr.leads.tableHeaders[0], field: "name" },
@@ -619,7 +532,7 @@ export function Leads() {
           )}
         </section>
 
-        <LeadDetail lead={selected} />
+        <LeadDetail lead={selected} onAnalyze={() => selected && setAnalysisLead(selected)} />
       </div>
 
       {selectedLead && (
@@ -636,6 +549,14 @@ export function Leads() {
             />
           </div>
         </>
+      )}
+
+      {analysisLead && (
+        <ExplorerAnalysisModal
+          lead={analysisLead}
+          isOpen
+          onClose={() => setAnalysisLead(null)}
+        />
       )}
     </div>
   );
