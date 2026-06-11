@@ -7,42 +7,11 @@ import { completeOnboarding } from "@/lib/api/auth";
 import { getToken } from "@/lib/auth";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { COUNTRY_DATA, sanitizeText, sanitizePhone, sanitizeUrl } from "@/lib/profile-fields";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const inputCls =
   "h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] transition-[border-color,box-shadow] duration-150 focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none";
-
-type CountryEntry = { dialCode: string; apiName: string };
-
-const COUNTRY_DATA: Record<string, CountryEntry> = {
-  "El Salvador":  { dialCode: "+503", apiName: "El Salvador" },
-  "Guatemala":    { dialCode: "+502", apiName: "Guatemala" },
-  "Honduras":     { dialCode: "+504", apiName: "Honduras" },
-  "Costa Rica":   { dialCode: "+506", apiName: "Costa Rica" },
-  "Panama":       { dialCode: "+507", apiName: "Panama" },
-  "Mexico":       { dialCode: "+52",  apiName: "Mexico" },
-  "Argentina":    { dialCode: "+54",  apiName: "Argentina" },
-  "Colombia":     { dialCode: "+57",  apiName: "Colombia" },
-  "Peru":         { dialCode: "+51",  apiName: "Peru" },
-  "Chile":        { dialCode: "+56",  apiName: "Chile" },
-  "Otro":         { dialCode: "",     apiName: "" },
-};
-
-// --- Sanitization ---
-// Strip HTML angle brackets and null bytes from free text
-function sanitizeText(val: string, maxLen = 100): string {
-  return val.replace(/[<>\x00]/g, "").slice(0, maxLen);
-}
-
-// Phone digits only: digits, spaces, dashes, parens, dots
-function sanitizePhone(val: string): string {
-  return val.replace(/[^\d\s\-().]/g, "").slice(0, 20);
-}
-
-// URLs: strip injection chars while preserving slashes and query strings
-function sanitizeUrl(val: string): string {
-  return val.replace(/[<>"'`\x00]/g, "").slice(0, 200);
-}
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (

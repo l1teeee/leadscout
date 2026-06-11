@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Activity,
   BadgeCheck,
@@ -13,13 +12,12 @@ import {
   MapPin,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
   UserRound,
   UsersRound,
 } from "lucide-react";
-import { getAiContext, setAiContext } from "@/lib/ai-context";
 import { Switch } from "@/components/ui/8bit-switch";
 import { Tag } from "@/components/ui/badge";
+import { WorkspaceInfoCard } from "./workspace-info-card";
 import {
   SETTINGS_OPERATIONAL_PREFERENCES,
   SETTINGS_PLAN_USAGE,
@@ -93,27 +91,23 @@ function SectionHeader({
   );
 }
 
-function EditableField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
+// Visually disables and grays out a section that is on the roadmap but not active yet.
+function ComingSoon({ children }: { children: React.ReactNode }) {
+  const { lang } = useLanguage();
+  const settings = translations[lang].settings;
   return (
-    <label className="block">
-      <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-        {label}
+    <div className="relative">
+      <span
+        className="retro pixel-text-xs absolute right-3 top-3 z-10 inline-flex items-center gap-1 border-2 border-[var(--border)] bg-[var(--pixel-highlight)] px-2 py-1 uppercase shadow-[1px_1px_0_var(--pixel-shadow)]"
+        style={{ color: "var(--text)" }}
+        title={settings.comingSoonHint}
+      >
+        {settings.comingSoon}
       </span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-semibold text-[var(--text)] focus:outline-none focus:border-[var(--text)]"
-        style={bodyTextStyle}
-      />
-    </label>
+      <div className="pointer-events-none select-none opacity-50 grayscale" aria-hidden>
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -159,84 +153,6 @@ function UsageRow({ label, value, limit }: { label: string; value: number; limit
   );
 }
 
-function AiContextSection({
-  copy,
-}: {
-  copy: {
-    eyebrow: string;
-    title: string;
-    helper: string;
-    businessLabel: string;
-    businessPlaceholder: string;
-    constraintsLabel: string;
-    constraintsPlaceholder: string;
-    save: string;
-    saved: string;
-  };
-}) {
-  const [business, setBusiness] = useState("");
-  const [constraints, setConstraints] = useState("");
-  const [saved, setSaved] = useState(false);
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    const c = getAiContext();
-    setBusiness(c.businessContext);
-    setConstraints(c.constraints);
-  }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  function handleSave() {
-    setAiContext({ businessContext: business, constraints });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  }
-
-  return (
-    <section className="pixel-card-sm bg-white p-5">
-      <SectionHeader eyebrow={copy.eyebrow} title={copy.title} icon={Sparkles} />
-      <p className="mb-4 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-        {copy.helper}
-      </p>
-      <div className="grid gap-4">
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-            {copy.businessLabel}
-          </span>
-          <textarea
-            value={business}
-            onChange={(e) => setBusiness(e.target.value)}
-            placeholder={copy.businessPlaceholder}
-            rows={3}
-            className="w-full resize-y rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] focus:border-[var(--text)] focus:outline-none"
-            style={bodyTextStyle}
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
-            {copy.constraintsLabel}
-          </span>
-          <textarea
-            value={constraints}
-            onChange={(e) => setConstraints(e.target.value)}
-            placeholder={copy.constraintsPlaceholder}
-            rows={3}
-            className="w-full resize-y rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] focus:border-[var(--text)] focus:outline-none"
-            style={bodyTextStyle}
-          />
-        </label>
-        <button
-          type="button"
-          onClick={handleSave}
-          className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 self-start border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--pixel-shadow)]"
-        >
-          {saved ? copy.saved : copy.save}
-        </button>
-      </div>
-    </section>
-  );
-}
-
 export function Configuracion() {
   const { lang } = useLanguage();
   const tr = translations[lang];
@@ -253,8 +169,6 @@ export function Configuracion() {
     saveStatus, save,
   } = useSettings();
 
-  const saving = saveStatus === "saving";
-
   const usage = [
     { label: settings.usageLabels.leads, value: planUsage.leads.usedThisMonth, limit: planUsage.leads.monthlyLimit },
     { label: settings.usageLabels.searches, value: planUsage.searches.usedThisMonth, limit: planUsage.searches.monthlyLimit },
@@ -266,46 +180,22 @@ export function Configuracion() {
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="pixel-card-sm overflow-hidden bg-white">
-          <div className="border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center border-2 border-[var(--border)] bg-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)]">
-                  <Building2 size={22} />
-                </div>
-                <div>
-                  <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
-                    {tr.common.workspace}
-                  </p>
-                  <h1 className="mt-1 text-2xl font-black leading-tight" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    {workspaceName || " "}
-                  </h1>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Tag>{tr.settingsEnums.plan[planUsage.plan]}</Tag>
-                    <Tag>{country}</Tag>
-                  </div>
-                </div>
-              </div>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={save}
-                className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-60"
-              >
-                {saving ? "..." : saveStatus === "ok" ? settings.saveStatus.ok : saveStatus === "error" ? settings.saveStatus.error : settings.save}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid gap-4 p-5 md:grid-cols-2">
-            <EditableField label={settings.fields.workspaceName} value={workspaceName} onChange={setWorkspaceName} />
-            <EditableField label={settings.fields.industry} value={industry} onChange={setIndustry} />
-            <EditableField label={settings.fields.country} value={country} onChange={setCountry} />
-            <EditableField label={settings.fields.mainCity} value={city} onChange={setCity} />
-            <EditableField label={settings.fields.phone} value={phone} onChange={setPhone} />
-            <EditableField label={settings.fields.website} value={website} onChange={setWebsite} />
-          </div>
-        </section>
+        <WorkspaceInfoCard
+          workspaceName={workspaceName}
+          setWorkspaceName={setWorkspaceName}
+          industry={industry}
+          setIndustry={setIndustry}
+          country={country}
+          setCountry={setCountry}
+          city={city}
+          setCity={setCity}
+          phone={phone}
+          setPhone={setPhone}
+          website={website}
+          setWebsite={setWebsite}
+          saveStatus={saveStatus}
+          save={save}
+        />
 
         <aside className="pixel-card-sm h-fit bg-white p-5">
           <SectionHeader eyebrow={settings.account} title={settings.currentUser} icon={UserRound} />
@@ -337,147 +227,161 @@ export function Configuracion() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
-          <AiContextSection copy={settings.aiContext} />
+          <ComingSoon>
+            <section className="pixel-card-sm bg-white p-5">
+              <SectionHeader eyebrow={settings.sections.operation} title={settings.sections.preferences} icon={SlidersHorizontal} />
+              <div className="grid gap-3 md:grid-cols-2">
+                <ToggleRow title={settings.toggles.autoAssign.title} description={settings.toggles.autoAssign.description(tr.settingsEnums.assignmentMode[preferences.assignmentMode])} checked />
+                <ToggleRow title={settings.toggles.requiredNotes.title} description={settings.toggles.requiredNotes.description} checked={preferences.requireLeadNotesBeforeStageChange} />
+                <ToggleRow title={settings.toggles.archiveLost.title} description={settings.toggles.archiveLost.description(preferences.staleLeadDays)} checked={preferences.autoArchiveLostLeads} />
+                <ToggleRow title={settings.toggles.weeklyReport.title} description={settings.toggles.weeklyReport.description(preferences.businessHours.mondayToFriday)} checked={false} />
+              </div>
+            </section>
+          </ComingSoon>
 
-          <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow={settings.sections.operation} title={settings.sections.preferences} icon={SlidersHorizontal} />
-            <div className="grid gap-3 md:grid-cols-2">
-              <ToggleRow title={settings.toggles.autoAssign.title} description={settings.toggles.autoAssign.description(tr.settingsEnums.assignmentMode[preferences.assignmentMode])} checked />
-              <ToggleRow title={settings.toggles.requiredNotes.title} description={settings.toggles.requiredNotes.description} checked={preferences.requireLeadNotesBeforeStageChange} />
-              <ToggleRow title={settings.toggles.archiveLost.title} description={settings.toggles.archiveLost.description(preferences.staleLeadDays)} checked={preferences.autoArchiveLostLeads} />
-              <ToggleRow title={settings.toggles.weeklyReport.title} description={settings.toggles.weeklyReport.description(preferences.businessHours.mondayToFriday)} checked={false} />
-            </div>
-          </section>
-
-          <section className="pixel-card-sm overflow-hidden bg-white">
-            <div className="border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-5">
-              <SectionHeader eyebrow={settings.sections.team} title={settings.sections.members} icon={UsersRound} />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-sm" style={bodyTextStyle}>
-                <thead>
-                  <tr>
-                    {settings.teamHeaders.map((heading) => (
-                      <th
-                        key={heading}
-                        className="retro border-b-2 border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase"
-                        style={{ color: "var(--text-3)" }}
-                      >
-                        {heading}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {team.map((member) => (
-                    <tr key={member.email} className="border-b border-[#E4E4E7] last:border-b-0">
-                      <td className="px-4 py-3 font-bold" style={{ color: "var(--text)" }}>
-                        {member.fullName}
-                      </td>
-                      <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
-                        {member.email}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Tag>{tr.settingsEnums.teamRole[member.role]}</Tag>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-2 text-xs font-bold" style={{ color: "var(--text-2)" }}>
-                          <span className="h-2 w-2 bg-[var(--c-qualified)]" />
-                          {tr.settingsEnums.teamStatus[member.status]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
-                        {compactDate(member.lastActiveAt, settings.pending)}
-                      </td>
+          <ComingSoon>
+            <section className="pixel-card-sm overflow-hidden bg-white">
+              <div className="border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-5">
+                <SectionHeader eyebrow={settings.sections.team} title={settings.sections.members} icon={UsersRound} />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm" style={bodyTextStyle}>
+                  <thead>
+                    <tr>
+                      {settings.teamHeaders.map((heading) => (
+                        <th
+                          key={heading}
+                          className="retro border-b-2 border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase"
+                          style={{ color: "var(--text-3)" }}
+                        >
+                          {heading}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {team.map((member) => (
+                      <tr key={member.email} className="border-b border-[#E4E4E7] last:border-b-0">
+                        <td className="px-4 py-3 font-bold" style={{ color: "var(--text)" }}>
+                          {member.fullName}
+                        </td>
+                        <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
+                          {member.email}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Tag>{tr.settingsEnums.teamRole[member.role]}</Tag>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center gap-2 text-xs font-bold" style={{ color: "var(--text-2)" }}>
+                            <span className="h-2 w-2 bg-[var(--c-qualified)]" />
+                            {tr.settingsEnums.teamStatus[member.status]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
+                          {compactDate(member.lastActiveAt, settings.pending)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </ComingSoon>
 
           <section className="grid gap-5 md:grid-cols-2">
-            <div className="pixel-card-sm bg-white p-5">
-              <SectionHeader eyebrow={settings.sections.zones} title={settings.sections.coverage} icon={MapPin} />
-              <div className="flex flex-wrap gap-2">
-                {workZones.map((zone) => (
-                  <Tag key={zone.id}>
-                    <span className="mr-1 inline-block h-2 w-2" style={{ background: zonePriorityColors[zone.priority] }} />
-                    {zone.name}
-                  </Tag>
-                ))}
+            <ComingSoon>
+              <div className="pixel-card-sm bg-white p-5">
+                <SectionHeader eyebrow={settings.sections.zones} title={settings.sections.coverage} icon={MapPin} />
+                <div className="flex flex-wrap gap-2">
+                  {workZones.map((zone) => (
+                    <Tag key={zone.id}>
+                      <span className="mr-1 inline-block h-2 w-2" style={{ background: zonePriorityColors[zone.priority] }} />
+                      {zone.name}
+                    </Tag>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="pixel-card-sm bg-white p-5">
-              <SectionHeader eyebrow={settings.sections.categories} title={settings.sections.activeCategories} icon={Globe2} />
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <Tag key={category}>{category}</Tag>
-                ))}
+            </ComingSoon>
+            <ComingSoon>
+              <div className="pixel-card-sm bg-white p-5">
+                <SectionHeader eyebrow={settings.sections.categories} title={settings.sections.activeCategories} icon={Globe2} />
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <Tag key={category}>{category}</Tag>
+                  ))}
+                </div>
               </div>
-            </div>
+            </ComingSoon>
           </section>
         </div>
 
         <div className="space-y-5">
-          <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow={settings.sections.plan} title={settings.sections.monthlyUsage} icon={CreditCard} />
-            <div className="space-y-4">
-              {usage.map((item) => (
-                <UsageRow key={item.label} {...item} />
-              ))}
-            </div>
-          </section>
-
-          <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow={settings.sections.security} title={settings.sections.accessSessions} icon={ShieldCheck} />
-            <div className="grid gap-3">
-              <div className="flex items-center gap-3 border-2 border-[var(--border)] bg-[var(--surface)] p-3">
-                <KeyRound size={16} />
-                <div>
-                  <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    {settings.securityLabels.password}
-                  </p>
-                  <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                    {settings.securityLabels.rotation(security.passwordRotationDays)}
-                  </p>
-                </div>
+          <ComingSoon>
+            <section className="pixel-card-sm bg-white p-5">
+              <SectionHeader eyebrow={settings.sections.plan} title={settings.sections.monthlyUsage} icon={CreditCard} />
+              <div className="space-y-4">
+                {usage.map((item) => (
+                  <UsageRow key={item.label} {...item} />
+                ))}
               </div>
-              <div className="flex items-center gap-3 border-2 border-[var(--border)] bg-[var(--surface)] p-3">
-                <BadgeCheck size={16} />
-                <div>
-                  <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                    {settings.securityLabels.domains}
-                  </p>
-                  <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                    {security.allowedEmailDomains.join(", ")}
-                  </p>
+            </section>
+          </ComingSoon>
+
+          <ComingSoon>
+            <section className="pixel-card-sm bg-white p-5">
+              <SectionHeader eyebrow={settings.sections.security} title={settings.sections.accessSessions} icon={ShieldCheck} />
+              <div className="grid gap-3">
+                <div className="flex items-center gap-3 border-2 border-[var(--border)] bg-[var(--surface)] p-3">
+                  <KeyRound size={16} />
+                  <div>
+                    <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                      {settings.securityLabels.password}
+                    </p>
+                    <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                      {settings.securityLabels.rotation(security.passwordRotationDays)}
+                    </p>
+                  </div>
                 </div>
+                <div className="flex items-center gap-3 border-2 border-[var(--border)] bg-[var(--surface)] p-3">
+                  <BadgeCheck size={16} />
+                  <div>
+                    <p className="text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                      {settings.securityLabels.domains}
+                    </p>
+                    <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                      {security.allowedEmailDomains.join(", ")}
+                    </p>
+                  </div>
+                </div>
+                <ToggleRow title={settings.toggles.twoFactor.title} description={settings.toggles.twoFactor.description(tr.settingsEnums.securityLevel[security.level])} checked={security.twoFactorRequired} />
               </div>
-              <ToggleRow title={settings.toggles.twoFactor.title} description={settings.toggles.twoFactor.description(tr.settingsEnums.securityLevel[security.level])} checked={security.twoFactorRequired} />
-            </div>
-          </section>
+            </section>
+          </ComingSoon>
 
-          <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow={settings.sections.system} title={settings.sections.notifications} icon={Bell} />
-            <div className="space-y-3">
-              <ToggleRow title={settings.toggles.newLeads.title} description={settings.toggles.newLeads.description} checked={preferences.preferredContactChannels.includes("app")} />
-              <ToggleRow title={settings.toggles.operationalEmail.title} description={settings.toggles.operationalEmail.description} checked={preferences.preferredContactChannels.includes("email")} />
-              <ToggleRow title={settings.toggles.commercialWhatsapp.title} description={settings.toggles.commercialWhatsapp.description} checked={preferences.preferredContactChannels.includes("whatsapp")} />
-            </div>
-          </section>
+          <ComingSoon>
+            <section className="pixel-card-sm bg-white p-5">
+              <SectionHeader eyebrow={settings.sections.system} title={settings.sections.notifications} icon={Bell} />
+              <div className="space-y-3">
+                <ToggleRow title={settings.toggles.newLeads.title} description={settings.toggles.newLeads.description} checked={preferences.preferredContactChannels.includes("app")} />
+                <ToggleRow title={settings.toggles.operationalEmail.title} description={settings.toggles.operationalEmail.description} checked={preferences.preferredContactChannels.includes("email")} />
+                <ToggleRow title={settings.toggles.commercialWhatsapp.title} description={settings.toggles.commercialWhatsapp.description} checked={preferences.preferredContactChannels.includes("whatsapp")} />
+              </div>
+            </section>
+          </ComingSoon>
 
-          <section className="pixel-card-sm bg-white p-5">
-            <SectionHeader eyebrow={settings.sections.audit} title={settings.sections.recentActivity} icon={Activity} />
-            <div className="space-y-3">
-              {settings.auditItems(userFullName.split(" ")[0] ?? userFullName).map((item) => (
-                <div key={item} className="flex items-center gap-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
-                  <CheckCircle2 size={14} />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+          <ComingSoon>
+            <section className="pixel-card-sm bg-white p-5">
+              <SectionHeader eyebrow={settings.sections.audit} title={settings.sections.recentActivity} icon={Activity} />
+              <div className="space-y-3">
+                {settings.auditItems(userFullName.split(" ")[0] ?? userFullName).map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+                    <CheckCircle2 size={14} />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </ComingSoon>
         </div>
       </div>
     </div>

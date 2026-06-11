@@ -49,6 +49,7 @@ const nextConfig: NextConfig = {
       { source: "/reportes", destination: "/reports" },
       { source: "/campanas", destination: "/campaigns" },
       { source: "/integraciones", destination: "/integrations" },
+      { source: "/contexto-ia", destination: "/ai-context" },
       { source: "/configuracion", destination: "/settings" },
     ];
   },

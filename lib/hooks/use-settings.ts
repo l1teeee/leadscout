@@ -31,7 +31,7 @@ export interface UseSettingsReturn {
   // save lifecycle
   saveStatus: SaveStatus;
   saveError: string | null;
-  save: () => Promise<void>;
+  save: () => Promise<boolean>;
 }
 
 export function useSettings(): UseSettingsReturn {
@@ -63,7 +63,7 @@ export function useSettings(): UseSettingsReturn {
       .catch(() => {});
   }, []);
 
-  const save = useCallback(async () => {
+  const save = useCallback(async (): Promise<boolean> => {
     setSaveStatus("saving");
     setSaveError(null);
     const payload: UpdateWorkspacePayload = {
@@ -77,11 +77,13 @@ export function useSettings(): UseSettingsReturn {
     try {
       await updateWorkspace(payload);
       setSaveStatus("ok");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+      return true;
     } catch (error) {
       setSaveError(parseApiError(error));
       setSaveStatus("error");
-    } finally {
       setTimeout(() => setSaveStatus("idle"), 3000);
+      return false;
     }
   }, [city, country, industry, phone, website, workspaceName]);
 

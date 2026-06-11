@@ -29,23 +29,39 @@ export interface UpdateWorkspacePayload {
   website?: string;
 }
 
+interface WorkspaceSettingsResponse {
+  id: string;
+  name: string;
+  slug: string;
+  country: string;
+  industry?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  timezone?: string;
+  currency?: string;
+}
+
+interface MeResponse {
+  email: string;
+  full_name?: string;
+  role: string;
+}
+
 export async function getSettingsData(): Promise<SettingsData> {
-  const user = await apiFetch<{
-    email: string;
-    full_name?: string;
-    role: string;
-    workspace_name?: string;
-    industry?: string;
-    country?: string;
-    city?: string;
-  }>("/api/auth/me");
+  const [workspace, user] = await Promise.all([
+    apiFetch<WorkspaceSettingsResponse>("/api/settings/workspace"),
+    apiFetch<MeResponse>("/api/auth/me"),
+  ]);
 
   return {
     workspace: {
-      workspace_name: user.workspace_name ?? "",
-      industry: user.industry ?? "",
-      country: user.country ?? "",
-      city: user.city ?? "",
+      workspace_name: workspace.name ?? "",
+      industry: workspace.industry ?? "",
+      country: workspace.country ?? "",
+      city: workspace.city ?? "",
+      phone: workspace.phone ?? "",
+      website: workspace.website ?? "",
     },
     user: {
       full_name: user.full_name ?? "",
@@ -55,9 +71,18 @@ export async function getSettingsData(): Promise<SettingsData> {
   };
 }
 
+// Backend WorkspaceUpdate uses `name` (not `workspace_name`); send only provided fields.
 export async function updateWorkspace(payload: UpdateWorkspacePayload): Promise<void> {
-  await apiFetch("/api/auth/me", {
+  const body: Record<string, string> = {};
+  if (payload.workspace_name !== undefined) body.name = payload.workspace_name;
+  if (payload.industry !== undefined) body.industry = payload.industry;
+  if (payload.country !== undefined) body.country = payload.country;
+  if (payload.city !== undefined) body.city = payload.city;
+  if (payload.phone !== undefined) body.phone = payload.phone;
+  if (payload.website !== undefined) body.website = payload.website;
+
+  await apiFetch("/api/settings/workspace", {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
 }

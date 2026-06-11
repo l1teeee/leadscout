@@ -16,7 +16,7 @@ export type PendingView = Exclude<View, "dashboard" | "explorer" | "opportunitie
 
 // Sidebar
 export interface SidebarItem {
-  id: View;
+  id: View | "ai-context";
   label: string;
   icon: ElementType;
 }

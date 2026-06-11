@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Globe,
   MessageSquare,
@@ -16,6 +17,7 @@ import { markLeadViewed, updateLead } from "@/lib/api/leads";
 import type { Lead } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { hasAiContext, launchAiContextGate } from "@/lib/ai-context-gate";
 
 interface ExplorerAnalysisModalProps {
   lead: Lead;
@@ -44,6 +46,7 @@ export function ExplorerAnalysisModal({
   onClose,
   onSocialProfiles,
 }: ExplorerAnalysisModalProps) {
+  const router = useRouter();
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.detail;
   const modalTr = tr.analysisModal;
@@ -82,6 +85,17 @@ export function ExplorerAnalysisModal({
   if (!isOpen) return null;
 
   async function handleAnalyze() {
+    if (!hasAiContext()) {
+      await launchAiContextGate({
+        lang,
+        onGoToContext: () => {
+          onClose();
+          router.push("/ai-context");
+        },
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     setAnalysisError(null);
     try {

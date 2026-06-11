@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Lead, LeadStatus } from "@/lib/data";
 import { getLeads, MAX_LEADS_LIMIT } from "@/lib/api/leads";
 import { getMe, updateApproximateLocation } from "@/lib/api/auth";
@@ -24,6 +25,7 @@ import type { ExplorerTab } from "@/types";
 import type { ExplorerSearchStage, SearchBounds } from "@/types/explorer";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { hasAiContext, launchAiContextGate } from "@/lib/ai-context-gate";
 
 const PREFS_KEY = "ls_explorer_prefs";
 const SEARCH_PROGRESS_STAGES: ExplorerSearchStage[] = [
@@ -84,6 +86,7 @@ function getSearchBounds({ center, radiusKm }: SearchArea): SearchBounds {
 }
 
 export function useExplorer() {
+  const router = useRouter();
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.errors;
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -435,6 +438,17 @@ export function useExplorer() {
 
   async function triggerSearch() {
     if (!hasLocation) return;
+    if (!hasAiContext()) {
+      try {
+        if (sessionStorage.getItem("scoutia_ai_ctx_search_nudge") !== "1") {
+          sessionStorage.setItem("scoutia_ai_ctx_search_nudge", "1");
+          void launchAiContextGate({
+            lang,
+            onGoToContext: () => router.push("/ai-context"),
+          }).catch(() => {});
+        }
+      } catch {}
+    }
     setSearchStage("preparing");
     setIsSearching(true);
     setSearchError(null);
