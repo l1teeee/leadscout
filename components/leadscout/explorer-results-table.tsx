@@ -10,6 +10,7 @@ import type { ExplorerResultsTableProps } from "@/types/explorer";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 import type { LeadStatus } from "@/lib/data";
+import { cn } from "@/lib/utils";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const pixelBadgeClass =
@@ -159,18 +160,12 @@ export function ExplorerResultsTable({
               <tr
                 key={lead.id}
                 onClick={() => onSelectLead(selected?.id === lead.id ? null : lead)}
-                className="cursor-pointer transition-colors"
-                style={{
-                  background: selected?.id === lead.id ? "var(--pixel-highlight)" : undefined,
-                }}
-                onMouseEnter={(e) => {
-                  if (selected?.id !== lead.id)
-                    (e.currentTarget as HTMLElement).style.background = "var(--pixel-highlight)";
-                }}
-                onMouseLeave={(e) => {
-                  if (selected?.id !== lead.id)
-                    (e.currentTarget as HTMLElement).style.background = "";
-                }}
+                className={cn(
+                  "cursor-pointer transition-colors",
+                  selected?.id === lead.id
+                    ? "bg-[var(--surface-2)]"
+                    : "hover:bg-[var(--surface-2)]",
+                )}
               >
                 <td className="px-5 py-3">
                   <p className="font-semibold leading-snug" style={{ color: "var(--text)" }}>

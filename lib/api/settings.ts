@@ -120,7 +120,8 @@ export async function getUsage(): Promise<UsageData> {
   return apiFetch<UsageData>("/api/settings/usage");
 }
 
-export async function getAudit(): Promise<AuditEntryData[]> {
-  const data = await apiFetch<{ entries: AuditEntryData[] }>("/api/settings/audit");
+export async function getAudit(limit?: number): Promise<AuditEntryData[]> {
+  const qs = limit ? `?limit=${limit}` : "";
+  const data = await apiFetch<{ entries: AuditEntryData[] }>(`/api/settings/audit${qs}`);
   return data.entries ?? [];
 }

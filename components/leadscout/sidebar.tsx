@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart3, Building2, Cable, LayoutDashboard, LogOut, Search, Send, Sparkles, Target, Settings, Zap,
+  BarChart3, Building2, Cable, History, LayoutDashboard, LogOut, Search, Send, Sparkles, Target, Settings, Zap,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { clearToken, getToken } from "@/lib/auth";
@@ -37,6 +37,7 @@ function useSidebarSections(): SidebarSection[] {
       label: tr.nav.sections.system,
       items: [
         { id: "ai-context", label: tr.nav.items.aiContext, icon: Sparkles },
+        { id: "audit", label: tr.nav.items.audit, icon: History },
         { id: "integrations", label: tr.nav.items.integrations, icon: Cable },
       ],
     },

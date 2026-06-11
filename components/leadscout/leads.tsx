@@ -13,7 +13,7 @@ import { PriorityBadge, StatusBadge, Tag } from "@/components/ui/badge";
 import { ScoreBar, ScoreBig } from "@/components/ui/score-bar";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { markLeadViewed } from "@/lib/api/leads";
-import { safeHref } from "@/lib/utils";
+import { cn, safeHref } from "@/lib/utils";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -383,9 +383,11 @@ export function Leads() {
                           markLeadViewed(lead.id).catch(() => {});
                         }
                       }}
-                      className="cursor-pointer transition-colors hover:bg-(--surface-2)"
+                      className={cn(
+                        "cursor-pointer transition-colors",
+                        isSelected ? "bg-[var(--surface-2)]" : "bg-[var(--surface)] hover:bg-[var(--surface-2)]",
+                      )}
                       style={{
-                        background: isSelected ? "var(--surface-2)" : "var(--surface)",
                         borderBottom: "1px solid #E4E4E7",
                       }}
                     >
