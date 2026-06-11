@@ -5,11 +5,11 @@ import {
   BadgeCheck,
   Bell,
   Building2,
-  CheckCircle2,
   CreditCard,
   Globe2,
   KeyRound,
   MapPin,
+  Search,
   ShieldCheck,
   SlidersHorizontal,
   UserRound,
@@ -20,13 +20,12 @@ import { Tag } from "@/components/ui/badge";
 import { WorkspaceInfoCard } from "./workspace-info-card";
 import {
   SETTINGS_OPERATIONAL_PREFERENCES,
-  SETTINGS_PLAN_USAGE,
   SETTINGS_SECURITY,
-  SETTINGS_TEAM_MEMBERS,
   SETTINGS_WORK_ZONES,
   type ZonePriority,
 } from "@/lib/settings-data";
 import { useSettings } from "@/lib/hooks/use-settings";
+import { useSettingsPanels } from "@/lib/hooks/use-settings-panels";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 
@@ -34,9 +33,7 @@ const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
-const team = SETTINGS_TEAM_MEMBERS;
 const preferences = SETTINGS_OPERATIONAL_PREFERENCES;
-const planUsage = SETTINGS_PLAN_USAGE;
 const security = SETTINGS_SECURITY;
 const workZones = SETTINGS_WORK_ZONES;
 const categories = Array.from(new Set(workZones.flatMap((zone) => zone.categories))).slice(0, 10);
@@ -56,12 +53,8 @@ function initials(name: string) {
     .join("");
 }
 
-function compactDate(value: string | undefined, pendingLabel: string) {
-  if (!value) return pendingLabel;
-  return value.split("T")[0] ?? value;
-}
-
 function usagePercent(value: number, limit: number) {
+  if (!limit) return 0;
   return Math.min(100, Math.round((value / limit) * 100));
 }
 
@@ -143,7 +136,7 @@ function UsageRow({ label, value, limit }: { label: string; value: number; limit
       <div className="mb-1.5 flex items-center justify-between gap-3 text-xs font-semibold" style={bodyTextStyle}>
         <span style={{ color: "var(--text-2)" }}>{label}</span>
         <span className="tabular-nums" style={{ color: "var(--text)" }}>
-          {value}/{limit}
+          {value.toLocaleString()}/{limit.toLocaleString()}
         </span>
       </div>
       <div className="h-5 border-2 border-[var(--border)] bg-[var(--surface)] p-[2px]">
@@ -169,13 +162,11 @@ export function Configuracion() {
     saveStatus, save,
   } = useSettings();
 
-  const usage = [
-    { label: settings.usageLabels.leads, value: planUsage.leads.usedThisMonth, limit: planUsage.leads.monthlyLimit },
-    { label: settings.usageLabels.searches, value: planUsage.searches.usedThisMonth, limit: planUsage.searches.monthlyLimit },
-    { label: settings.usageLabels.members, value: planUsage.seats.used, limit: planUsage.seats.limit },
-    { label: settings.usageLabels.exports, value: planUsage.exports.usedThisMonth, limit: planUsage.exports.monthlyLimit },
-    { label: settings.usageLabels.storage, value: planUsage.storageGb.used, limit: planUsage.storageGb.limit },
-  ];
+  const { team, usage, audit, loading } = useSettingsPanels();
+
+  const planLabel = usage
+    ? tr.settingsEnums.plan[usage.plan as keyof typeof tr.settingsEnums.plan] ?? usage.plan
+    : "";
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
@@ -227,6 +218,50 @@ export function Configuracion() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
+          {/* Team - live data */}
+          <section className="pixel-card-sm overflow-hidden bg-white">
+            <div className="border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-5">
+              <SectionHeader eyebrow={settings.sections.team} title={settings.sections.members} icon={UsersRound} />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px] text-sm" style={bodyTextStyle}>
+                <thead>
+                  <tr>
+                    {settings.teamHeaders.slice(0, 3).map((heading) => (
+                      <th
+                        key={heading}
+                        className="retro border-b-2 border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase"
+                        style={{ color: "var(--text-3)" }}
+                      >
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {team.map((member) => (
+                    <tr key={member.id} className="border-b border-[#E4E4E7] last:border-b-0">
+                      <td className="px-4 py-3 font-bold" style={{ color: "var(--text)" }}>
+                        {member.full_name || member.email}
+                      </td>
+                      <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
+                        {member.email}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Tag>{tr.settingsEnums.teamRole[member.role as keyof typeof tr.settingsEnums.teamRole] ?? member.role}</Tag>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {!loading && team.length === 0 && (
+                <p className="px-4 py-4 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                  {settings.teamEmpty}
+                </p>
+              )}
+            </div>
+          </section>
+
           <ComingSoon>
             <section className="pixel-card-sm bg-white p-5">
               <SectionHeader eyebrow={settings.sections.operation} title={settings.sections.preferences} icon={SlidersHorizontal} />
@@ -235,55 +270,6 @@ export function Configuracion() {
                 <ToggleRow title={settings.toggles.requiredNotes.title} description={settings.toggles.requiredNotes.description} checked={preferences.requireLeadNotesBeforeStageChange} />
                 <ToggleRow title={settings.toggles.archiveLost.title} description={settings.toggles.archiveLost.description(preferences.staleLeadDays)} checked={preferences.autoArchiveLostLeads} />
                 <ToggleRow title={settings.toggles.weeklyReport.title} description={settings.toggles.weeklyReport.description(preferences.businessHours.mondayToFriday)} checked={false} />
-              </div>
-            </section>
-          </ComingSoon>
-
-          <ComingSoon>
-            <section className="pixel-card-sm overflow-hidden bg-white">
-              <div className="border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-5">
-                <SectionHeader eyebrow={settings.sections.team} title={settings.sections.members} icon={UsersRound} />
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm" style={bodyTextStyle}>
-                  <thead>
-                    <tr>
-                      {settings.teamHeaders.map((heading) => (
-                        <th
-                          key={heading}
-                          className="retro border-b-2 border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase"
-                          style={{ color: "var(--text-3)" }}
-                        >
-                          {heading}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {team.map((member) => (
-                      <tr key={member.email} className="border-b border-[#E4E4E7] last:border-b-0">
-                        <td className="px-4 py-3 font-bold" style={{ color: "var(--text)" }}>
-                          {member.fullName}
-                        </td>
-                        <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
-                          {member.email}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Tag>{tr.settingsEnums.teamRole[member.role]}</Tag>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-2 text-xs font-bold" style={{ color: "var(--text-2)" }}>
-                            <span className="h-2 w-2 bg-[var(--c-qualified)]" />
-                            {tr.settingsEnums.teamStatus[member.status]}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-semibold" style={{ color: "var(--text-3)" }}>
-                          {compactDate(member.lastActiveAt, settings.pending)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </section>
           </ComingSoon>
@@ -316,16 +302,48 @@ export function Configuracion() {
         </div>
 
         <div className="space-y-5">
-          <ComingSoon>
-            <section className="pixel-card-sm bg-white p-5">
-              <SectionHeader eyebrow={settings.sections.plan} title={settings.sections.monthlyUsage} icon={CreditCard} />
-              <div className="space-y-4">
-                {usage.map((item) => (
-                  <UsageRow key={item.label} {...item} />
-                ))}
-              </div>
-            </section>
-          </ComingSoon>
+          {/* Plan + monthly usage - live data */}
+          <section className="pixel-card-sm bg-white p-5">
+            <SectionHeader
+              eyebrow={settings.sections.plan}
+              title={planLabel || settings.sections.monthlyUsage}
+              icon={CreditCard}
+            />
+            <div className="space-y-4">
+              <UsageRow
+                label={settings.usageLabels.searches}
+                value={usage?.searches_used ?? 0}
+                limit={usage?.searches_limit ?? 0}
+              />
+              <UsageRow
+                label={settings.usageLabels.tokens}
+                value={usage?.tokens_used ?? 0}
+                limit={usage?.tokens_limit ?? 0}
+              />
+            </div>
+          </section>
+
+          {/* Audit - live recent searches */}
+          <section className="pixel-card-sm bg-white p-5">
+            <SectionHeader eyebrow={settings.sections.audit} title={settings.sections.recentActivity} icon={Activity} />
+            <div className="space-y-3">
+              {!loading && audit.length === 0 && (
+                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                  {settings.auditEmpty}
+                </p>
+              )}
+              {audit.map((entry, i) => {
+                const query = (entry.query ?? "").trim() || settings.auditFallback.business;
+                const location = (entry.location ?? "").trim() || settings.auditFallback.zone;
+                return (
+                  <div key={i} className="flex items-start gap-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+                    <Search size={14} className="mt-0.5 shrink-0" />
+                    <span>{settings.auditSearch(query, location, entry.results_count)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
 
           <ComingSoon>
             <section className="pixel-card-sm bg-white p-5">
@@ -365,20 +383,6 @@ export function Configuracion() {
                 <ToggleRow title={settings.toggles.newLeads.title} description={settings.toggles.newLeads.description} checked={preferences.preferredContactChannels.includes("app")} />
                 <ToggleRow title={settings.toggles.operationalEmail.title} description={settings.toggles.operationalEmail.description} checked={preferences.preferredContactChannels.includes("email")} />
                 <ToggleRow title={settings.toggles.commercialWhatsapp.title} description={settings.toggles.commercialWhatsapp.description} checked={preferences.preferredContactChannels.includes("whatsapp")} />
-              </div>
-            </section>
-          </ComingSoon>
-
-          <ComingSoon>
-            <section className="pixel-card-sm bg-white p-5">
-              <SectionHeader eyebrow={settings.sections.audit} title={settings.sections.recentActivity} icon={Activity} />
-              <div className="space-y-3">
-                {settings.auditItems(userFullName.split(" ")[0] ?? userFullName).map((item) => (
-                  <div key={item} className="flex items-center gap-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
-                    <CheckCircle2 size={14} />
-                    <span>{item}</span>
-                  </div>
-                ))}
               </div>
             </section>
           </ComingSoon>

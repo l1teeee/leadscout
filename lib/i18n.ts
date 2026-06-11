@@ -803,6 +803,7 @@ export const translations = {
         members: "Members",
         exports: "Exports",
         storage: "Storage GB",
+        tokens: "AI tokens",
       },
       securityLabels: {
         password: "Active password",
@@ -814,6 +815,13 @@ export const translations = {
         "Mariana updated zones",
         "Carlos closed 3 opportunities",
       ],
+      auditEmpty: "No recent activity yet.",
+      auditSearch: (query: string, location: string, count: number) =>
+        `Searched ${query} in ${location} - ${count} results`,
+      auditFallback: { business: "businesses", zone: "your zone" },
+      teamEmpty: "No team members yet.",
+      currentPlan: "Current plan",
+      panelsError: "Could not load this data.",
     },
     aiContext: {
       eyebrow: "Personalization",
@@ -1928,6 +1936,7 @@ export const translations = {
         members: "Miembros",
         exports: "Exportaciones",
         storage: "Storage GB",
+        tokens: "Tokens de IA",
       },
       securityLabels: {
         password: "Password activo",
@@ -1939,6 +1948,13 @@ export const translations = {
         "Mariana actualizó zonas",
         "Carlos cerró 3 oportunidades",
       ],
+      auditEmpty: "Aún no hay actividad reciente.",
+      auditSearch: (query: string, location: string, count: number) =>
+        `Buscaste ${query} en ${location} - ${count} resultados`,
+      auditFallback: { business: "negocios", zone: "tu zona" },
+      teamEmpty: "Aún no hay miembros del equipo.",
+      currentPlan: "Plan actual",
+      panelsError: "No se pudieron cargar estos datos.",
     },
     aiContext: {
       eyebrow: "Personalización",

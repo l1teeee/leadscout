@@ -86,3 +86,41 @@ export async function updateWorkspace(payload: UpdateWorkspacePayload): Promise<
     body: JSON.stringify(body),
   });
 }
+
+export interface TeamMemberData {
+  id: string;
+  full_name: string | null;
+  email: string;
+  role: string;
+  avatar_url: string | null;
+}
+
+export interface UsageData {
+  plan: string;
+  searches_used: number;
+  searches_limit: number;
+  tokens_used: number;
+  tokens_limit: number;
+}
+
+export interface AuditEntryData {
+  query: string | null;
+  location: string | null;
+  category: string | null;
+  results_count: number;
+  created_at: string | null;
+}
+
+export async function getTeam(): Promise<TeamMemberData[]> {
+  const data = await apiFetch<{ members: TeamMemberData[] }>("/api/settings/team");
+  return data.members ?? [];
+}
+
+export async function getUsage(): Promise<UsageData> {
+  return apiFetch<UsageData>("/api/settings/usage");
+}
+
+export async function getAudit(): Promise<AuditEntryData[]> {
+  const data = await apiFetch<{ entries: AuditEntryData[] }>("/api/settings/audit");
+  return data.entries ?? [];
+}
