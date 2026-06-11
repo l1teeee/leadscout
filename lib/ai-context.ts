@@ -39,7 +39,7 @@ export function setAiContext(v: { businessContext: string; constraints: string }
     };
     window.localStorage.setItem(LS_KEY, JSON.stringify(payload));
   } catch {
-    // ignore
+    return;
   }
 }
 
@@ -48,7 +48,7 @@ export function clearAiContext(): void {
   try {
     window.localStorage.removeItem(LS_KEY);
   } catch {
-    // ignore
+    return;
   }
 }
 
@@ -64,4 +64,39 @@ export function composeContext(businessContext: string, constraints: string): st
 export function buildContextString(): string {
   const { businessContext, constraints } = getAiContext();
   return composeContext(businessContext, constraints);
+}
+
+export function syncAiContextFromServer(data: {
+  business_context: string;
+  constraints: string;
+  updated_at: string | null;
+}): void {
+  setAiContext({
+    businessContext: data.business_context,
+    constraints: data.constraints,
+  });
+  if (typeof window === "undefined" || !data.updated_at) return;
+  try {
+    const raw = window.localStorage.getItem(LS_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    window.localStorage.setItem(
+      LS_KEY,
+      JSON.stringify({ ...parsed, updatedAt: data.updated_at }),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+export async function getOrSyncContext(): Promise<string> {
+  const local = buildContextString();
+  if (local) return local;
+  try {
+    const { getAiContext: getServerAiContext } = await import("@/lib/api/settings");
+    const data = await getServerAiContext();
+    syncAiContextFromServer(data);
+    return composeContext(data.business_context, data.constraints);
+  } catch {
+    return "";
+  }
 }

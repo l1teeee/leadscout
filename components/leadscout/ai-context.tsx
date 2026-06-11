@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { Clock, Eye, Lightbulb, Sparkles, Trash2 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { getAiContext as getServerAiContext, updateAiContext } from "@/lib/api/settings";
 import {
   BUSINESS_MAX,
   CONSTRAINTS_MAX,
   clearAiContext,
   composeContext,
-  getAiContext,
-  setAiContext,
+  getAiContext as getLocalAiContext,
+  syncAiContextFromServer,
 } from "@/lib/ai-context";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
@@ -43,13 +44,23 @@ export function AiContextPage() {
   const [constraints, setConstraints] = useState("");
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    const c = getAiContext();
+    const c = getLocalAiContext();
     setBusinessContext(c.businessContext);
     setConstraints(c.constraints);
     setUpdatedAt(c.updatedAt ?? null);
+
+    getServerAiContext()
+      .then((data) => {
+        setBusinessContext(data.business_context);
+        setConstraints(data.constraints);
+        setUpdatedAt(data.updated_at);
+        syncAiContextFromServer(data);
+      })
+      .catch(() => undefined);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -57,14 +68,24 @@ export function AiContextPage() {
   const isActive = composed.trim().length > 0;
   const approxTokens = Math.ceil(composed.length / 4);
 
-  function handleSave() {
-    setAiContext({ businessContext, constraints });
-    setUpdatedAt(getAiContext().updatedAt ?? new Date().toISOString());
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1500);
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const data = await updateAiContext({
+        business_context: businessContext,
+        constraints,
+      });
+      syncAiContextFromServer(data);
+      setUpdatedAt(data.updated_at);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleClear() {
+  async function handleClear() {
+    updateAiContext({ business_context: "", constraints: "" }).catch(() => undefined);
     clearAiContext();
     setBusinessContext("");
     setConstraints("");
@@ -151,6 +172,7 @@ export function AiContextPage() {
               <button
                 type="button"
                 onClick={handleSave}
+                disabled={saving}
                 className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--pixel-shadow)]"
               >
                 <Sparkles size={13} />

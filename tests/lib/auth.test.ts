@@ -32,7 +32,7 @@ function captureCookieWrites(action: () => void): string[] {
   if (ownDescriptor) {
     Object.defineProperty(document, 'cookie', ownDescriptor)
   } else {
-    delete (document as Document & { cookie?: string }).cookie
+    Reflect.deleteProperty(document, 'cookie')
   }
 
   return writes

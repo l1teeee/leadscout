@@ -1,6 +1,6 @@
 import { apiFetch } from "./client";
 import { getUserSignature, getToken, parseTokenUser } from "@/lib/auth";
-import { buildContextString } from "@/lib/ai-context";
+import { getOrSyncContext } from "@/lib/ai-context";
 
 export const EXPLORER_SEARCH_TIMEOUT_MS = 180_000;
 
@@ -76,7 +76,7 @@ export interface LeadChatResponse {
 }
 
 export async function analyzeLead(body: LeadAnalyzeRequest): Promise<LeadAnalyzeResponse> {
-  const business_context = body.business_context ?? (buildContextString() || undefined);
+  const business_context = body.business_context ?? ((await getOrSyncContext()) || undefined);
   return apiFetch<LeadAnalyzeResponse>("/api/explorer/analyze", {
     method: "POST",
     body: JSON.stringify({ ...body, business_context }),
@@ -84,7 +84,7 @@ export async function analyzeLead(body: LeadAnalyzeRequest): Promise<LeadAnalyze
 }
 
 export async function askLeadQuestion(body: LeadChatRequest): Promise<LeadChatResponse> {
-  const business_context = body.business_context ?? (buildContextString() || undefined);
+  const business_context = body.business_context ?? ((await getOrSyncContext()) || undefined);
   return apiFetch<LeadChatResponse>("/api/explorer/chat", {
     method: "POST",
     body: JSON.stringify({ ...body, business_context }),

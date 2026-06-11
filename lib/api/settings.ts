@@ -125,3 +125,22 @@ export async function getAudit(limit?: number): Promise<AuditEntryData[]> {
   const data = await apiFetch<{ entries: AuditEntryData[] }>(`/api/settings/audit${qs}`);
   return data.entries ?? [];
 }
+
+export interface AiContextData {
+  business_context: string;
+  constraints: string;
+  updated_at: string | null;
+}
+
+export async function getAiContext(): Promise<AiContextData> {
+  return apiFetch<AiContextData>("/api/settings/ai-context");
+}
+
+export async function updateAiContext(
+  body: Partial<Pick<AiContextData, "business_context" | "constraints">>,
+): Promise<AiContextData> {
+  return apiFetch<AiContextData>("/api/settings/ai-context", {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
