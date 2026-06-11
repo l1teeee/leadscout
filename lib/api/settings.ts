@@ -144,3 +144,32 @@ export async function updateAiContext(
     body: JSON.stringify(body),
   });
 }
+
+export interface AiContextExampleData {
+  business_context: string;
+  constraints: string;
+}
+
+export async function generateAiContextExample(body: {
+  business_type: string;
+  lang: "en" | "es";
+}): Promise<AiContextExampleData> {
+  const res = await fetch("/api/ai-context/example", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    let detail = "Could not generate example";
+    try {
+      const payload = await res.json() as { detail?: unknown };
+      if (typeof payload.detail === "string") detail = payload.detail;
+    } catch {
+      // keep generic detail
+    }
+    throw new Error(detail);
+  }
+
+  return res.json() as Promise<AiContextExampleData>;
+}
