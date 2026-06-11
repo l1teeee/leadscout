@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { login, register } from "@/lib/api/auth";
-import { clearToken, setToken } from "@/lib/auth";
+import { setToken } from "@/lib/auth";
 import LoadingScreen from "@/components/ui/8bit-loading-screen";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -43,10 +43,6 @@ export default function RegisterForm({ className }: { className?: string }) {
     setErrorMsg(msg);
     errorTimerRef.current = setTimeout(() => setErrorMsg(null), 2500);
   };
-
-  useEffect(() => {
-    clearToken();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

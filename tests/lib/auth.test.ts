@@ -1,9 +1,47 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setToken, getToken, clearToken, parseTokenUser } from '@/lib/auth'
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_SECONDS,
+  setToken,
+  getToken,
+  clearToken,
+  parseTokenUser,
+  setUserSignature,
+  getUserSignature,
+} from '@/lib/auth'
+
+function captureCookieWrites(action: () => void): string[] {
+  const ownDescriptor = Object.getOwnPropertyDescriptor(document, 'cookie')
+  const prototypeDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie')
+  const descriptor = ownDescriptor ?? prototypeDescriptor
+  const writes: string[] = []
+
+  Object.defineProperty(document, 'cookie', {
+    configurable: true,
+    get() {
+      return descriptor?.get?.call(document) ?? ''
+    },
+    set(value: string) {
+      writes.push(value)
+      descriptor?.set?.call(document, value)
+    },
+  })
+
+  action()
+
+  if (ownDescriptor) {
+    Object.defineProperty(document, 'cookie', ownDescriptor)
+  } else {
+    delete (document as Document & { cookie?: string }).cookie
+  }
+
+  return writes
+}
 
 describe('auth token management', () => {
   beforeEach(() => {
     document.cookie = 'ls_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
+    sessionStorage.clear()
   })
 
   it('setToken escribe el token en cookie ls_token', () => {
@@ -18,10 +56,32 @@ describe('auth token management', () => {
     expect(getToken()).toBe('my-test-token')
   })
 
+  it('setToken crea una cookie persistente de 7 dias', () => {
+    const [cookieWrite] = captureCookieWrites(() => setToken('my-test-token'))
+
+    expect(cookieWrite).toContain(`${SESSION_COOKIE_NAME}=my-test-token`)
+    expect(cookieWrite).toContain(`max-age=${SESSION_MAX_AGE_SECONDS}`)
+    expect(cookieWrite).toContain('expires=')
+    expect(cookieWrite).toContain('path=/')
+    expect(cookieWrite).toContain('SameSite=Strict')
+  })
+
   it('clearToken elimina el token de la cookie', () => {
     setToken('my-test-token')
     clearToken()
     expect(getToken()).toBeNull()
+  })
+
+  it('clearToken expira la cookie y limpia la firma de sesion', () => {
+    setToken('my-test-token')
+    setUserSignature('signed-user')
+
+    const [cookieWrite] = captureCookieWrites(() => clearToken())
+
+    expect(cookieWrite).toContain(`${SESSION_COOKIE_NAME}=`)
+    expect(cookieWrite).toContain('max-age=0')
+    expect(cookieWrite).toContain('expires=Thu, 01 Jan 1970 00:00:00 GMT')
+    expect(getUserSignature()).toBeNull()
   })
 
   it('getToken retorna null cuando no hay cookie', () => {

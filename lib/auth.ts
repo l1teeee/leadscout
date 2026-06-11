@@ -1,23 +1,26 @@
-const COOKIE = "ls_token";
-const MAX_AGE = 7 * 24 * 60 * 60; // 7 days
+export const SESSION_COOKIE_NAME = "ls_token";
+export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 const SIG_KEY = "ls_user_sig";
+
+function getCookieSecurityAttribute(): string {
+  return typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
+}
 
 export function setToken(token: string): void {
   if (typeof document === "undefined") return;
-  const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${COOKIE}=${encodeURIComponent(token)}; path=/; max-age=${MAX_AGE}; SameSite=Strict${secure}`;
+  const expires = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000).toUTCString();
+  document.cookie = `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; expires=${expires}; SameSite=Strict${getCookieSecurityAttribute()}`;
 }
 
 export function getToken(): string | null {
   if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${COOKIE}=([^;]*)`));
+  const match = document.cookie.match(new RegExp(`(?:^|; )${SESSION_COOKIE_NAME}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
 }
 
 export function clearToken(): void {
   if (typeof document === "undefined") return;
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${COOKIE}=; path=/; max-age=0; SameSite=Strict${secure}`;
+  document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict${getCookieSecurityAttribute()}`;
   sessionStorage.removeItem(SIG_KEY);
 }
 

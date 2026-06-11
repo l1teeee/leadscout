@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { login } from "@/lib/api/auth";
-import { clearToken, setToken } from "@/lib/auth";
+import { setToken } from "@/lib/auth";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 
@@ -30,7 +30,7 @@ export default function LoginForm() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
-  const [lockoutSecondsLeft, setLockoutSecondsLeft] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showError = (msg: string) => {
@@ -40,29 +40,18 @@ export default function LoginForm() {
   };
 
   const isDisabled = !email || !password || isLoading || Boolean(lockoutUntil);
+  const lockoutSecondsLeft = lockoutUntil ? Math.max(0, Math.ceil((lockoutUntil - now) / 1000)) : 0;
 
   useEffect(() => {
-    clearToken();
-  }, []);
-
-  useEffect(() => {
-    if (!lockoutUntil) {
-      setLockoutSecondsLeft(0);
-      return;
-    }
-
-    const updateLockout = () => {
-      const secondsLeft = Math.max(0, Math.ceil((lockoutUntil - Date.now()) / 1000));
-      setLockoutSecondsLeft(secondsLeft);
-
-      if (secondsLeft === 0) {
+    if (!lockoutUntil) return;
+    const timer = setInterval(() => {
+      const currentTime = Date.now();
+      setNow(currentTime);
+      if (currentTime >= lockoutUntil) {
         setFailedAttempts(0);
         setLockoutUntil(null);
       }
-    };
-
-    updateLockout();
-    const timer = setInterval(updateLockout, 1000);
+    }, 1000);
     return () => clearInterval(timer);
   }, [lockoutUntil]);
 
@@ -92,7 +81,9 @@ export default function LoginForm() {
       const nextAttempts = failedAttempts + 1;
       setFailedAttempts(nextAttempts);
       if (nextAttempts >= 5) {
-        setLockoutUntil(Date.now() + 60000);
+        const currentTime = Date.now();
+        setNow(currentTime);
+        setLockoutUntil(currentTime + 60000);
       }
       setIsLoading(false);
     }
