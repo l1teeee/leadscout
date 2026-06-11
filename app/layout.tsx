@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: [
         {
-          url: "/favicon.svg",
+          url: "/favicon.svg?v=2",
           type: "image/svg+xml",
         },
       ],
