@@ -126,7 +126,7 @@ export function ExplorerAnalysisModal({
   }
 
   async function handleSendMessage() {
-    const question = chatInput.trim();
+    const question = chatInput.trim().replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "");
     if (!question || isChatLoading) return;
 
     setChatInput("");
@@ -172,7 +172,7 @@ export function ExplorerAnalysisModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="analysis-dialog-title"
-        className="pixel-card-sm flex w-full max-w-4xl animate-fade-up flex-col"
+        className="pixel-card-sm flex w-full max-w-5xl animate-fade-up flex-col"
         style={{ height: "min(88vh, 720px)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -410,6 +410,7 @@ export function ExplorerAnalysisModal({
                   }
                 }}
                 placeholder={chatTr.placeholder}
+                maxLength={500}
                 disabled={isChatLoading}
                 className="flex-1 pixel-inset px-3 py-2 text-xs bg-surface border-0 outline-none disabled:opacity-50"
                 style={{ ...bodyTextStyle, color: "var(--text)" }}
