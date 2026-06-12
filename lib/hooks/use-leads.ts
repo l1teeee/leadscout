@@ -97,7 +97,7 @@ export function useLeads(): UseLeadsReturn {
   const [status, setStatusState] = useState<LeadStatus | "">("");
   const [priority, setPriorityState] = useState<LeadPriority | "">("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortField>("created_at");
+  const [sortBy, setSortBy] = useState<SortField>("score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPageState] = useState(0);
 

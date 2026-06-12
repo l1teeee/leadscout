@@ -48,11 +48,12 @@ export const translations = {
       mapLoading: "Loading map",
       leadsLabel: "Leads",
       scoreLabels: {
-        critical: "Critical",
-        weak: "Weak",
-        moderate: "Moderate",
-        good: "Good",
+        critical: "Low",
+        weak: "Moderate",
+        moderate: "Good",
+        good: "High",
       },
+      scoreTooltip: "Opportunity score: higher = more commercial potential",
       chartEmpty: {
         title: "A zone still needs to be explored",
         description: "When you run your first search, you will see leads detected by day here.",
@@ -694,7 +695,7 @@ export const translations = {
         total: { label: "Total leads", sub: "Estimated workspace base" },
         contacted: { label: "Contacted", sub: "In commercial follow-up" },
         conversion: { label: "Conversion", sub: "Qualified leads" },
-        critical: { label: "Critical", sub: "Score equal to or lower than 20" },
+        critical: { label: "Top leads", sub: "Score equal to or higher than 80" },
       },
       chart: {
         title: "Weekly activity",
@@ -1241,11 +1242,12 @@ export const translations = {
       mapLoading: "Cargando mapa",
       leadsLabel: "Leads",
       scoreLabels: {
-        critical: "Crítico",
-        weak: "Débil",
-        moderate: "Moderado",
-        good: "Bueno",
+        critical: "Bajo",
+        weak: "Moderado",
+        moderate: "Bueno",
+        good: "Alto",
       },
+      scoreTooltip: "Score de oportunidad: mayor puntaje = mas potencial comercial",
       chartEmpty: {
         title: "Aún falta explorar una zona",
         description: "Cuando ejecutes tu primera búsqueda, acá verás los leads detectados por día.",
@@ -1887,7 +1889,7 @@ export const translations = {
         total: { label: "Total leads", sub: "Base estimada del workspace" },
         contacted: { label: "Contactados", sub: "En seguimiento comercial" },
         conversion: { label: "Conversión", sub: "Leads calificados" },
-        critical: { label: "Críticos", sub: "Score igual o menor a 20" },
+        critical: { label: "Alta oportunidad", sub: "Score mayor o igual a 80" },
       },
       chart: {
         title: "Actividad semanal",

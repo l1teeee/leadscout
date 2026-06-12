@@ -1,5 +1,6 @@
 "use client";
 
+import * as Tooltip from "@radix-ui/react-tooltip";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -26,30 +27,46 @@ interface ScoreBarProps {
 
 export function ScoreBar({ score, showLabel = false, className }: ScoreBarProps) {
   const { lang } = useLanguage();
+  const t = translations[lang].common;
   const color = scoreColor(score);
-  const label = scoreLabel(score, translations[lang].common.scoreLabels);
+  const label = scoreLabel(score, t.scoreLabels);
   const value = Math.max(0, Math.min(100, score));
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <div className="h-3 flex-1 overflow-hidden rounded-none border-2 border-[var(--border)] bg-[var(--surface)] p-[1px]">
-        <div
-          className="h-full rounded-none transition-all"
-          style={{ width: `${value}%`, backgroundColor: color }}
-        />
-      </div>
-      <span
-        className="retro pixel-text-xs shrink-0 tabular-nums text-xs font-bold tracking-[0px]"
-        style={{ color }}
-      >
-        {score}
-      </span>
-      {showLabel && (
-        <span className="retro pixel-text-xs shrink-0 text-[10px] font-bold tracking-[0px] text-[var(--text-2)]">
-          {label}
-        </span>
-      )}
-    </div>
+    <Tooltip.Provider delayDuration={300}>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>
+          <div className={cn("flex items-center gap-2 cursor-default", className)}>
+            <div className="h-3 flex-1 overflow-hidden rounded-none border-2 border-(--border) bg-surface p-px">
+              <div
+                className="h-full rounded-none transition-all"
+                style={{ width: `${value}%`, backgroundColor: color }}
+              />
+            </div>
+            <span
+              className="retro pixel-text-xs shrink-0 tabular-nums text-xs font-bold tracking-normal"
+              style={{ color }}
+            >
+              {score}
+            </span>
+            {showLabel && (
+              <span className="retro pixel-text-xs shrink-0 text-[10px] font-bold tracking-normal text-text-2">
+                {label}
+              </span>
+            )}
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Content
+            className="retro pixel-text-xs z-50 max-w-50 rounded-none border-2 border-(--border) bg-surface px-2 py-1 text-[9px] text-text"
+            sideOffset={5}
+          >
+            {t.scoreTooltip}
+            <Tooltip.Arrow className="fill-(--border)" />
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Tooltip.Provider>
   );
 }
 
