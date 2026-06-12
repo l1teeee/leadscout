@@ -26,14 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL("https://scoutia.dev"),
     title: seo.title,
     description: seo.description,
-    icons: {
-      icon: [
-        {
-          url: "/favicon.svg?v=2",
-          type: "image/svg+xml",
-        },
-      ],
-    },
+
     alternates: {
       canonical: "/",
     },

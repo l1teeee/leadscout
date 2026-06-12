@@ -13,9 +13,26 @@ function isTokenExpired(token: string): boolean {
   }
 }
 
+function isSafeRedirect(raw: string): boolean {
+  if (!raw.startsWith("/")) return false;
+  if (raw.startsWith("//") || raw.startsWith("/\\")) return false;
+  try {
+    new URL(raw);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 export function proxy(request: NextRequest) {
   const token = request.cookies.get("ls_token")?.value;
   const { pathname } = request.nextUrl;
+
+  // Redirect root based on auth state
+  if (pathname === "/") {
+    const destination = token && !isTokenExpired(token) ? "/dashboard" : "/login";
+    return NextResponse.redirect(new URL(destination, request.url));
+  }
 
   if (token && isTokenExpired(token)) {
     const response = NextResponse.redirect(new URL("/login", request.url));
@@ -28,6 +45,13 @@ export function proxy(request: NextRequest) {
   }
 
   if (token && AUTH_ROUTES.has(pathname)) {
+    // Sanitize open-redirect in ?next= before bouncing to dashboard
+    const next = request.nextUrl.searchParams.get("next");
+    if (next && !isSafeRedirect(next)) {
+      const url = request.nextUrl.clone();
+      url.searchParams.set("next", "/dashboard");
+      return NextResponse.redirect(url);
+    }
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
