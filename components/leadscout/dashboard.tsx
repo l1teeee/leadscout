@@ -93,9 +93,9 @@ function PriorityBar({
   className?: string;
 }) {
   const priorities = [
-    { key: "alta", color: "#E63946" },
+    { key: "alta", color: "#3FAE2A" },
     { key: "media", color: "#F4A261" },
-    { key: "baja", color: "#3FAE2A" },
+    { key: "baja", color: "#9CA3AF" },
   ];
   const priorityTotal =
     (by_priority.alta ?? 0) + (by_priority.media ?? 0) + (by_priority.baja ?? 0);
@@ -267,7 +267,7 @@ export async function Dashboard() {
   const recent = leads.slice(0, 5);
   const chartData = toChartData(summary.weekly_activity, tr.dashboard.days);
   const quickWins = leads
-    .filter((lead) => lead.score >= 65 && lead.status === "nuevo")
+    .filter((lead) => lead.priority === "alta" && lead.status === "nuevo")
     .sort((a, b) => b.score - a.score)
     .slice(0, 3);
   const topCategories = Object.entries(summary.by_category)
@@ -282,7 +282,7 @@ export async function Dashboard() {
       <div data-tour="dashboard-kpis" data-stagger className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         <KpiCard label={tr.dashboard.kpi.totalLeads.label} value={summary.total_leads} sub={tr.dashboard.kpi.totalLeads.sub} tone="neutral" />
         <KpiCard label={tr.dashboard.kpi.thisWeek.label} value={summary.new_this_week} sub={tr.dashboard.kpi.thisWeek.sub} tone="info" />
-        <KpiCard label={tr.dashboard.kpi.highPriority.label} value={summary.by_priority?.alta ?? 0} sub={tr.dashboard.kpi.highPriority.sub} tone="warning" />
+        <KpiCard label={tr.dashboard.kpi.highPriority.label} value={summary.by_priority?.alta ?? 0} sub={tr.dashboard.kpi.highPriority.sub} tone="success" />
         <KpiCard label={tr.dashboard.kpi.avgScore.label} value={summary.avg_score} sub={tr.dashboard.kpi.avgScore.sub} tone="score" />
         <KpiCard label={tr.dashboard.kpi.qualified.label} value={summary.by_status?.calificado ?? 0} sub={tr.dashboard.kpi.qualified.sub} tone="success" />
         <KpiCard label={tr.dashboard.kpi.noContact.label} value={summary.total_leads - summary.contacted} sub={tr.dashboard.kpi.noContact.sub} tone="pending" />

@@ -13,7 +13,7 @@ const STATUS_DOT: Record<LeadStatus, string> = {
 };
 
 const PRIORITY_DOT: Record<LeadPriority, string> = {
-  alta: "bg-[var(--c-hi)]",
+  alta: "bg-[var(--score-good)]",
   media: "bg-[var(--c-mid)]",
   baja: "bg-[var(--c-lo)]",
 };

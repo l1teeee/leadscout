@@ -125,7 +125,7 @@ export function useLeads(): UseLeadsReturn {
       setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
     } else {
       setSortBy(field);
-      setSortOrder("asc");
+      setSortOrder(field === "score" ? "desc" : "asc");
     }
     setPageState(0);
   }

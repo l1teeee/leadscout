@@ -59,6 +59,28 @@ function LeadMetric({ label, value, tone }: { label: string; value: string | num
   );
 }
 
+const SOCIAL_HOSTS: Record<string, string> = {
+  "facebook.com": "Facebook", "fb.com": "Facebook",
+  "instagram.com": "Instagram", "tiktok.com": "TikTok",
+  "twitter.com": "X / Twitter", "x.com": "X / Twitter",
+  "linkedin.com": "LinkedIn", "youtube.com": "YouTube",
+  "youtu.be": "YouTube", "wa.me": "WhatsApp", "whatsapp.com": "WhatsApp",
+};
+
+function getSocialName(url?: string | null): string | null {
+  if (!url) return null;
+  try {
+    let host = new URL(url).hostname.toLowerCase();
+    if (host.startsWith("www.")) host = host.slice(4);
+    for (const [domain, name] of Object.entries(SOCIAL_HOSTS)) {
+      if (host === domain || host.endsWith(`.${domain}`)) return name;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function LeadDetail({ lead, onAnalyze }: { lead: Lead | null; onAnalyze: () => void }) {
   const { lang } = useLanguage();
   const tr = translations[lang];
@@ -139,26 +161,31 @@ function LeadDetail({ lead, onAnalyze }: { lead: Lead | null; onAnalyze: () => v
             </span>
           </div>
         )}
-        {lead.website && (
-          <div className="flex items-center gap-2 border-2 border-(--border) bg-surface px-3 py-2">
-            <Globe2 size={14} />
-            {safeHref(lead.website) ? (
-              <a
-                href={safeHref(lead.website)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="truncate underline underline-offset-2 hover:opacity-70"
-                style={{ color: "var(--text-2)" }}
-              >
-                {lead.website}
-              </a>
-            ) : (
-              <span className="truncate" style={{ color: "var(--text-2)" }}>
-                {lead.website}
-              </span>
-            )}
-          </div>
-        )}
+        {lead.website && (() => {
+          const socialName = getSocialName(lead.website);
+          const href = safeHref(lead.website);
+          let displayText: string;
+          try { displayText = socialName ?? new URL(lead.website).hostname.replace(/^www\./, ""); }
+          catch { displayText = lead.website; }
+          return (
+            <div className="flex items-center gap-2 border-2 border-(--border) bg-surface px-3 py-2">
+              <Globe2 size={14} />
+              {href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate underline underline-offset-2 hover:opacity-70"
+                  style={{ color: "var(--text-2)" }}
+                >
+                  {displayText}
+                </a>
+              ) : (
+                <span className="truncate" style={{ color: "var(--text-2)" }}>{displayText}</span>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* AI Analysis */}
@@ -243,7 +270,7 @@ export function Leads() {
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <div data-stagger className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <LeadMetric label={tr.leads.kpi.visible} value={loading ? "..." : total} />
-        <LeadMetric label={tr.leads.kpi.highPriority} value={loading ? "..." : highPriorityCount} tone="var(--c-hi)" />
+        <LeadMetric label={tr.leads.kpi.highPriority} value={loading ? "..." : highPriorityCount} tone="var(--score-good)" />
         <LeadMetric label={tr.leads.kpi.toContact} value={loading ? "..." : noContactCount} tone="var(--c-mid)" />
         <LeadMetric label={tr.leads.kpi.avgScore} value={loading ? "..." : avgScore} />
       </div>
@@ -391,8 +418,8 @@ export function Leads() {
                         borderBottom: "1px solid #E4E4E7",
                       }}
                     >
-                      <td className="px-4 py-3">
-                        <p className="font-bold" style={{ color: "var(--text)" }}>
+                      <td className="px-4 py-3" style={{ maxWidth: "260px", overflow: "hidden" }}>
+                        <p className="font-bold truncate" style={{ color: "var(--text)" }}>
                           {lead.name}
                         </p>
                         {!lead.is_viewed && !locallyViewed.has(lead.id) && (
@@ -400,7 +427,7 @@ export function Leads() {
                             {tr.leads.newBadge}
                           </span>
                         )}
-                        <p className="mt-1 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
+                        <p className="mt-1 text-xs font-semibold truncate" style={{ color: "var(--text-3)" }}>
                           {lead.category} / {lead.location}
                         </p>
                       </td>

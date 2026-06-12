@@ -734,7 +734,7 @@ export const translations = {
       },
       insights: {
         contacted: "{n} leads already have commercial progress.",
-        contactedAdvice: "Prioritize critical businesses without contact to increase pipeline speed.",
+        contactedAdvice: "Prioritize high-opportunity businesses without contact to increase pipeline speed.",
         qualified: "{n} opportunities are qualified.",
         qualifiedAdvice: "Use them as the base for proposals and next closing reports.",
       },
@@ -1928,7 +1928,7 @@ export const translations = {
       },
       insights: {
         contacted: "{n} leads ya tienen avance comercial.",
-        contactedAdvice: "Priorizá los negocios críticos sin contacto para subir velocidad del pipeline.",
+        contactedAdvice: "Priorizá los negocios de alta oportunidad sin contacto para subir velocidad del pipeline.",
         qualified: "{n} oportunidades están calificadas.",
         qualifiedAdvice: "Usalas como base para propuestas y siguientes reportes de cierre.",
       },

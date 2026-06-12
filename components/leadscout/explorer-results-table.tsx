@@ -167,16 +167,16 @@ export function ExplorerResultsTable({
                     : "hover:bg-[var(--surface-2)]",
                 )}
               >
-                <td className="px-5 py-3">
-                  <p className="font-semibold leading-snug" style={{ color: "var(--text)" }}>
+                <td className="px-5 py-3" style={{ maxWidth: "200px", overflow: "hidden" }}>
+                  <p className="font-semibold leading-snug truncate" style={{ color: "var(--text)" }}>
                     {lead.name}
                   </p>
                 </td>
-                <td className="px-5 py-3" style={{ color: "var(--text-2)" }}>
-                  {lead.category}
+                <td className="px-5 py-3" style={{ maxWidth: "140px", overflow: "hidden", color: "var(--text-2)" }}>
+                  <span className="block truncate">{lead.category}</span>
                 </td>
-                <td className="px-5 py-3" style={{ color: "var(--text-2)" }}>
-                  {SCRAPING_ZONES[lead.id] ?? lead.location}
+                <td className="px-5 py-3" style={{ maxWidth: "140px", overflow: "hidden", color: "var(--text-2)" }}>
+                  <span className="block truncate">{SCRAPING_ZONES[lead.id] ?? lead.location}</span>
                 </td>
                 <td className="px-5 py-3 w-36">
                   <div className="pixel-inset px-2 py-1">

@@ -133,7 +133,7 @@ export async function Reportes() {
   const leadTotal = leads.length;
   const qualified = summary.by_status["calificado"] ?? 0;
   const contacted = (summary.by_status["contactado"] ?? 0) + qualified;
-  const highRisk = leads.filter((l) => l.score <= 20).length;
+  const highRisk = leads.filter((l) => l.score >= 80).length;
   const conversion = percent(qualified, leadTotal);
 
   const statusRows = (Object.keys(tr.statusLabels) as LeadStatus[]).map((status) => ({
