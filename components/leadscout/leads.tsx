@@ -598,6 +598,10 @@ export function Leads() {
             <ExplorerLeadDetail
               lead={selectedLead}
               onClose={() => setSelectedLead(null)}
+              onStatusChange={() => {
+                refresh();
+                setSelectedLead(null);
+              }}
               onHide={() => {
                 hideLead(selectedLead);
                 setSelectedLead(null);

@@ -77,6 +77,7 @@ export interface ExplorerLeadDetailProps {
   lead: Lead;
   onClose: () => void;
   onStatusChange?: (status: import("@/lib/data").LeadStatus) => void;
+  onHide?: () => void;
 }
 
 export interface ExplorerCategoryModalProps {

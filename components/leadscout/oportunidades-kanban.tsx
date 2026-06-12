@@ -21,6 +21,7 @@ import { ScoreBar } from "@/components/ui/score-bar";
 import { ExplorerLeadDetail } from "@/components/leadscout/explorer-lead-detail";
 import { useLanguage } from "@/contexts/language-context";
 import { updateLeadStatus } from "@/lib/api/leads";
+import { hideLead as persistHideLead } from "@/lib/hidden-leads";
 import type { Lead, LeadStatus } from "@/lib/data";
 import { translations } from "@/lib/i18n";
 
@@ -51,10 +52,12 @@ function LeadDetailPortal({
   lead,
   onClose,
   onStatusChange,
+  onHide,
 }: {
   lead: Lead | null;
   onClose: () => void;
   onStatusChange?: (status: LeadStatus) => void;
+  onHide?: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -86,7 +89,7 @@ function LeadDetailPortal({
         className="fixed right-0 z-50 flex"
         style={{ top: 58, bottom: 0 }}
       >
-        <ExplorerLeadDetail lead={lead} onClose={onClose} onStatusChange={onStatusChange} />
+        <ExplorerLeadDetail lead={lead} onClose={onClose} onStatusChange={onStatusChange} onHide={onHide} />
       </div>
     </>,
     document.body
@@ -455,6 +458,20 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
         setLeads((current) =>
           current.map((l) => (l.id === selectedLead!.id ? { ...l, status: nextStatus } : l)),
         );
+        setSelectedLead(null);
+      }}
+      onHide={() => {
+        if (selectedLead) {
+          persistHideLead({
+            id: selectedLead.id,
+            name: selectedLead.name,
+            category: selectedLead.category,
+            location: selectedLead.location,
+            score: selectedLead.score,
+            priority: selectedLead.priority,
+          });
+          setLeads((current) => current.filter((l) => l.id !== selectedLead.id));
+        }
         setSelectedLead(null);
       }}
     />

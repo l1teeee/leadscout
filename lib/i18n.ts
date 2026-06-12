@@ -998,6 +998,10 @@ export const translations = {
         markingContacted: "Marking...",
         contacted: "Contacted",
         history: "View history",
+        historyTitle: "History",
+        prevAnalysis: "Previous analysis",
+        noAnalysis: "No previous analysis.",
+        noContact: "No contacts registered yet.",
         website: "Website",
         address: "Address",
         aiAnalysis: {
@@ -2196,6 +2200,10 @@ export const translations = {
         markingContacted: "Marcando...",
         contacted: "Contactado",
         history: "Ver historial",
+        historyTitle: "Historial",
+        prevAnalysis: "Análisis previo",
+        noAnalysis: "Sin análisis previo.",
+        noContact: "Sin contactos registrados.",
         website: "Sitio web",
         address: "Dirección",
         aiAnalysis: {

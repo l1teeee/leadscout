@@ -50,7 +50,7 @@ const pixelBadgeClass =
 const pixelButtonClass =
   "retro rounded-none border-2 border-[var(--border)] pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px active:shadow-none";
 
-export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: ExplorerLeadDetailProps & { onHide?: () => void }) {
+export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: ExplorerLeadDetailProps) {
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.detail;
   const [socialProfiles, setSocialProfiles] = useState<SocialProfile[]>([]);
@@ -59,6 +59,7 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updated, setUpdated] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const mapsUrl = lead.latitude != null && lead.longitude != null
     ? `https://www.google.com/maps?q=${lead.latitude},${lead.longitude}`
@@ -348,7 +349,8 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
               </Button>
               <Button
                 variant="secondary"
-                className={`${pixelButtonClass} h-10 w-full justify-center bg-[var(--surface-2)] text-text hover:bg-(--pixel-highlight)`}
+                onClick={() => setShowHistory((v) => !v)}
+                className={`${pixelButtonClass} h-10 w-full justify-center hover:bg-(--pixel-highlight) ${showHistory ? "bg-[var(--border)] text-[var(--surface)]" : "bg-[var(--surface-2)] text-text"}`}
               >
                 {tr.history}
               </Button>
@@ -361,6 +363,42 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
                 {translations[lang].leads.hide}
               </button>
             </div>
+
+            {showHistory && (
+              <div className="space-y-3 border-t-2 border-[var(--border)] pt-5">
+                <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-2)" }}>
+                  {tr.historyTitle}
+                </p>
+                {lead.lastContact ? (
+                  <div className="pixel-inset px-3 py-2">
+                    <p className="retro pixel-text-xs uppercase mb-1" style={{ color: "var(--text-3)" }}>
+                      {tr.lastContact}
+                    </p>
+                    <p className="text-sm" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                      {lead.lastContact}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                    {tr.noContact}
+                  </p>
+                )}
+                {lead.ai_analysis ? (
+                  <div className="pixel-inset px-3 py-3 space-y-2">
+                    <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
+                      {tr.prevAnalysis}
+                    </p>
+                    <p className="text-xs leading-relaxed whitespace-pre-line" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+                      {lead.ai_analysis}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                    {tr.noAnalysis}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
