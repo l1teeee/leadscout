@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Check,
   ChevronRight,
+  Copy,
   Globe,
   MessageSquare,
   Phone,
@@ -13,7 +15,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { analyzeLead, askLeadQuestion, type SocialProfile } from "@/lib/api/explorer";
+import { analyzeLead, askLeadQuestion, generateOutreachMessage, type SocialProfile } from "@/lib/api/explorer";
 import { markLeadViewed, updateLead } from "@/lib/api/leads";
 import type { Lead } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
@@ -80,6 +82,12 @@ export function ExplorerAnalysisModal({
   const [analysis, setAnalysis] = useState<string | null>(lead.ai_analysis ?? null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [socialProfiles, setSocialProfilesLocal] = useState<SocialProfile[]>([]);
+  const [outreachPlatform, setOutreachPlatform] = useState<string | null>(null);
+  const [outreachMessage, setOutreachMessage] = useState<string | null>(null);
+  const [isGeneratingOutreach, setIsGeneratingOutreach] = useState(false);
+  const [outreachError, setOutreachError] = useState<string | null>(null);
+  const [copiedOutreach, setCopiedOutreach] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -97,6 +105,11 @@ export function ExplorerAnalysisModal({
     setMessages(loadPersistedMessages(lead.id));
     setChatInput("");
     setChatError(null);
+    setSocialProfilesLocal([]);
+    setOutreachPlatform(null);
+    setOutreachMessage(null);
+    setOutreachError(null);
+    setCopiedOutreach(false);
     if (!lead.is_viewed) {
       markLeadViewed(lead.id).catch(() => {});
     }
@@ -147,7 +160,10 @@ export function ExplorerAnalysisModal({
         force_refresh: Boolean(analysis),
       });
       setAnalysis(res.analysis);
-      if (res.social_profiles?.length) onSocialProfiles?.(res.social_profiles);
+      if (res.social_profiles?.length) {
+        onSocialProfiles?.(res.social_profiles);
+        setSocialProfilesLocal(res.social_profiles);
+      }
       updateLead(lead.id, { ai_analysis: res.analysis }).catch(() => {});
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
@@ -159,6 +175,42 @@ export function ExplorerAnalysisModal({
     } finally {
       setIsAnalyzing(false);
     }
+  }
+
+  async function handleGenerateOutreach(platform: string) {
+    if (isGeneratingOutreach) return;
+    setOutreachPlatform(platform);
+    setOutreachMessage(null);
+    setOutreachError(null);
+    setCopiedOutreach(false);
+    setIsGeneratingOutreach(true);
+    try {
+      const res = await generateOutreachMessage({
+        lead_id: lead.id,
+        name: lead.name,
+        category: lead.category,
+        location: lead.location,
+        phone: lead.phone ?? undefined,
+        website: lead.website ?? undefined,
+        score: lead.score,
+        issues: lead.issues,
+        platform,
+        social_profiles: socialProfiles,
+      });
+      setOutreachMessage(res.message);
+    } catch {
+      setOutreachError("No se pudo generar el mensaje. Intenta de nuevo.");
+    } finally {
+      setIsGeneratingOutreach(false);
+    }
+  }
+
+  function handleCopyOutreach() {
+    if (!outreachMessage) return;
+    navigator.clipboard?.writeText(outreachMessage).then(() => {
+      setCopiedOutreach(true);
+      setTimeout(() => setCopiedOutreach(false), 1800);
+    }).catch(() => {});
   }
 
   async function handleSendMessage() {
@@ -359,6 +411,102 @@ export function ExplorerAnalysisModal({
                 </div>
               )}
             </div>
+
+            {/* Outreach message section */}
+            {analysis && !isAnalyzing && (() => {
+              const websitePlatform = (() => {
+                if (!lead.website) return null;
+                try {
+                  let h = new URL(lead.website, "https://x.invalid").hostname.toLowerCase();
+                  if (h.startsWith("www.")) h = h.slice(4);
+                  for (const [p, d] of [["facebook","facebook.com"],["instagram","instagram.com"],["tiktok","tiktok.com"]] as [string,string][]) {
+                    if (h === d || h.endsWith(`.${d}`)) return p;
+                  }
+                } catch { return null; }
+                return null;
+              })();
+              const detectedPlatforms = new Set<string>();
+              if (websitePlatform) detectedPlatforms.add(websitePlatform);
+              for (const p of socialProfiles) detectedPlatforms.add(p.platform);
+              const platformsToShow = detectedPlatforms.size > 0
+                ? Array.from(detectedPlatforms)
+                : ["whatsapp", "facebook", "email"];
+
+              const PLATFORM_LABELS: Record<string, string> = {
+                whatsapp: "WhatsApp",
+                facebook: "Facebook",
+                instagram: "Instagram",
+                tiktok: "TikTok",
+                linkedin: "LinkedIn",
+                x: "X",
+                email: "Email",
+              };
+
+              return (
+                <div className="border-t-2 border-(--border) pt-4 mt-2">
+                  <div className="mb-3 flex items-center gap-2">
+                    <MessageSquare size={12} style={{ color: "var(--pixel-highlight)" }} />
+                    <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-2)" }}>
+                      Mensaje de contacto
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {platformsToShow.map((platform) => (
+                      <button
+                        key={platform}
+                        type="button"
+                        onClick={() => handleGenerateOutreach(platform)}
+                        disabled={isGeneratingOutreach}
+                        className={cn(
+                          "retro pixel-text-xs border-2 px-3 py-1.5 uppercase transition-transform active:translate-x-px active:translate-y-px active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed",
+                          outreachPlatform === platform
+                            ? "border-(--border) bg-(--pixel-highlight) shadow-none"
+                            : "border-(--border) bg-surface shadow-[1px_1px_0_0_var(--pixel-shadow)] hover:bg-(--surface-2)"
+                        )}
+                        style={{ color: "var(--text)" }}
+                      >
+                        {isGeneratingOutreach && outreachPlatform === platform ? (
+                          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ width: 8, height: 8, background: "var(--text)", display: "inline-block", animation: "pixelSpin 1s steps(8, end) infinite" }} />
+                            {PLATFORM_LABELS[platform] ?? platform}
+                          </span>
+                        ) : (
+                          PLATFORM_LABELS[platform] ?? platform
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {outreachError && (
+                    <p className="text-xs" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
+                      {outreachError}
+                    </p>
+                  )}
+
+                  {outreachMessage && !isGeneratingOutreach && (
+                    <div className="pixel-inset p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
+                          {PLATFORM_LABELS[outreachPlatform ?? ""] ?? outreachPlatform}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleCopyOutreach}
+                          className="flex items-center gap-1 px-2 py-1 border border-(--border) bg-surface text-xs hover:bg-(--surface-2) transition-colors"
+                          style={{ ...bodyTextStyle, color: "var(--text-2)" }}
+                        >
+                          {copiedOutreach ? <Check size={10} /> : <Copy size={10} />}
+                          {copiedOutreach ? "Copiado" : "Copiar"}
+                        </button>
+                      </div>
+                      <p className="whitespace-pre-line text-xs leading-relaxed" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                        {outreachMessage}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Chat section - right column on desktop, bottom on mobile */}

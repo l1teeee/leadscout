@@ -75,6 +75,25 @@ export interface LeadChatResponse {
   answer: string;
 }
 
+export interface OutreachRequest {
+  lead_id?: string;
+  name: string;
+  category: string;
+  location: string;
+  phone?: string;
+  website?: string;
+  score: number;
+  issues: string[];
+  platform: string;
+  social_profiles?: SocialProfile[];
+  business_context?: string;
+}
+
+export interface OutreachResponse {
+  message: string;
+  platform: string;
+}
+
 export async function analyzeLead(body: LeadAnalyzeRequest): Promise<LeadAnalyzeResponse> {
   const business_context = body.business_context ?? ((await getOrSyncContext()) || undefined);
   return apiFetch<LeadAnalyzeResponse>("/api/explorer/analyze", {
@@ -86,6 +105,14 @@ export async function analyzeLead(body: LeadAnalyzeRequest): Promise<LeadAnalyze
 export async function askLeadQuestion(body: LeadChatRequest): Promise<LeadChatResponse> {
   const business_context = body.business_context ?? ((await getOrSyncContext()) || undefined);
   return apiFetch<LeadChatResponse>("/api/explorer/chat", {
+    method: "POST",
+    body: JSON.stringify({ ...body, business_context }),
+  });
+}
+
+export async function generateOutreachMessage(body: OutreachRequest): Promise<OutreachResponse> {
+  const business_context = body.business_context ?? ((await getOrSyncContext()) || undefined);
+  return apiFetch<OutreachResponse>("/api/explorer/outreach", {
     method: "POST",
     body: JSON.stringify({ ...body, business_context }),
   });
