@@ -34,6 +34,8 @@ export interface UseLeadsReturn {
   setStatus: (s: LeadStatus | "") => void;
   priority: LeadPriority | "";
   setPriority: (p: LeadPriority | "") => void;
+  viewedFilter: boolean | null;
+  setViewedFilter: (v: boolean | null) => void;
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
   sortBy: SortField;
@@ -96,6 +98,7 @@ export function useLeads(): UseLeadsReturn {
 
   const [status, setStatusState] = useState<LeadStatus | "">("");
   const [priority, setPriorityState] = useState<LeadPriority | "">("");
+  const [viewedFilter, setViewedFilterState] = useState<boolean | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortField>("score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -117,6 +120,11 @@ export function useLeads(): UseLeadsReturn {
 
   function setPriority(p: LeadPriority | "") {
     setPriorityState(p);
+    setPageState(0);
+  }
+
+  function setViewedFilter(v: boolean | null) {
+    setViewedFilterState(v);
     setPageState(0);
   }
 
@@ -149,6 +157,7 @@ export function useLeads(): UseLeadsReturn {
         q: debouncedQuery || undefined,
         status: status || undefined,
         priority: priority || undefined,
+        is_viewed: viewedFilter ?? undefined,
         sort_by: sortBy,
         sort_order: sortOrder,
         limit: PAGE_SIZE,
@@ -167,7 +176,7 @@ export function useLeads(): UseLeadsReturn {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [debouncedQuery, status, priority, sortBy, sortOrder, page]);
+  }, [debouncedQuery, status, priority, viewedFilter, sortBy, sortOrder, page]);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
@@ -194,6 +203,8 @@ export function useLeads(): UseLeadsReturn {
     setStatus,
     priority,
     setPriority,
+    viewedFilter,
+    setViewedFilter,
     selectedId,
     setSelectedId,
     sortBy,

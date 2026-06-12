@@ -60,6 +60,7 @@ export interface LeadFilters {
   category?: string;
   min_score?: number;
   max_score?: number;
+  is_viewed?: boolean;
   sort_by?: string;
   sort_order?: "asc" | "desc";
   limit?: number;
@@ -79,6 +80,7 @@ export async function getLeads(filters: LeadFilters = {}, signal?: AbortSignal, 
   if (filters.category && filters.category !== "all") params.set("category", filters.category);
   if (filters.min_score != null) params.set("min_score", String(filters.min_score));
   if (filters.max_score != null) params.set("max_score", String(filters.max_score));
+  if (filters.is_viewed != null) params.set("is_viewed", String(filters.is_viewed));
   if (filters.sort_by) params.set("sort_by", filters.sort_by);
   if (filters.sort_order) params.set("sort_order", filters.sort_order);
   if (filters.limit != null) {

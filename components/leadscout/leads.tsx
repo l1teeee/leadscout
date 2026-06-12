@@ -219,6 +219,7 @@ export function Leads() {
     query, setQuery,
     status, setStatus,
     priority, setPriority,
+    viewedFilter, setViewedFilter,
     setSelectedId,
     sortBy,
     sortOrder,
@@ -318,7 +319,7 @@ export function Leads() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(220px,1fr)_150px_150px]">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(220px,1fr)_150px_150px_auto]">
                 <label className="relative block">
                   <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" size={14} />
                   <input
@@ -361,6 +362,32 @@ export function Leads() {
                     ))}
                   </select>
                 </label>
+
+                <div className="flex h-9 items-stretch border-2 border-(--border) bg-surface">
+                  {[
+                    { label: tr.leads.filters.viewedAll, value: null },
+                    { label: tr.leads.filters.viewedNew, value: false },
+                    { label: tr.leads.filters.viewedSeen, value: true },
+                  ].map((option) => {
+                    const isActive = viewedFilter === option.value;
+                    const isNew = option.value === false;
+                    return (
+                      <button
+                        key={option.label}
+                        type="button"
+                        onClick={() => setViewedFilter(option.value)}
+                        className="retro pixel-text-xs border-r-2 border-(--border) px-2 uppercase last:border-r-0 transition-colors hover:bg-(--surface-2)"
+                        style={
+                          isActive
+                            ? { background: "var(--border)", color: "var(--surface)" }
+                            : { color: isNew ? "var(--c-new)" : "var(--text-2)" }
+                        }
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>

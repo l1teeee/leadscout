@@ -50,9 +50,11 @@ interface OportunidadesKanbanProps {
 function LeadDetailPortal({
   lead,
   onClose,
+  onStatusChange,
 }: {
   lead: Lead | null;
   onClose: () => void;
+  onStatusChange?: (status: LeadStatus) => void;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -84,7 +86,7 @@ function LeadDetailPortal({
         className="fixed right-0 z-50 flex"
         style={{ top: 58, bottom: 0 }}
       >
-        <ExplorerLeadDetail lead={lead} onClose={onClose} />
+        <ExplorerLeadDetail lead={lead} onClose={onClose} onStatusChange={onStatusChange} />
       </div>
     </>,
     document.body
@@ -446,7 +448,16 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
       </DragOverlay>
     </DndContext>
 
-    <LeadDetailPortal lead={selectedLead} onClose={() => setSelectedLead(null)} />
+    <LeadDetailPortal
+      lead={selectedLead}
+      onClose={() => setSelectedLead(null)}
+      onStatusChange={(nextStatus) => {
+        setLeads((current) =>
+          current.map((l) => (l.id === selectedLead!.id ? { ...l, status: nextStatus } : l)),
+        );
+        setSelectedLead(null);
+      }}
+    />
     </>
   );
 }

@@ -50,7 +50,7 @@ const pixelBadgeClass =
 const pixelButtonClass =
   "retro rounded-none border-2 border-[var(--border)] pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px active:shadow-none";
 
-export function ExplorerLeadDetail({ lead, onClose, onHide }: ExplorerLeadDetailProps & { onHide?: () => void }) {
+export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: ExplorerLeadDetailProps & { onHide?: () => void }) {
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.detail;
   const [socialProfiles, setSocialProfiles] = useState<SocialProfile[]>([]);
@@ -103,6 +103,7 @@ export function ExplorerLeadDetail({ lead, onClose, onHide }: ExplorerLeadDetail
     try {
       await updateLeadStatus(lead.id, "contactado");
       setUpdated(true);
+      onStatusChange?.("contactado");
     } catch {
     } finally {
       setIsUpdating(false);

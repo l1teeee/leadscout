@@ -1,10 +1,8 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState } from "react";
 import { useExplorer } from "@/lib/hooks/use-explorer";
 import { ExplorerLocationPanel } from "./explorer-location-panel";
 import { ExplorerMapSection } from "./explorer-map-section";
-import { ExplorerResultsTable } from "./explorer-results-table";
 import { ExplorerLeadDetail } from "./explorer-lead-detail";
 import { ExplorerCategoryModal } from "./explorer-category-modal";
 import { ExplorerOnboardingTour } from "./explorer-onboarding-tour";
@@ -38,7 +36,6 @@ export function Explorer() {
     { id: "ubicacion", label: tr.tabs.ubicacion },
     { id: "resultados", label: tr.tabs.resultados },
   ];
-  const [resultsView, setResultsView] = useState<"table" | "map">("table");
   const {
     activeTab, setActiveTab,
     hasLocation,
@@ -47,7 +44,6 @@ export function Explorer() {
     searchRadius, setSearchRadius, isEditingSearchArea,
     selectedCategory, isCategoryModalOpen,
     selectedCategoryInfo, categoryCounts,
-    query, setQuery, filterStatus, setFilterStatus,
     selected,
     placeSuggestions, visibleScrapingPoints,
     activeSelectedPoint, activeSearchArea, filtered,
@@ -129,26 +125,11 @@ export function Explorer() {
         )}
 
         {activeTab === "resultados" && (
-          resultsView === "table" ? (
-            <ExplorerResultsTable
-              filtered={filtered}
-              visibleCount={visibleScrapingPoints.length}
-              selected={selected}
-              onSelectLead={selectLead}
-              query={query}
-              onQueryChange={setQuery}
-              filterStatus={filterStatus}
-              onFilterStatusChange={setFilterStatus}
-              onViewInMap={() => setResultsView("map")}
-            />
-          ) : (
-            <ExplorerResultsMap
-              leads={filtered}
-              selected={selected}
-              onSelectLead={selectLead}
-              onBackToTable={() => setResultsView("table")}
-            />
-          )
+          <ExplorerResultsMap
+            leads={filtered}
+            selected={selected}
+            onSelectLead={selectLead}
+          />
         )}
       </div>
 

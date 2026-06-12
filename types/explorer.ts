@@ -70,12 +70,13 @@ export interface ExplorerResultsMapProps {
   leads: Lead[];
   selected: Lead | null;
   onSelectLead: (lead: Lead | null) => void;
-  onBackToTable: () => void;
+  onBackToTable?: () => void;
 }
 
 export interface ExplorerLeadDetailProps {
   lead: Lead;
   onClose: () => void;
+  onStatusChange?: (status: import("@/lib/data").LeadStatus) => void;
 }
 
 export interface ExplorerCategoryModalProps {

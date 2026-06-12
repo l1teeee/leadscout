@@ -103,10 +103,12 @@ export function ExplorerResultsMap({
             {tr.mapSummary(points.length)}
           </p>
         </div>
-        <Button variant="secondary" size="sm" className="h-8 justify-center" onClick={onBackToTable}>
-          <List size={13} />
-          {tr.tableView}
-        </Button>
+        {onBackToTable && (
+          <Button variant="secondary" size="sm" className="h-8 justify-center" onClick={onBackToTable}>
+            <List size={13} />
+            {tr.tableView}
+          </Button>
+        )}
       </div>
 
       <div className="relative min-h-0 flex-1 overflow-hidden">

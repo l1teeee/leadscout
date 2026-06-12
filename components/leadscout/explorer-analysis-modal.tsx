@@ -3,21 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ChevronRight,
   Globe,
   MessageSquare,
   Phone,
   RefreshCw,
   Send,
   Sparkles,
+  Trash2,
   X,
 } from "lucide-react";
-import { ScoreBig, ScoreBar } from "@/components/ui/score-bar";
 import { analyzeLead, askLeadQuestion, type SocialProfile } from "@/lib/api/explorer";
 import { markLeadViewed, updateLead } from "@/lib/api/leads";
 import type { Lead } from "@/lib/data";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 import { hasAiContext, launchAiContextGate } from "@/lib/ai-context-gate";
+import { cn } from "@/lib/utils";
 
 interface ExplorerAnalysisModalProps {
   lead: Lead;
@@ -32,6 +34,29 @@ interface ChatMessage {
 }
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
+
+function chatStorageKey(leadId: number | string) {
+  return `ls_chat_${leadId}`;
+}
+
+function loadPersistedMessages(leadId: number | string): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(chatStorageKey(leadId));
+    return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveMessages(leadId: number | string, msgs: ChatMessage[]) {
+  try {
+    if (msgs.length === 0) {
+      localStorage.removeItem(chatStorageKey(leadId));
+    } else {
+      localStorage.setItem(chatStorageKey(leadId), JSON.stringify(msgs));
+    }
+  } catch {}
+}
 
 function getScoreBadgeStyle(score: number) {
   if (score > 60) return { background: "#3FAE2A", color: "#FFFFFF" };
@@ -60,6 +85,7 @@ export function ExplorerAnalysisModal({
   const [chatInput, setChatInput] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +94,7 @@ export function ExplorerAnalysisModal({
     if (!isOpen) return;
     setAnalysis(lead.ai_analysis ?? null);
     setAnalysisError(null);
-    setMessages([]);
+    setMessages(loadPersistedMessages(lead.id));
     setChatInput("");
     setChatError(null);
     if (!lead.is_viewed) {
@@ -77,12 +103,22 @@ export function ExplorerAnalysisModal({
   }, [lead.id, lead.ai_analysis, lead.is_viewed, isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    saveMessages(lead.id, messages);
+  }, [messages, lead.id, isOpen]);
+
+  useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isChatLoading]);
 
   if (!isOpen) return null;
+
+  function handleClearChat() {
+    setMessages([]);
+    saveMessages(lead.id, []);
+  }
 
   async function handleAnalyze() {
     if (!hasAiContext()) {
@@ -222,212 +258,235 @@ export function ExplorerAnalysisModal({
         {/* Body: analysis (left column) + chat (right column) */}
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
 
-        {/* Analysis area - scrollable */}
-        <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
-          {/* Business info grid */}
-          <div className="pixel-inset grid gap-3 p-4 sm:grid-cols-3">
-            <div className="min-w-0">
-              <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-3)" }}>
-                {modalTr.businessInfo}
-              </p>
-              <div className="mt-2 flex items-center gap-2">
-                <Phone size={12} style={{ color: "var(--text)" }} />
-                <span className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                  {lead.phone ?? modalTr.unavailable}
-                </span>
+          {/* Analysis area - scrollable */}
+          <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
+            {/* Business info grid */}
+            <div className="pixel-inset grid gap-3 p-4 sm:grid-cols-3">
+              <div className="min-w-0">
+                <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-3)" }}>
+                  {modalTr.businessInfo}
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <Phone size={12} style={{ color: "var(--text)" }} />
+                  <span className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                    {lead.phone ?? modalTr.unavailable}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="min-w-0">
-              <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-3)" }}>
-                {tr.website}
-              </p>
-              <div className="mt-2 flex items-center gap-2">
-                <Globe size={12} style={{ color: "var(--text)" }} />
-                <span className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                  {lead.website ?? modalTr.unavailable}
-                </span>
+              <div className="min-w-0">
+                <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-3)" }}>
+                  {tr.website}
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <Globe size={12} style={{ color: "var(--text)" }} />
+                  <span className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                    {lead.website ?? modalTr.unavailable}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-3)" }}>
-                {tr.gaps}
-              </p>
-              <p className="mt-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                {lead.issues.length}
-              </p>
-            </div>
-          </div>
-
-          {/* Score bar */}
-          <div className="pixel-inset p-4">
-            <ScoreBig score={lead.score} />
-            <div className="mt-3">
-              <ScoreBar score={lead.score} />
-            </div>
-          </div>
-
-          {/* AI Analysis section */}
-          <div>
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Sparkles size={13} style={{ color: "var(--pixel-highlight)" }} />
-                <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-2)" }}>
-                  {tr.aiAnalysis.title}
+              <div>
+                <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-3)" }}>
+                  {tr.gaps}
+                </p>
+                <p className="mt-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                  {lead.issues.length}
                 </p>
               </div>
-              {analysis && (
+            </div>
+
+            {/* AI Analysis section */}
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={13} style={{ color: "var(--pixel-highlight)" }} />
+                  <p className="retro pixel-text-xs uppercase font-bold" style={{ color: "var(--text-2)" }}>
+                    {tr.aiAnalysis.title}
+                  </p>
+                </div>
+                {analysis && (
+                  <button
+                    type="button"
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold underline underline-offset-2 disabled:opacity-40"
+                    style={{ ...bodyTextStyle, color: "var(--text-3)" }}
+                  >
+                    <RefreshCw size={11} />
+                    {modalTr.reanalyze}
+                  </button>
+                )}
+              </div>
+
+              {!analysis && !isAnalyzing && (
                 <button
                   type="button"
                   onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold underline underline-offset-2 disabled:opacity-40"
-                  style={{ ...bodyTextStyle, color: "var(--text-3)" }}
+                  className="pixel-inset flex w-full cursor-pointer items-center justify-center gap-2 px-3 py-4 text-xs font-semibold transition-colors hover:bg-(--surface-2)"
+                  style={{ ...bodyTextStyle, color: "var(--text-2)" }}
                 >
-                  <RefreshCw size={11} />
-                  {modalTr.reanalyze}
+                  <Sparkles size={11} />
+                  {tr.aiAnalysis.cta}
                 </button>
               )}
-            </div>
 
-            {!analysis && !isAnalyzing && (
-              <button
-                type="button"
-                onClick={handleAnalyze}
-                className="pixel-inset flex w-full cursor-pointer items-center justify-center gap-2 px-3 py-4 text-xs font-semibold transition-colors hover:bg-(--surface-2)"
-                style={{ ...bodyTextStyle, color: "var(--text-2)" }}
-              >
-                <Sparkles size={11} />
-                {tr.aiAnalysis.cta}
-              </button>
-            )}
+              {isAnalyzing && (
+                <div className="pixel-inset flex items-center justify-center gap-2 px-3 py-4">
+                  <div
+                    style={{
+                      width: 12,
+                      height: 12,
+                      background: "var(--text)",
+                      animation: "pixelSpin 1s steps(8, end) infinite",
+                    }}
+                  />
+                  <span className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+                    {tr.aiAnalysis.analyzing}
+                  </span>
+                </div>
+              )}
 
-            {isAnalyzing && (
-              <div className="pixel-inset flex items-center justify-center gap-2 px-3 py-4">
-                <div
-                  style={{
-                    width: 12,
-                    height: 12,
-                    background: "var(--text)",
-                    animation: "pixelSpin 1s steps(8, end) infinite",
-                  }}
-                />
-                <span className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
-                  {tr.aiAnalysis.analyzing}
-                </span>
-              </div>
-            )}
-
-            {analysisError && (
-              <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
-                {analysisError}
-              </p>
-            )}
-
-            {analysis && !isAnalyzing && (
-              <div className="pixel-inset p-3">
-                <p className="whitespace-pre-line text-xs leading-relaxed" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                  {analysis}
+              {analysisError && (
+                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
+                  {analysisError}
                 </p>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
 
-        {/* Chat section - right column on desktop, bottom on mobile */}
-        <div className="flex h-70 w-full shrink-0 flex-col border-t-2 border-(--border) md:h-auto md:w-80 md:border-l-2 md:border-t-0">
-          <div className="flex h-full flex-col">
+              {analysis && !isAnalyzing && (
+                <div className="pixel-inset p-3">
+                  <p className="whitespace-pre-line text-xs leading-relaxed" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                    {analysis}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Chat section - right column on desktop, bottom on mobile */}
+          <div
+            className={cn(
+              "shrink-0 flex flex-col border-t-2 border-(--border) md:border-l-2 md:border-t-0",
+              isChatOpen
+                ? "h-70 w-full md:h-auto md:w-80"
+                : "h-auto w-full md:h-auto md:w-auto"
+            )}
+          >
             {/* Chat header */}
             <div
               className="flex shrink-0 items-center gap-2 border-b-2 border-(--border) px-4 py-2.5"
               style={{ background: "var(--surface-2)" }}
             >
               <MessageSquare size={12} style={{ color: "var(--text-2)" }} />
-              <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>
+              <p className="retro pixel-text-xs flex-1 whitespace-nowrap uppercase" style={{ color: "var(--text-2)" }}>
                 {chatTr.title}
               </p>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2" style={{ minHeight: 0 }}>
-              {messages.length === 0 && !isChatLoading && (
-                <p
-                  className="text-xs"
-                  style={{ ...bodyTextStyle, color: "var(--text-3)" }}
+              {messages.length > 0 && isChatOpen && (
+                <button
+                  type="button"
+                  onClick={handleClearChat}
+                  title={chatTr.clearChat}
+                  className="flex h-6 w-6 items-center justify-center rounded-none border-2 border-(--border) bg-surface text-text shadow-[1px_1px_0_0_var(--pixel-shadow)] transition-transform hover:bg-(--pixel-highlight) active:translate-x-px active:translate-y-px active:shadow-none"
                 >
-                  {chatTr.empty}
-                </p>
+                  <Trash2 size={10} />
+                </button>
               )}
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[82%] px-3 py-2 text-xs leading-relaxed ${
-                      msg.role === "user"
-                        ? "border-2 border-(--border) bg-(--pixel-highlight) shadow-[1px_1px_0_0_var(--pixel-shadow)]"
-                        : "pixel-inset"
-                    }`}
-                    style={{ ...bodyTextStyle, color: "var(--text)" }}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-              {isChatLoading && (
-                <div className="flex justify-start">
-                  <div className="pixel-inset flex items-center gap-2 px-3 py-2">
-                    <div
-                      style={{
-                        width: 8,
-                        height: 8,
-                        background: "var(--text-2)",
-                        animation: "pixelSpin 1s steps(8, end) infinite",
-                      }}
-                    />
-                    <span className="text-xs" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                      {chatTr.thinking}
-                    </span>
-                  </div>
-                </div>
-              )}
-              {chatError && (
-                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
-                  {chatError}
-                </p>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input bar */}
-            <div className="shrink-0 flex gap-2 border-t-2 border-(--border) p-3">
-              <input
-                ref={inputRef}
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder={chatTr.placeholder}
-                maxLength={500}
-                disabled={isChatLoading}
-                className="flex-1 pixel-inset px-3 py-2 text-xs bg-surface border-0 outline-none disabled:opacity-50"
-                style={{ ...bodyTextStyle, color: "var(--text)" }}
-              />
               <button
                 type="button"
-                onClick={handleSendMessage}
-                disabled={!chatInput.trim() || isChatLoading}
-                className="retro pixel-text-xs flex shrink-0 items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-3 py-2 uppercase shadow-[1px_1px_0_0_var(--pixel-shadow)] transition-transform active:translate-x-px active:translate-y-px active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ color: "var(--text)" }}
+                onClick={() => setIsChatOpen((v) => !v)}
+                title={isChatOpen ? "Collapse" : "Expand"}
+                className="flex h-6 w-6 items-center justify-center rounded-none border-2 border-(--border) bg-surface text-text shadow-[1px_1px_0_0_var(--pixel-shadow)] transition-transform hover:bg-(--pixel-highlight) active:translate-x-px active:translate-y-px active:shadow-none"
               >
-                <Send size={11} />
-                {chatTr.send}
+                <ChevronRight
+                  size={12}
+                  className={cn(
+                    "transition-transform",
+                    isChatOpen ? "rotate-90 md:rotate-0" : "-rotate-90 md:rotate-180"
+                  )}
+                />
               </button>
             </div>
+
+            {isChatOpen && (
+              <>
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2" style={{ minHeight: 0 }}>
+                  {messages.length === 0 && !isChatLoading && (
+                    <p className="text-xs" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                      {chatTr.empty}
+                    </p>
+                  )}
+                  {messages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={cn(
+                          "max-w-[82%] px-3 py-2 text-xs leading-relaxed",
+                          msg.role === "user"
+                            ? "border-2 border-(--border) bg-(--pixel-highlight) shadow-[1px_1px_0_0_var(--pixel-shadow)]"
+                            : "pixel-inset"
+                        )}
+                        style={{ ...bodyTextStyle, color: "var(--text)" }}
+                      >
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="pixel-inset flex items-center gap-2 px-3 py-2">
+                        <div
+                          style={{
+                            width: 8,
+                            height: 8,
+                            background: "var(--text-2)",
+                            animation: "pixelSpin 1s steps(8, end) infinite",
+                          }}
+                        />
+                        <span className="text-xs" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                          {chatTr.thinking}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {chatError && (
+                    <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
+                      {chatError}
+                    </p>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input bar */}
+                <div className="shrink-0 flex gap-2 border-t-2 border-(--border) p-3">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder={chatTr.placeholder}
+                    maxLength={500}
+                    disabled={isChatLoading}
+                    className="flex-1 pixel-inset px-3 py-2 text-xs bg-surface border-0 outline-none disabled:opacity-50"
+                    style={{ ...bodyTextStyle, color: "var(--text)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendMessage}
+                    disabled={!chatInput.trim() || isChatLoading}
+                    className="retro pixel-text-xs flex shrink-0 items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-3 py-2 uppercase shadow-[1px_1px_0_0_var(--pixel-shadow)] transition-transform active:translate-x-px active:translate-y-px active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ color: "var(--text)" }}
+                  >
+                    <Send size={11} />
+                    {chatTr.send}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </div>
         </div>
       </div>
     </div>
