@@ -67,6 +67,13 @@ export default function LoginForm() {
       setFailedAttempts(0);
       setLockoutUntil(null);
 
+      // fire-and-forget: send login notification email (never blocks UX)
+      fetch("/api/email/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: result.access_token }),
+      }).catch(() => {});
+
       if (rememberMe) {
         localStorage.setItem("ls_remember_email", email);
       } else {

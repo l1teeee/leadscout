@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Zap, Eye, EyeOff, ArrowRight } from "lucide-react";
-import { resetPassword } from "@/lib/api/auth";
+import { resetPassword, resetPasswordWithOtpToken } from "@/lib/api/auth";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 
@@ -14,8 +14,15 @@ export default function ResetPasswordForm() {
   const tr = translations[lang].auth.reset;
   const [accessToken] = useState(() => {
     if (typeof window === "undefined") return "";
+    const searchParams = new URLSearchParams(window.location.search);
+    const otpToken = searchParams.get("token");
+    if (otpToken) return otpToken;
     const params = new URLSearchParams(window.location.hash.replace("#", "?"));
     return params.get("access_token") ?? "";
+  });
+  const [isOtpMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).has("token");
   });
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -39,7 +46,11 @@ export default function ResetPasswordForm() {
     setErrorMsg(null);
 
     try {
-      await resetPassword(accessToken, password);
+      if (isOtpMode) {
+        await resetPasswordWithOtpToken(accessToken, password);
+      } else {
+        await resetPassword(accessToken, password);
+      }
       router.replace("/login");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : tr.genericError);

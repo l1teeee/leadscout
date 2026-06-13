@@ -105,3 +105,24 @@ export async function updateApproximateLocation(
     body: JSON.stringify(data),
   });
 }
+
+export async function verifyRegistrationOtp(email: string, code: string): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>('/api/auth/verify-registration-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  });
+}
+
+export async function verifyResetOtp(email: string, code: string): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>('/api/auth/verify-reset-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  });
+}
+
+export async function resetPasswordWithOtpToken(reset_token: string, new_password: string): Promise<void> {
+  await apiFetch('/api/auth/reset-password-otp', {
+    method: 'POST',
+    body: JSON.stringify({ reset_token, new_password }),
+  });
+}

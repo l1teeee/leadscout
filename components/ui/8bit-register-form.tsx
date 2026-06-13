@@ -2,11 +2,9 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { login, register } from "@/lib/api/auth";
-import { setToken } from "@/lib/auth";
-import LoadingScreen from "@/components/ui/8bit-loading-screen";
+import { register } from "@/lib/api/auth";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 
@@ -18,12 +16,6 @@ const secureInputProps = {
   autoCorrect: "off", autoCapitalize: "off", spellCheck: false, maxLength: 128,
 } as const;
 
-const LOADER_MIN_DURATION = 5200;
-
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
 export default function RegisterForm({ className }: { className?: string }) {
   const router = useRouter();
   const { lang } = useLanguage();
@@ -33,9 +25,7 @@ export default function RegisterForm({ className }: { className?: string }) {
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showError = (msg: string) => {
@@ -59,86 +49,17 @@ export default function RegisterForm({ className }: { className?: string }) {
     }
 
     setIsLoading(true);
-    setLoadingProgress(0);
-    const startedAt = Date.now();
-    const progressTimer = window.setInterval(() => {
-      setLoadingProgress((current) => Math.min(92, current + 4));
-    }, 180);
 
     try {
       await register(email, password);
-      setLoadingProgress(72);
-      try {
-        const result = await login(email, password);
-        setToken(result.access_token);
-        setLoadingProgress(88);
-      } catch {
-        // Auto-login failed after register - go to login page
-      }
-      const elapsed = Date.now() - startedAt;
-      if (elapsed < LOADER_MIN_DURATION) {
-        await wait(LOADER_MIN_DURATION - elapsed);
-      }
-      window.clearInterval(progressTimer);
-      setLoadingProgress(100);
-      sessionStorage.setItem("scoutia_onboarding_pending", "1");
-      await wait(650);
-      setSuccess(true);
-      setTimeout(() => { router.replace("/onboarding"); router.refresh(); }, 1200);
+      sessionStorage.setItem("otp_pending_email", email);
+      router.replace("/verify-otp");
     } catch (err) {
-      window.clearInterval(progressTimer);
       const msg = err instanceof Error ? err.message : "";
       showError(msg.includes("400") ? tr.duplicateEmail : tr.genericError);
       setIsLoading(false);
-      setLoadingProgress(0);
     }
   };
-
-  if (success) {
-    return (
-      <div className="animate-scale-in w-full">
-        <div className="pixel-card overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>{tr.header}</p>
-            <div className="flex gap-1.5" aria-hidden="true">
-              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
-              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
-              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#3FAE2A" }} />
-            </div>
-          </div>
-          <div className="px-6 py-8 flex flex-col items-center gap-4 text-center">
-            <CheckCircle size={32} style={{ color: "var(--c-qualified)" }} />
-            <div>
-              <p className="retro pixel-text-sm uppercase" style={{ color: "var(--text)" }}>{tr.successTitle}</p>
-              <p className="mt-2 text-xs" style={{ ...body, color: "var(--text-3)" }}>{tr.successSubtitle}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className={cn("animate-scale-in w-full", className)}>
-        <div className="pixel-card overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--sidebar)", borderBottom: "2px solid #000" }}>
-            <p className="retro pixel-text-xs uppercase" style={{ color: "#A1A1AA" }}>{tr.header}</p>
-            <div className="flex gap-1.5" aria-hidden="true">
-              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#E63946" }} />
-              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "rgba(255,255,255,0.12)" }} />
-              <span style={{ display: "inline-block", width: 10, height: 10, border: "2px solid #3A2719", background: "#3FAE2A" }} />
-            </div>
-          </div>
-          <LoadingScreen
-            title={tr.loadingTitle}
-            progress={loadingProgress}
-            tips={[...tr.tips]}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={cn("animate-scale-in w-full", className)}>

@@ -279,7 +279,7 @@ export async function Dashboard() {
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
       <OnboardingTour />
 
-      <div data-tour="dashboard-kpis" data-stagger className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+      <div data-tour="dashboard-kpis" data-stagger className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <KpiCard label={tr.dashboard.kpi.totalLeads.label} value={summary.total_leads} sub={tr.dashboard.kpi.totalLeads.sub} tone="neutral" />
         <KpiCard label={tr.dashboard.kpi.thisWeek.label} value={summary.new_this_week} sub={tr.dashboard.kpi.thisWeek.sub} tone="info" />
         <KpiCard label={tr.dashboard.kpi.highPriority.label} value={summary.by_priority?.alta ?? 0} sub={tr.dashboard.kpi.highPriority.sub} tone="success" />

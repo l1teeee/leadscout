@@ -1,9 +1,10 @@
 "use client";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { useMobileNav } from "@/contexts/mobile-nav-context";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
@@ -35,13 +36,23 @@ export function Topbar({ initialEmail }: { initialEmail?: string }) {
   const { lang, setLang } = useLanguage();
   const tr = translations[lang];
   const title = (tr.topbar.titles as Record<string, string>)[pathname] ?? "ScoutIA";
+  const { setIsMobileNavOpen } = useMobileNav();
 
   return (
     <header
-      className="h-14.5 shrink-0 flex items-center justify-between px-8"
+      className="h-14.5 shrink-0 flex items-center justify-between px-3 md:px-8"
       style={{ background: "var(--surface)", borderBottom: "2px solid var(--border)" }}
     >
-      <div>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setIsMobileNavOpen(true)}
+          className="flex h-8 w-8 items-center justify-center rounded-none border-2 border-[var(--border)] bg-[var(--surface-2)] shadow-[2px_2px_0_0_var(--pixel-shadow)] md:hidden"
+          style={{ color: "var(--text)" }}
+          aria-label="Abrir menu"
+        >
+          <Menu size={16} />
+        </button>
         <h1 className="text-sm font-semibold tracking-normal" style={{ ...bodyFont, color: "var(--text)" }}>
           {title}
         </h1>

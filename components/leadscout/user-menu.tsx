@@ -46,7 +46,7 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
         <DropdownMenu.Content
           align="end"
           sideOffset={8}
-          className="z-50 w-72 border-2 border-[var(--border)] bg-[var(--surface)] p-2 shadow-[3px_3px_0_var(--pixel-shadow)] animate-scale-in"
+          className="z-50 w-64 max-w-[calc(100vw-1rem)] border-2 border-[var(--border)] bg-[var(--surface)] p-2 shadow-[3px_3px_0_var(--pixel-shadow)] animate-scale-in"
         >
           <div className="border-2 border-[var(--border)] bg-[var(--surface-2)] p-3">
             <div className="flex items-start gap-3">

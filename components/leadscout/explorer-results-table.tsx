@@ -129,7 +129,8 @@ export function ExplorerResultsTable({
       </div>
 
       <div data-tour="explorer-results-list" className="min-h-0 flex-1 overflow-auto">
-        <table className="pixel-table w-full text-sm" style={bodyTextStyle}>
+        <div className="overflow-x-auto">
+          <table className="pixel-table w-full text-sm" style={bodyTextStyle}>
           <thead className="sticky top-0 z-10">
             <tr style={{ background: "var(--surface-2)" }}>
               {tr.headers.map((h) => (
@@ -192,7 +193,8 @@ export function ExplorerResultsTable({
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </section>
   );

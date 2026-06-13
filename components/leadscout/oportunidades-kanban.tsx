@@ -81,13 +81,13 @@ function LeadDetailPortal({
   return createPortal(
     <>
       <div
-        className="fixed z-40 bg-black/30 backdrop-blur-[1px]"
-        style={{ left: 58, top: 58, right: 0, bottom: 0 }}
+        className="fixed z-40 bg-black/30 backdrop-blur-[1px] left-0 top-0 md:left-[58px] md:top-[58px]"
+        style={{ right: 0, bottom: 0 }}
         onClick={onClose}
       />
       <div
-        className="fixed right-0 z-50 flex"
-        style={{ top: 58, bottom: 0 }}
+        className="fixed right-0 z-50 flex top-0 md:top-[58px]"
+        style={{ bottom: 0 }}
       >
         <ExplorerLeadDetail lead={lead} onClose={onClose} onStatusChange={onStatusChange} onHide={onHide} />
       </div>

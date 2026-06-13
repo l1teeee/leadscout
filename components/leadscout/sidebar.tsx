@@ -3,13 +3,14 @@ import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart3, Building2, Cable, History, LayoutDashboard, LogOut, Search, Send, Sparkles, Target, Settings, Zap,
+  BarChart3, Building2, Cable, History, LayoutDashboard, LogOut, Search, Send, Sparkles, Target, Settings, Zap, X,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { clearToken, getToken } from "@/lib/auth";
 import type { SidebarNavItemProps, SidebarMenuSectionProps, SidebarSection } from "@/types";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { useMobileNav } from "@/contexts/mobile-nav-context";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
@@ -107,6 +108,7 @@ export function Sidebar() {
   const sections = useSidebarSections();
   const { lang } = useLanguage();
   const tr = translations[lang];
+  const { isMobileNavOpen, setIsMobileNavOpen } = useMobileNav();
 
   function handleMouseEnter() {
     expandTimer.current = setTimeout(() => setIsExpanded(true), 500);
@@ -128,15 +130,106 @@ export function Sidebar() {
   }
 
   return (
-    <aside
-      className={cn(
-        "shrink-0 flex flex-col h-full overflow-hidden transition-[width] duration-200 ease-out",
-        isExpanded ? "w-[232px]" : "w-[58px]"
+    <>
+      {/* Mobile sidebar overlay */}
+      {isMobileNavOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsMobileNavOpen(false)}
+          />
+          {/* Drawer */}
+          <aside
+            className="relative z-10 flex h-full w-[232px] flex-col overflow-hidden"
+            style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
+          >
+            {/* Close button in header area */}
+            <div
+              className="h-[58px] flex items-center justify-between px-4 shrink-0"
+              style={{ borderBottom: "2px solid #000" }}
+            >
+              <button
+                type="button"
+                onClick={() => router.push("/landing")}
+                className="flex items-center gap-2.5"
+                aria-label={tr.nav.landingLabel}
+              >
+                <span
+                  className="w-8 h-8 rounded-none flex items-center justify-center shrink-0"
+                  style={{ background: "var(--pixel-highlight)", border: "2px solid #000", boxShadow: "2px 2px 0 0 #000" }}
+                >
+                  <Zap size={15} color="#17110D" strokeWidth={2.5} />
+                </span>
+                <span className="truncate text-sm font-extrabold tracking-normal text-[#FFFFFF]" style={bodyFont}>
+                  ScoutIA
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(false)}
+                className="flex h-8 w-8 items-center justify-center"
+                style={{ color: "#D4D4D8" }}
+                aria-label="Cerrar menu"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Nav items - same as desktop expanded state */}
+            <nav className="flex-1 px-2 py-2 flex flex-col gap-5 overflow-y-auto">
+              {sections.map((section) => (
+                <SidebarMenuSection
+                  key={section.label}
+                  section={section}
+                  pathname={pathname}
+                  isExpanded={true}
+                />
+              ))}
+            </nav>
+
+            {/* Bottom buttons - same as desktop */}
+            <div className="px-2 pb-3 pt-3" style={{ borderTop: "2px solid #000" }}>
+              <button
+                onClick={() => { router.push("/settings"); setIsMobileNavOpen(false); }}
+                data-tour="sidebar-settings"
+                title={tr.nav.items.settings}
+                aria-label={tr.nav.items.settings}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer"
+                style={
+                  pathname === "/settings"
+                    ? { ...bodyFont, background: "var(--pixel-highlight)", border: "2px solid #1C1917", boxShadow: "2px 2px 0 0 #000", color: "#17110D" }
+                    : { ...bodyFont, color: "#D4D4D8", border: "2px solid transparent" }
+                }
+              >
+                <Settings size={15} strokeWidth={pathname === "/settings" ? 2.5 : 2} />
+                <span className="truncate">{tr.nav.items.settings}</span>
+              </button>
+              <button
+                onClick={handleSidebarLogout}
+                title={tr.topbar.signOut}
+                aria-label={tr.topbar.signOut}
+                className="mt-0.5 w-full flex items-center gap-2.5 px-2.5 py-2 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer"
+                style={{ ...bodyFont, color: "#E63946", border: "2px solid transparent" }}
+              >
+                <LogOut size={15} strokeWidth={2} />
+                <span className="truncate">{tr.topbar.signOut}</span>
+              </button>
+            </div>
+          </aside>
+        </div>
       )}
-      style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden md:flex shrink-0 flex-col h-full overflow-hidden transition-[width] duration-200 ease-out",
+          isExpanded ? "w-[232px]" : "w-[58px]"
+        )}
+        style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
       <div
         className={cn("h-[58px] flex items-center shrink-0", isExpanded ? "px-4 gap-2.5" : "justify-center px-0")}
         style={{ borderBottom: "2px solid #000" }}
@@ -225,6 +318,7 @@ export function Sidebar() {
           {isExpanded && <span className="truncate">{tr.topbar.signOut}</span>}
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

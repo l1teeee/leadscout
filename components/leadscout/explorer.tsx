@@ -9,6 +9,7 @@ import { ExplorerOnboardingTour } from "./explorer-onboarding-tour";
 import type { ExplorerTab } from "@/types";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 function ExplorerMapLoading() {
   const { lang } = useLanguage();
@@ -60,8 +61,11 @@ export function Explorer() {
       <ExplorerOnboardingTour setActiveTab={setActiveTab} />
 
       <div
-        className="flex h-full min-h-0 flex-col overflow-hidden p-5 gap-4"
-        style={{ width: selected ? "calc(100% - 384px)" : "100%" }}
+        className={cn(
+          "flex h-full min-h-0 flex-col overflow-hidden p-5 gap-4",
+          selected ? "md:w-[calc(100%-384px)]" : "",
+          "w-full"
+        )}
       >
         <div data-tour="explorer-tabs" className="pixel-card-sm flex shrink-0 items-center gap-2 bg-white p-2">
           {tabs.map((tab) => {

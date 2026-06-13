@@ -138,7 +138,7 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
   return (
     <>
       <div
-        className="w-[384px] shrink-0 overflow-y-auto animate-slide-in p-5 pl-0"
+        className="fixed inset-0 z-40 overflow-y-auto animate-slide-in p-5 pl-0 md:relative md:inset-auto md:w-[384px] md:shrink-0 md:p-5 md:pl-0"
         style={{ background: "transparent" }}
       >
         <div className="pixel-card-sm h-full overflow-y-auto">

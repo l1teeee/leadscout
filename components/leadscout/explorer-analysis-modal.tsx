@@ -183,6 +183,8 @@ export function ExplorerAnalysisModal({
     setOutreachMessage(null);
     setOutreachError(null);
     setCopiedOutreach(false);
+    setEmailSent(false);
+    setEmailError(null);
     setIsGeneratingOutreach(true);
     try {
       const res = await generateOutreachMessage({
@@ -489,15 +491,17 @@ export function ExplorerAnalysisModal({
                         <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
                           {PLATFORM_LABELS[outreachPlatform ?? ""] ?? outreachPlatform}
                         </p>
-                        <button
-                          type="button"
-                          onClick={handleCopyOutreach}
-                          className="flex items-center gap-1 px-2 py-1 border border-(--border) bg-surface text-xs hover:bg-(--surface-2) transition-colors"
-                          style={{ ...bodyTextStyle, color: "var(--text-2)" }}
-                        >
-                          {copiedOutreach ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedOutreach ? "Copiado" : "Copiar"}
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={handleCopyOutreach}
+                            className="flex items-center gap-1 px-2 py-1 border border-(--border) bg-surface text-xs hover:bg-(--surface-2) transition-colors"
+                            style={{ ...bodyTextStyle, color: "var(--text-2)" }}
+                          >
+                            {copiedOutreach ? <Check size={10} /> : <Copy size={10} />}
+                            {copiedOutreach ? "Copiado" : "Copiar"}
+                          </button>
+                        </div>
                       </div>
                       <p className="whitespace-pre-line text-xs leading-relaxed" style={{ ...bodyTextStyle, color: "var(--text)" }}>
                         {outreachMessage}
