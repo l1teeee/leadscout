@@ -183,8 +183,6 @@ export function ExplorerAnalysisModal({
     setOutreachMessage(null);
     setOutreachError(null);
     setCopiedOutreach(false);
-    setEmailSent(false);
-    setEmailError(null);
     setIsGeneratingOutreach(true);
     try {
       const res = await generateOutreachMessage({
