@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
   Check,
   Clock,
   Edit3,
   Eye,
+  FileText,
   Lightbulb,
   ShieldAlert,
   Sparkles,
   Trash2,
+  Upload,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -17,12 +19,14 @@ import {
   generateAiContextExample,
   getAiContext as getServerAiContext,
   getSettingsData,
+  importAiContextJson,
   updateAiContext,
 } from "@/lib/api/settings";
 import {
   BUSINESS_MAX,
   CONSTRAINTS_MAX,
   EXAMPLE_SEED_MAX,
+  JSON_IMPORT_MAX_CHARS,
   clearAiContext,
   composeContext,
   getAiContext as getLocalAiContext,
@@ -89,7 +93,12 @@ export function AiContextPage() {
   const [clearing, setClearing] = useState(false);
   const [exampleSeed, setExampleSeed] = useState("");
   const [generatingExample, setGeneratingExample] = useState(false);
+  const [jsonText, setJsonText] = useState("");
+  const [jsonFileName, setJsonFileName] = useState("");
+  const [analyzingJson, setAnalyzingJson] = useState(false);
+  const [jsonImportNotice, setJsonImportNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -147,6 +156,7 @@ export function AiContextPage() {
   const validation = validateAiContext(currentValue.businessContext, currentValue.constraints);
   const canSave = isEditing && hasChanges && validation.canSave && !saving && !clearing;
   const approxTokens = Math.ceil(composed.length / 4);
+  const jsonChars = jsonText.trim().length;
 
   const validationItems = [
     { ok: validation.hasBusinessDescription, label: copy.validationBusiness },
@@ -235,6 +245,103 @@ export function AiContextPage() {
     }
   }
 
+  function getJsonPayload(): unknown | null {
+    const trimmed = jsonText.trim();
+    if (!trimmed) {
+      setError(copy.jsonImportEmpty);
+      return null;
+    }
+    if (trimmed.length > JSON_IMPORT_MAX_CHARS) {
+      setError(copy.jsonImportTooLarge);
+      return null;
+    }
+
+    let payload: unknown;
+    try {
+      payload = JSON.parse(trimmed);
+    } catch {
+      setError(copy.jsonImportInvalid);
+      return null;
+    }
+
+    const isEmptyArray = Array.isArray(payload) && payload.length === 0;
+    const isEmptyObject =
+      typeof payload === "object" &&
+      payload !== null &&
+      !Array.isArray(payload) &&
+      Object.keys(payload as Record<string, unknown>).length === 0;
+    if (typeof payload !== "object" || payload === null || isEmptyArray || isEmptyObject) {
+      setError(copy.jsonImportUnsupported);
+      return null;
+    }
+
+    return payload;
+  }
+
+  async function handleJsonFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+
+    if (file.size > JSON_IMPORT_MAX_CHARS * 4) {
+      setError(copy.jsonImportTooLarge);
+      event.currentTarget.value = "";
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      if (text.trim().length > JSON_IMPORT_MAX_CHARS) {
+        setError(copy.jsonImportTooLarge);
+        event.currentTarget.value = "";
+        return;
+      }
+      setJsonText(text);
+      setJsonFileName(file.name);
+      setJsonImportNotice(null);
+      setError(null);
+    } catch {
+      setError(copy.jsonImportInvalid);
+      event.currentTarget.value = "";
+    }
+  }
+
+  function handleJsonTextChange(value: string) {
+    setJsonText(value);
+    setJsonImportNotice(null);
+    if (!value.trim()) setJsonFileName("");
+  }
+
+  function handleClearJsonImport() {
+    setJsonText("");
+    setJsonFileName("");
+    setJsonImportNotice(null);
+    if (jsonFileInputRef.current) jsonFileInputRef.current.value = "";
+  }
+
+  async function handleAnalyzeJson() {
+    const payload = getJsonPayload();
+    if (!payload) return;
+
+    setAnalyzingJson(true);
+    setError(null);
+    setJsonImportNotice(null);
+    try {
+      const data = await importAiContextJson({
+        json_payload: payload,
+        lang,
+      });
+      setBusinessContext(sanitizeAiContextText(data.business_context, BUSINESS_MAX));
+      setConstraints(sanitizeAiContextText(data.constraints, CONSTRAINTS_MAX));
+      setIsEditing(true);
+      setSaved(false);
+      setJsonImportNotice(copy.jsonImportApplied);
+    } catch {
+      setError(copy.jsonImportAnalyzeError);
+    } finally {
+      setAnalyzingJson(false);
+    }
+  }
+
   const lastUpdatedLabel = updatedAt
     ? new Date(updatedAt).toLocaleString(lang === "es" ? "es-SV" : "en-US", {
         dateStyle: "medium",
@@ -295,6 +402,104 @@ export function AiContextPage() {
                   {copy.exampleSeedHelper}
                 </p>
               </label>
+            </div>
+
+            <div className="pixel-inset p-3">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <FileText size={14} style={{ color: "var(--text-2)" }} />
+                      <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>
+                        {copy.jsonImportTitle}
+                      </p>
+                    </div>
+                    <p className="mt-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                      {copy.jsonImportHelper}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <input
+                      ref={jsonFileInputRef}
+                      type="file"
+                      accept=".json,application/json"
+                      className="hidden"
+                      onChange={handleJsonFileChange}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => jsonFileInputRef.current?.click()}
+                      className="inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-bold text-[var(--text)] shadow-[1px_1px_0_var(--pixel-shadow)] transition-colors hover:bg-[var(--pixel-highlight)]"
+                      style={bodyTextStyle}
+                    >
+                      <Upload size={13} />
+                      {copy.jsonImportUpload}
+                    </button>
+                    {jsonText && (
+                      <button
+                        type="button"
+                        onClick={handleClearJsonImport}
+                        className="inline-flex h-9 items-center justify-center gap-1.5 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)]"
+                        style={bodyTextStyle}
+                      >
+                        <Trash2 size={13} />
+                        {copy.jsonImportClear}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <label className="block">
+                  <span className="block text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+                    {copy.jsonImportPasteLabel}
+                  </span>
+                  <textarea
+                    value={jsonText}
+                    onChange={(event) => handleJsonTextChange(event.target.value)}
+                    placeholder={copy.jsonImportPlaceholder}
+                    rows={4}
+                    className={`${textareaCls} mt-2 min-h-24`}
+                    style={bodyTextStyle}
+                  />
+                </label>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                      {jsonFileName ? `${copy.jsonImportFileLoaded}: ${jsonFileName}` : copy.jsonImportNoFile}
+                    </p>
+                    <p
+                      className="mt-1 text-xs font-semibold tabular-nums"
+                      style={{
+                        ...bodyTextStyle,
+                        color: jsonChars > JSON_IMPORT_MAX_CHARS ? "var(--c-hi)" : "var(--text-3)",
+                      }}
+                    >
+                      {jsonChars}/{JSON_IMPORT_MAX_CHARS}
+                    </p>
+                    {jsonImportNotice && (
+                      <p className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-mid)" }}>
+                        {jsonImportNotice}
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAnalyzeJson}
+                    disabled={analyzingJson || jsonChars === 0}
+                    className="inline-flex h-9 w-full shrink-0 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-bold text-[var(--text)] shadow-[1px_1px_0_var(--pixel-shadow)] transition-colors hover:bg-[var(--pixel-highlight)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    style={bodyTextStyle}
+                  >
+                    <Sparkles size={13} />
+                    {analyzingJson ? copy.jsonImportAnalyzing : copy.jsonImportAnalyze}
+                  </button>
+                </div>
+
+                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                  {copy.jsonImportPrivacy}
+                </p>
+              </div>
             </div>
 
             <label className="block">

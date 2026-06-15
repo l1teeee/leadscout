@@ -173,3 +173,32 @@ export async function generateAiContextExample(body: {
 
   return res.json() as Promise<AiContextExampleData>;
 }
+
+export interface AiContextJsonImportData {
+  business_context: string;
+  constraints: string;
+}
+
+export async function importAiContextJson(body: {
+  json_payload: unknown;
+  lang: "en" | "es";
+}): Promise<AiContextJsonImportData> {
+  const res = await fetch("/api/ai-context/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    let detail = "Could not analyze JSON";
+    try {
+      const payload = await res.json() as { detail?: unknown };
+      if (typeof payload.detail === "string") detail = payload.detail;
+    } catch {
+      // keep generic detail
+    }
+    throw new Error(detail);
+  }
+
+  return res.json() as Promise<AiContextJsonImportData>;
+}
