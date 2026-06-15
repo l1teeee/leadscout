@@ -1,5 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
+import { Trash2 } from "lucide-react";
 import { useExplorer } from "@/lib/hooks/use-explorer";
 import { ExplorerLocationPanel } from "./explorer-location-panel";
 import { ExplorerMapSection } from "./explorer-map-section";
@@ -48,6 +49,7 @@ export function Explorer() {
     selected,
     placeSuggestions, visibleScrapingPoints,
     activeSelectedPoint, activeSearchArea, filtered,
+    cleanFilter, setCleanFilter,
     isSearching, searchStage, searchError,
     selectScrapingPoint, selectPlace, selectCategory,
     handleBrowserLocation, moveSearchArea,
@@ -86,6 +88,19 @@ export function Explorer() {
               </button>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setCleanFilter((value) => !value)}
+            className="retro ml-auto flex h-8 items-center gap-2 border-2 px-3 pixel-text-xs uppercase transition-colors"
+            style={
+              cleanFilter
+                ? { background: "var(--border)", color: "var(--surface)", borderColor: "var(--border)" }
+                : { background: "var(--surface)", color: "var(--text-2)", borderColor: "var(--border)" }
+            }
+          >
+            <Trash2 size={12} />
+            {lang === "es" ? "Limpiar" : "Clean"}
+          </button>
         </div>
 
         {activeTab === "ubicacion" && (

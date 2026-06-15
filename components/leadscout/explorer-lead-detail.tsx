@@ -15,6 +15,7 @@ import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 import { safeHref } from "@/lib/utils";
 import { hideLead as persistHideLead } from "@/lib/hidden-leads";
+import type { LeadStatus } from "@/lib/data";
 
 const bodyTextStyle = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
@@ -45,6 +46,7 @@ const PLATFORM_META: Record<string, { abbr: string; color: string }> = {
 const PLATFORM_OPTIONS = [
   "facebook", "instagram", "linkedin", "tiktok", "x", "youtube", "whatsapp", "otro",
 ];
+const STATUS_OPTIONS = ["nuevo", "contactado", "calificado", "perdido"] as const satisfies readonly LeadStatus[];
 
 function classifySocial(url?: string | null): string | null {
   if (!url) return null;
@@ -73,7 +75,7 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
   const hasContact = Boolean(lead.phone || lead.website);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [updated, setUpdated] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<LeadStatus>(lead.status);
   const [showHistory, setShowHistory] = useState(false);
 
   // Social edit state
@@ -96,7 +98,7 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
     queueMicrotask(() => {
       if (cancelled) return;
       setIsUpdating(false);
-      setUpdated(false);
+      setCurrentStatus(lead.status);
       setIsAddingProfile(false);
       setNewPlatform("facebook");
       setNewUrl("");
@@ -123,13 +125,16 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
     onClose();
   }
 
-  async function handleMarkContacted() {
+  async function handleStatusChange(newStatus: LeadStatus) {
+    const prev = currentStatus;
+    if (newStatus === prev || isUpdating) return;
     setIsUpdating(true);
+    setCurrentStatus(newStatus);
     try {
-      await updateLeadStatus(lead.id, "contactado");
-      setUpdated(true);
-      onStatusChange?.("contactado");
+      await updateLeadStatus(lead.id, newStatus);
+      onStatusChange?.(newStatus);
     } catch {
+      setCurrentStatus(prev);
     } finally {
       setIsUpdating(false);
     }
@@ -260,7 +265,7 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
                 {tr.status}
               </p>
               <div className="flex gap-2">
-                <StatusBadge status={lead.status} className={pixelBadgeClass} />
+                <StatusBadge status={currentStatus} className={pixelBadgeClass} />
                 <PriorityBadge priority={lead.priority} className={pixelBadgeClass} />
               </div>
             </div>
@@ -537,23 +542,27 @@ export function ExplorerLeadDetail({ lead, onClose, onStatusChange, onHide }: Ex
             </div>
 
             <div className="flex flex-col gap-3 border-t-2 border-[var(--border)] pt-5">
-              <Button
-                variant="primary"
-                onClick={handleMarkContacted}
-                disabled={isUpdating || updated}
-                className={`${pixelButtonClass} h-10 w-full justify-center`}
-              >
-                {isUpdating ? (
-                  tr.markingContacted
-                ) : updated ? (
-                  <>
-                    <Check size={13} />
-                    {tr.contacted}
-                  </>
-                ) : (
-                  tr.markContacted
-                )}
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                {STATUS_OPTIONS.map((status) => {
+                  const isActive = currentStatus === status;
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => handleStatusChange(status)}
+                      disabled={isUpdating}
+                      className={`${pixelButtonClass} flex h-10 items-center justify-center px-2 disabled:opacity-40`}
+                      style={{
+                        background: isActive ? "var(--border)" : "var(--surface-2)",
+                        color: isActive ? "var(--surface)" : "var(--text)",
+                        borderColor: "var(--border)",
+                      }}
+                    >
+                      {translations[lang].leadStatus[status]}
+                    </button>
+                  );
+                })}
+              </div>
               <Button
                 variant="secondary"
                 onClick={() => setShowHistory((v) => !v)}

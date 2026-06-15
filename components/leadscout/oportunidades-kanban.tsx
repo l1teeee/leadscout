@@ -14,14 +14,16 @@ import {
   type DragStartEvent,
   type Modifier,
 } from "@dnd-kit/core";
-import { ArrowUpDown, Search, X } from "lucide-react";
+import { ArrowUpDown, Search, Trash2, X } from "lucide-react";
 import { PriorityBadge, Tag } from "@/components/ui/badge";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { ExplorerLeadDetail } from "@/components/leadscout/explorer-lead-detail";
 import { useLanguage } from "@/contexts/language-context";
-import { updateLeadStatus } from "@/lib/api/leads";
-import { hideLead as persistHideLead } from "@/lib/hidden-leads";
+import { checkLeadQuality, updateLeadStatus, type LeadQualityItem } from "@/lib/api/leads";
+import { hideLead as persistHideLead, getHiddenIds } from "@/lib/hidden-leads";
+import { applyStatusOverrides, clearStatusOverride, setStatusOverride } from "@/lib/lead-status-cache";
+import { addJunkIds, clearJunkIds, getJunkIds, isLowQuality } from "@/lib/lead-quality";
 import type { Lead, LeadStatus } from "@/lib/data";
 import { translations } from "@/lib/i18n";
 
@@ -303,9 +305,17 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
   const { lang } = useLanguage();
   const tr = translations[lang].oportunidades;
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
+  useEffect(() => {
+    const hiddenIds = getHiddenIds();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLeads(applyStatusOverrides(initialLeads).filter((l) => !hiddenIds.has(l.id)));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [query, setQuery] = useState("");
+  const [cleanMode, setCleanMode] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [columnSorts, setColumnSorts] = useState<Record<LeadStatus, SortKey>>({
     nuevo: "score_desc",
     contactado: "score_desc",
@@ -323,7 +333,7 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
 
   const activeLead = activeId ? leads.find((l) => l.id === activeId) : undefined;
 
-  const filteredLeads = query.trim()
+  const queryFilteredLeads = query.trim()
     ? leads.filter((l) => {
         const q = query.toLowerCase();
         return (
@@ -333,6 +343,41 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
         );
       })
     : leads;
+  const junkIds = cleanMode ? getJunkIds() : new Set<string>();
+  const filteredLeads = cleanMode
+    ? queryFilteredLeads.filter((l) => !isLowQuality(l) && !junkIds.has(l.id))
+    : queryFilteredLeads;
+  const hiddenCleanCount = cleanMode ? queryFilteredLeads.length - filteredLeads.length : 0;
+
+  async function analyzeWithAI() {
+    if (analyzing) return;
+    setAnalyzing(true);
+    try {
+      const items: LeadQualityItem[] = leads.map((lead) => ({
+        id: lead.id,
+        name: lead.name,
+        phone: lead.phone,
+        website: lead.website,
+        category: lead.category,
+        score: lead.score,
+      }));
+      const junkIds = await checkLeadQuality(items);
+      addJunkIds(junkIds);
+    } catch {
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  function handleCleanToggle() {
+    if (cleanMode) {
+      clearJunkIds();
+      setCleanMode(false);
+      return;
+    }
+    setCleanMode(true);
+    void analyzeWithAI();
+  }
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
@@ -365,14 +410,17 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
     if (!lead || lead.status === nextStatus) return;
 
     const previousLeads = leads;
+    setStatusOverride(leadId, nextStatus);
     setLeads((current) =>
       current.map((item) => (item.id === leadId ? { ...item, status: nextStatus } : item)),
     );
 
     try {
       await updateLeadStatus(leadId, nextStatus);
+      clearStatusOverride(leadId);
     } catch (error) {
       setLeads(previousLeads);
+      clearStatusOverride(leadId);
       console.error(error);
     }
   }
@@ -414,6 +462,27 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
                 : `${filteredLeads.length} lead${filteredLeads.length !== 1 ? "s" : ""}`}
             </p>
           )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCleanToggle}
+              disabled={analyzing}
+              className="retro inline-flex h-9 items-center gap-2 rounded-none border-2 px-3 pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px disabled:opacity-50"
+              style={
+                cleanMode
+                  ? { background: "var(--border)", color: "var(--surface)", borderColor: "var(--border)" }
+                  : { background: "var(--surface)", color: "var(--text-2)", borderColor: "var(--border)" }
+              }
+            >
+              <Trash2 size={12} />
+              {analyzing ? (lang === "es" ? "Analizando..." : "Analyzing...") : (lang === "es" ? "Limpiar" : "Clean")}
+            </button>
+            {cleanMode && (
+              <span className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                {lang === "es" ? `${hiddenCleanCount} ocultos` : `${hiddenCleanCount} hidden`}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -455,6 +524,7 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
       lead={selectedLead}
       onClose={() => setSelectedLead(null)}
       onStatusChange={(nextStatus) => {
+        clearStatusOverride(selectedLead!.id);
         setLeads((current) =>
           current.map((l) => (l.id === selectedLead!.id ? { ...l, status: nextStatus } : l)),
         );

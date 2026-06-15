@@ -26,6 +26,7 @@ import type { ExplorerSearchStage, SearchBounds } from "@/types/explorer";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 import { hasAiContext, launchAiContextGate } from "@/lib/ai-context-gate";
+import { getJunkIds, isLowQuality } from "@/lib/lead-quality";
 
 const PREFS_KEY = "ls_explorer_prefs";
 const SEARCH_PROGRESS_STAGES: ExplorerSearchStage[] = [
@@ -111,6 +112,7 @@ export function useExplorer() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ExplorerTab>("ubicacion");
   const [placeSuggestions, setPlaceSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [cleanFilter, setCleanFilter] = useState(false);
 
   const hasLocation = !!(customCenter || selectedPlace);
   const hasStoredLocation = hasLocation;
@@ -290,8 +292,10 @@ export function useExplorer() {
     [zoneScrapingPoints]
   );
 
+  const junkIds = cleanFilter ? getJunkIds() : new Set<string>();
   const filtered = leads.filter((l) => {
     if (l.status === "desvinculado") return false;
+    if (cleanFilter && (isLowQuality(l) || junkIds.has(l.id))) return false;
     if (!zoneLeadIds.has(l.id)) return false;
     const q = query.toLowerCase();
     const matchQ =
@@ -517,6 +521,8 @@ export function useExplorer() {
     activeSearchArea,
     searchBounds,
     filtered,
+    cleanFilter,
+    setCleanFilter,
     isSearching,
     searchStage,
     searchError,

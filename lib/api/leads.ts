@@ -128,3 +128,20 @@ export async function updateLeadSocialProfiles(
     body: JSON.stringify({ social_profiles: profiles }),
   });
 }
+
+export interface LeadQualityItem {
+  id: string;
+  name: string;
+  phone?: string;
+  website?: string;
+  category: string;
+  score: number;
+}
+
+export async function checkLeadQuality(leads: LeadQualityItem[]): Promise<string[]> {
+  const res = await apiFetch<{ junk_ids: string[] }>("/api/leads/quality-check", {
+    method: "POST",
+    body: JSON.stringify({ leads }),
+  });
+  return res.junk_ids;
+}
