@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getTimeline, type TimelineResponse } from "@/lib/api/reports";
+import { Download, FileSpreadsheet, Mail } from "lucide-react";
+import { getTimeline, downloadReport, emailReport, type TimelineResponse } from "@/lib/api/reports";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 
 type Range = 7 | 30 | 90;
+type ExportBusy = "pdf" | "xlsx" | "email" | null;
 type TimelinePoint = TimelineResponse["points"][number];
 
 const bodyTextStyle = {
@@ -50,11 +52,14 @@ function KpiCard({ label, value }: { label: string; value: string | number }) {
 export default function TimelineView() {
   const { lang } = useLanguage();
   const tr = translations[lang].timeline;
+  const trToolbar = translations[lang].reportes.toolbar;
   const common = translations[lang].common;
   const [range, setRange] = useState<Range>(90);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TimelineResponse | null>(null);
+  const [exportBusy, setExportBusy] = useState<ExportBusy>(null);
+  const [exportMsg, setExportMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const rangeLabels: Record<Range, string> = {
     7: tr.range7,
     30: tr.range30,
@@ -91,6 +96,37 @@ export default function TimelineView() {
     setRange(days);
   }
 
+  function showExportMsg(text: string, ok: boolean) {
+    setExportMsg({ text, ok });
+    setTimeout(() => setExportMsg(null), 3000);
+  }
+
+  async function handlePdf() {
+    if (exportBusy) return;
+    setExportBusy("pdf");
+    try { await downloadReport("pdf", range); }
+    catch { showExportMsg(trToolbar.exportError, false); }
+    finally { setExportBusy(null); }
+  }
+
+  async function handleExcel() {
+    if (exportBusy) return;
+    setExportBusy("xlsx");
+    try { await downloadReport("xlsx", range); }
+    catch { showExportMsg(trToolbar.exportError, false); }
+    finally { setExportBusy(null); }
+  }
+
+  async function handleEmail() {
+    if (exportBusy) return;
+    setExportBusy("email");
+    try {
+      await emailReport(range);
+      showExportMsg(trToolbar.emailSent, true);
+    } catch { showExportMsg(trToolbar.emailError, false); }
+    finally { setExportBusy(null); }
+  }
+
   const points = data?.points ?? [];
   const total = points.reduce((sum, point) => sum + point.count, 0);
   const maxCount = Math.max(1, ...points.map((point) => point.count));
@@ -119,22 +155,61 @@ export default function TimelineView() {
           </p>
         </div>
 
-        <div className="flex gap-0">
-          {ranges.map((days) => (
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex gap-0">
+            {ranges.map((days) => (
+              <button
+                key={days}
+                type="button"
+                onClick={() => handleRangeChange(days)}
+                className={`retro pixel-text-xs cursor-pointer border-2 border-(--border) px-3 py-1.5 uppercase transition-colors ${
+                  days === range
+                    ? "bg-(--pixel-highlight) text-[#17110D]"
+                    : "bg-white text-(--text-3) hover:bg-(--surface-2)"
+                }`}
+                style={{ marginLeft: days === 7 ? 0 : -2 }}
+              >
+                {rangeLabels[days]}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
             <button
-              key={days}
               type="button"
-              onClick={() => handleRangeChange(days)}
-              className={`retro pixel-text-xs cursor-pointer border-2 border-(--border) px-3 py-1.5 uppercase transition-colors ${
-                days === range
-                  ? "bg-(--pixel-highlight) text-[#17110D]"
-                  : "bg-white text-(--text-3) hover:bg-(--surface-2)"
-              }`}
-              style={{ marginLeft: days === 7 ? 0 : -2 }}
+              onClick={handlePdf}
+              disabled={exportBusy !== null}
+              className="retro pixel-text-xs cursor-pointer inline-flex items-center gap-1.5 border-2 border-(--border) bg-surface px-3 py-1.5 uppercase transition-transform hover:bg-(--surface-2) active:translate-x-px active:translate-y-px disabled:cursor-not-allowed disabled:opacity-40"
+              style={bodyTextStyle}
             >
-              {rangeLabels[days]}
+              <Download size={11} />
+              {exportBusy === "pdf" ? "..." : trToolbar.exportPdf}
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={handleExcel}
+              disabled={exportBusy !== null}
+              className="retro pixel-text-xs cursor-pointer inline-flex items-center gap-1.5 border-2 border-(--border) bg-surface px-3 py-1.5 uppercase transition-transform hover:bg-(--surface-2) active:translate-x-px active:translate-y-px disabled:cursor-not-allowed disabled:opacity-40"
+              style={bodyTextStyle}
+            >
+              <FileSpreadsheet size={11} />
+              {exportBusy === "xlsx" ? "..." : trToolbar.exportExcel}
+            </button>
+            <button
+              type="button"
+              onClick={handleEmail}
+              disabled={exportBusy !== null}
+              className="retro pixel-text-xs cursor-pointer inline-flex items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-3 py-1.5 uppercase transition-transform hover:opacity-90 active:translate-x-px active:translate-y-px disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ color: "#17110D" }}
+            >
+              <Mail size={11} />
+              {exportBusy === "email" ? "..." : trToolbar.sendEmail}
+            </button>
+          </div>
+          {exportMsg && (
+            <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: exportMsg.ok ? "var(--c-qualified)" : "var(--c-lost)" }}>
+              {exportMsg.text}
+            </p>
+          )}
         </div>
       </div>
 

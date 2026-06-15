@@ -1,10 +1,10 @@
 import { cookies } from "next/headers";
-import { BarChart3, CheckCircle2, CircleDot, Clock3, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { BarChart3, CheckCircle2, CircleDot, Clock3, CalendarDays, TrendingUp } from "lucide-react";
 import { getLeads } from "@/lib/api/leads";
 import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
 import { ChartBars } from "@/components/ui/8bit-chart-bars";
 import { EmptyInsight } from "@/components/ui/empty-insight";
-import { ReportToolbar } from "@/components/leadscout/report-toolbar";
 import PriorityDistribution from "@/components/ui/priority-distribution";
 import type { LeadStatus } from "@/lib/data";
 import { getLang } from "@/lib/get-lang";
@@ -162,7 +162,16 @@ export async function Reportes() {
         <ReportMetric label={tr.kpi.critical.label} value={highRisk} sub={tr.kpi.critical.sub} icon={CircleDot} />
       </div>
 
-      <ReportToolbar hasData={summary.total_leads > 0} />
+      <div className="mb-5 flex justify-end">
+        <Link
+          href="/timeline"
+          className="retro pixel-text-xs inline-flex cursor-pointer items-center gap-1.5 border-2 border-(--border) bg-white px-3 py-1.5 uppercase text-text shadow-[2px_2px_0_0_var(--pixel-shadow)] transition-transform hover:bg-(--surface-2) active:translate-x-px active:translate-y-px"
+          style={{ fontFamily: "var(--font-body), system-ui, sans-serif" }}
+        >
+          <CalendarDays size={12} />
+          {tr.sections.viewTimeline}
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
