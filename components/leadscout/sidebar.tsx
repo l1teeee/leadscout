@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart3, Building2, Cable, History, LayoutDashboard, LogOut, Search, Send, Sparkles, Target, Settings, Zap, X,
+  BarChart3, Building2, Cable, CalendarDays, History, LayoutDashboard, LogOut, Search, Send, Sparkles, Target, Settings, Zap, X,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { clearToken, getToken } from "@/lib/auth";
@@ -32,6 +32,7 @@ function useSidebarSections(): SidebarSection[] {
         { id: "leads", label: tr.nav.items.leads, icon: Building2 },
         { id: "campaigns", label: tr.nav.items.campaigns, icon: Send },
         { id: "reports", label: tr.nav.items.reports, icon: BarChart3 },
+        { id: "timeline", label: tr.nav.items.timeline, icon: CalendarDays },
       ],
     },
     {

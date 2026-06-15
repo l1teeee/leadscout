@@ -47,6 +47,7 @@ const nextConfig: NextConfig = {
       { source: "/backend/:path*", destination: `${apiUrl}/:path*` },
       { source: "/oportunidades", destination: "/opportunities" },
       { source: "/reportes", destination: "/reports" },
+      { source: "/cronologia", destination: "/timeline" },
       { source: "/campanas", destination: "/campaigns" },
       { source: "/integraciones", destination: "/integrations" },
       { source: "/contexto-ia", destination: "/ai-context" },
