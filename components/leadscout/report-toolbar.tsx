@@ -79,7 +79,7 @@ export function ReportToolbar({ hasData }: ReportToolbarProps) {
             type="button"
             onClick={() => setRange(r)}
             className={cn(
-              "retro pixel-text-xs border-2 border-(--border) px-3 py-1.5 uppercase transition-colors",
+              "retro pixel-text-xs cursor-pointer border-2 border-(--border) px-3 py-1.5 uppercase transition-colors",
               r === range
                 ? "bg-(--pixel-highlight) text-[#17110D]"
                 : "bg-white text-(--text-3) hover:bg-(--surface-2)"
@@ -97,7 +97,7 @@ export function ReportToolbar({ hasData }: ReportToolbarProps) {
             type="button"
             onClick={handlePdf}
             disabled={!hasData || busy !== null}
-            className="retro pixel-text-xs inline-flex items-center gap-1.5 border-2 border-(--border) px-3 py-1.5 uppercase transition-transform hover:bg-(--surface-2) active:translate-x-px active:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
+            className="retro pixel-text-xs cursor-pointer inline-flex items-center gap-1.5 border-2 border-(--border) px-3 py-1.5 uppercase transition-transform hover:bg-(--surface-2) active:translate-x-px active:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ ...bodyFont, background: "var(--surface)", color: "var(--text)" }}
           >
             <Download size={11} />
@@ -107,7 +107,7 @@ export function ReportToolbar({ hasData }: ReportToolbarProps) {
             type="button"
             onClick={handleExcel}
             disabled={!hasData || busy !== null}
-            className="retro pixel-text-xs inline-flex items-center gap-1.5 border-2 border-(--border) px-3 py-1.5 uppercase transition-transform hover:bg-(--surface-2) active:translate-x-px active:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
+            className="retro pixel-text-xs cursor-pointer inline-flex items-center gap-1.5 border-2 border-(--border) px-3 py-1.5 uppercase transition-transform hover:bg-(--surface-2) active:translate-x-px active:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ ...bodyFont, background: "var(--surface)", color: "var(--text)" }}
           >
             <FileSpreadsheet size={11} />
@@ -117,7 +117,7 @@ export function ReportToolbar({ hasData }: ReportToolbarProps) {
             type="button"
             onClick={handleEmail}
             disabled={!hasData || busy !== null}
-            className="retro pixel-text-xs inline-flex items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-3 py-1.5 uppercase transition-transform hover:opacity-90 active:translate-x-px active:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
+            className="retro pixel-text-xs cursor-pointer inline-flex items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-3 py-1.5 uppercase transition-transform hover:opacity-90 active:translate-x-px active:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ color: "#17110D" }}
           >
             <Mail size={11} />

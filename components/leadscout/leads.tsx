@@ -124,7 +124,7 @@ function PaginationFooter({
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page === 0}
-          className="retro pixel-text-xs border-2 border-(--border) px-3 py-1.5 uppercase transition-colors hover:bg-surface disabled:opacity-40"
+          className="retro pixel-text-xs cursor-pointer border-2 border-(--border) px-3 py-1.5 uppercase transition-colors hover:bg-surface disabled:opacity-40"
           style={{ color: "var(--text-2)" }}
         >
           {copy.prev}
@@ -136,7 +136,7 @@ function PaginationFooter({
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages - 1}
-          className="retro pixel-text-xs border-2 border-(--border) px-3 py-1.5 uppercase transition-colors hover:bg-surface disabled:opacity-40"
+          className="retro pixel-text-xs cursor-pointer border-2 border-(--border) px-3 py-1.5 uppercase transition-colors hover:bg-surface disabled:opacity-40"
           style={{ color: "var(--text-2)" }}
         >
           {copy.next}
@@ -606,7 +606,7 @@ export function Leads() {
                     disabled={loading}
                     title={tr.leads.refresh}
                     aria-label={tr.leads.refresh}
-                    className="flex h-9 w-9 items-center justify-center border-2 border-(--border) bg-surface text-text transition-colors hover:bg-white disabled:opacity-40"
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center border-2 border-(--border) bg-surface text-text transition-colors hover:bg-white disabled:opacity-40"
                   >
                     <RefreshCcw
                       size={14}
@@ -621,7 +621,7 @@ export function Leads() {
                     }}
                     title={tr.leads.hidden.toggle}
                     aria-label={tr.leads.hidden.toggle}
-                    className="relative flex h-9 w-9 items-center justify-center border-2 border-(--border) text-text transition-colors hover:bg-white"
+                    className="relative flex h-9 w-9 cursor-pointer items-center justify-center border-2 border-(--border) text-text transition-colors hover:bg-white"
                     style={{
                       background: showHidden ? "var(--border)" : "var(--surface)",
                       color: showHidden ? "var(--surface)" : "var(--text)",
@@ -643,7 +643,7 @@ export function Leads() {
                       setCreateError(null);
                       setIsCreateOpen(true);
                     }}
-                    className="retro pixel-text-xs inline-flex h-9 items-center justify-center gap-2 border-2 border-(--border) bg-(--pixel-highlight) px-3 uppercase text-text transition-transform hover:bg-white active:translate-x-px active:translate-y-px"
+                    className="retro pixel-text-xs inline-flex h-9 cursor-pointer items-center justify-center gap-2 border-2 border-(--border) bg-(--pixel-highlight) px-3 uppercase text-text transition-transform hover:bg-white active:translate-x-px active:translate-y-px"
                   >
                     <Plus size={13} />
                     {tr.leads.manual.create}
@@ -708,7 +708,7 @@ export function Leads() {
                         key={option.label}
                         type="button"
                         onClick={() => setViewedFilter(option.value)}
-                        className="retro pixel-text-xs border-r-2 border-(--border) px-2 uppercase last:border-r-0 transition-colors hover:bg-(--surface-2)"
+                        className="retro pixel-text-xs cursor-pointer border-r-2 border-(--border) px-2 uppercase last:border-r-0 transition-colors hover:bg-(--surface-2)"
                         style={
                           isActive
                             ? { background: "var(--border)", color: "var(--surface)" }
@@ -738,7 +738,7 @@ export function Leads() {
                         <button
                           type="button"
                           onClick={() => toggleSort(field)}
-                          className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity"
+                          className="inline-flex cursor-pointer items-center gap-1 hover:opacity-70 transition-opacity"
                           style={{ color: sortBy === field ? "var(--text)" : "var(--text-3)" }}
                         >
                           {label}
@@ -784,7 +784,7 @@ export function Leads() {
                           onClick={() => unhideLead(h.id)}
                           title={tr.leads.hidden.restore}
                           aria-label={tr.leads.hidden.restore}
-                          className="retro pixel-text-xs inline-flex items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-2.5 py-1.5 uppercase transition-transform active:translate-x-px active:translate-y-px"
+                          className="retro pixel-text-xs inline-flex cursor-pointer items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-2.5 py-1.5 uppercase transition-transform active:translate-x-px active:translate-y-px"
                           style={{ color: "var(--text)" }}
                         >
                           <Eye size={12} />
@@ -845,7 +845,7 @@ export function Leads() {
                             }}
                             title={tr.leads.hide}
                             aria-label={tr.leads.hide}
-                            className="inline-flex h-7 w-7 items-center justify-center border-2 border-(--border) bg-surface text-text transition-colors hover:bg-(--surface-2)"
+                            className="inline-flex h-7 w-7 cursor-pointer items-center justify-center border-2 border-(--border) bg-surface text-text transition-colors hover:bg-(--surface-2)"
                           >
                             <EyeOff size={13} />
                           </button>

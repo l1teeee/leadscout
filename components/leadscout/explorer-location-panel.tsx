@@ -104,7 +104,7 @@ export function ExplorerLocationPanel({
             type="button"
             onClick={onCategoryOpen}
             data-tour="explorer-category"
-            className="motion-retro-control flex min-h-12 w-full items-center justify-between rounded-none border-2 border-(--border) bg-surface px-3 py-2 text-left shadow-[2px_2px_0_0_var(--pixel-shadow)] hover:bg-(--surface-2)"
+            className="motion-retro-control flex min-h-12 w-full cursor-pointer items-center justify-between rounded-none border-2 border-(--border) bg-surface px-3 py-2 text-left shadow-[2px_2px_0_0_var(--pixel-shadow)] hover:bg-(--surface-2)"
           >
             <div>
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
@@ -150,7 +150,7 @@ export function ExplorerLocationPanel({
                 key={place.id}
                 type="button"
                 onClick={() => onSelectPlace(place)}
-                className="block w-full border-b border-(--border) px-3 py-2 text-left text-xs font-semibold transition-colors last:border-b-0 hover:bg-(--surface-2)"
+                className="block w-full cursor-pointer border-b border-(--border) px-3 py-2 text-left text-xs font-semibold transition-colors last:border-b-0 hover:bg-(--surface-2)"
                 style={{ ...bodyTextStyle, color: "var(--text)" }}
               >
                 {place.label}

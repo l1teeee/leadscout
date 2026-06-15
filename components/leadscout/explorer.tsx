@@ -77,7 +77,7 @@ export function Explorer() {
                 key={tab.id}
                 data-tour={`explorer-tab-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
-                className="retro h-8 border-2 px-3 pixel-text-xs uppercase transition-colors"
+                className="retro h-8 cursor-pointer border-2 px-3 pixel-text-xs uppercase transition-colors"
                 style={
                   isActive
                     ? { background: "var(--border)", color: "var(--surface)", borderColor: "var(--border)" }
@@ -91,7 +91,7 @@ export function Explorer() {
           <button
             type="button"
             onClick={() => setCleanFilter((value) => !value)}
-            className="retro ml-auto flex h-8 items-center gap-2 border-2 px-3 pixel-text-xs uppercase transition-colors"
+            className="retro ml-auto flex h-8 cursor-pointer items-center gap-2 border-2 px-3 pixel-text-xs uppercase transition-colors"
             style={
               cleanFilter
                 ? { background: "var(--border)", color: "var(--surface)", borderColor: "var(--border)" }

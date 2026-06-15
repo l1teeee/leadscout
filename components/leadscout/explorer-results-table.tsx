@@ -59,7 +59,7 @@ export function ExplorerResultsTable({
           <button
             type="button"
             onClick={onViewInMap}
-            className="flex items-center gap-1.5 border-2 border-(--border) bg-white px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-(--surface-2)"
+            className="flex cursor-pointer items-center gap-1.5 border-2 border-(--border) bg-white px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-(--surface-2)"
             style={{ fontFamily: "var(--font-body), system-ui, sans-serif", color: "var(--text-2)" }}
           >
             <Map size={12} />
@@ -90,7 +90,7 @@ export function ExplorerResultsTable({
             <button
               key={s.value}
               onClick={() => onFilterStatusChange(s.value)}
-              className={`${pixelButtonClass} h-8 px-2.5 hover:-translate-y-0.5`}
+              className={`${pixelButtonClass} h-8 cursor-pointer px-2.5 hover:-translate-y-0.5`}
               style={
                 filterStatus === s.value
                   ? {

@@ -242,7 +242,7 @@ function KanbanColumn({ col, leads, sort, onSortChange, onLeadClick, tr }: Kanba
         <div className="relative">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold transition-colors hover:bg-[#F4F4F5]"
+            className="flex cursor-pointer items-center gap-1 px-2 py-1 text-[10px] font-semibold transition-colors hover:bg-[#F4F4F5]"
             style={{ ...bodyTextStyle, color: "var(--text-3)", border: "1px solid var(--border)" }}
             title={tr.sortAria}
           >
@@ -264,7 +264,7 @@ function KanbanColumn({ col, leads, sort, onSortChange, onLeadClick, tr }: Kanba
                   <button
                     key={key}
                     onClick={() => handleSortSelect(key)}
-                    className="block w-full px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-[#F4F4F5]"
+                    className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-[#F4F4F5]"
                     style={{
                       ...bodyTextStyle,
                       color: sort === key ? "var(--c-qualified, #2FB226)" : "var(--text)",
@@ -467,7 +467,7 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
               type="button"
               onClick={handleCleanToggle}
               disabled={analyzing}
-              className="retro inline-flex h-9 items-center gap-2 rounded-none border-2 px-3 pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px disabled:opacity-50"
+              className="retro inline-flex h-9 cursor-pointer items-center gap-2 rounded-none border-2 px-3 pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px disabled:opacity-50"
               style={
                 cleanMode
                   ? { background: "var(--border)", color: "var(--surface)", borderColor: "var(--border)" }
