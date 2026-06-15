@@ -43,33 +43,47 @@ export function ChartBars({ title, eyebrow, data }: ChartBarsProps) {
           </p>
         </div>
       ) : (
-        <div className="flex items-end gap-1" style={{ height: "120px" }}>
-          {data.map((d) => {
-            const heightPct = max > 0 ? Math.max(4, Math.round((d.value / max) * 100)) : 4;
-            return (
-              <div key={d.label} className="flex flex-1 flex-col items-center gap-1">
-                <span
-                  className="retro pixel-text-xs tabular-nums"
-                  style={{ color: d.value > 0 ? "var(--text)" : "var(--text-3)", fontSize: "7px" }}
+        <>
+          <div className="flex items-end gap-[2px]" style={{ height: "80px" }}>
+            {data.map((d) => {
+              const barH = Math.max(2, Math.round((d.value / max) * 76));
+              return (
+                <div
+                  key={d.label}
+                  className="flex flex-1 flex-col items-center justify-end"
+                  style={{ height: "100%" }}
                 >
-                  {d.value > 0 ? d.value : ""}
-                </span>
-                <div className="w-full flex-1 flex items-end">
+                  {d.value > 0 && (
+                    <span
+                      className="retro tabular-nums"
+                      style={{ fontSize: "7px", color: "var(--text)", lineHeight: 1, marginBottom: 2 }}
+                    >
+                      {d.value}
+                    </span>
+                  )}
                   <div
                     className="w-full border-2 border-[var(--border)]"
                     style={{
-                      height: `${heightPct}%`,
+                      height: `${barH}px`,
                       background: d.value > 0 ? "var(--text)" : "var(--surface-2)",
                     }}
                   />
                 </div>
-                <span className="retro tabular-nums" style={{ color: "var(--text-3)", fontSize: "7px" }}>
-                  {d.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+          <div className="mt-1 flex gap-[2px]">
+            {data.map((d) => (
+              <span
+                key={d.label}
+                className="retro flex-1 text-center"
+                style={{ fontSize: "7px", color: "var(--text-3)" }}
+              >
+                {d.label}
+              </span>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
