@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Download, FileSpreadsheet, Mail } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CalendarDays, Download, FileSpreadsheet, Mail } from "lucide-react";
 import { downloadReport, emailReport } from "@/lib/api/reports";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -17,16 +17,37 @@ interface ReportToolbarProps {
   onRangeChange?: (days: Range) => void;
 }
 
-export function ReportToolbar({ hasData }: ReportToolbarProps) {
+export function ReportToolbar({ hasData, onRangeChange }: ReportToolbarProps) {
   const { lang } = useLanguage();
   const tr = translations[lang].reportes.toolbar;
   const [range, setRange] = useState<Range>(30);
+  const [isRangeOpen, setIsRangeOpen] = useState(false);
   const [busy, setBusy] = useState<Busy>(null);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
+  const rangeMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isRangeOpen) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!rangeMenuRef.current?.contains(event.target as Node)) {
+        setIsRangeOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isRangeOpen]);
 
   function showMsg(text: string, ok: boolean) {
     setMessage({ text, ok });
     setTimeout(() => setMessage(null), 3000);
+  }
+
+  function handleRangeSelect(days: Range) {
+    setRange(days);
+    onRangeChange?.(days);
+    setIsRangeOpen(false);
   }
 
   async function handlePdf() {
@@ -72,23 +93,44 @@ export function ReportToolbar({ hasData }: ReportToolbarProps) {
 
   return (
     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex gap-0">
-        {ranges.map((r) => (
-          <button
-            key={r}
-            type="button"
-            onClick={() => setRange(r)}
-            className={cn(
-              "retro pixel-text-xs cursor-pointer border-2 border-(--border) px-3 py-1.5 uppercase transition-colors",
-              r === range
-                ? "bg-(--pixel-highlight) text-[#17110D]"
-                : "bg-white text-(--text-3) hover:bg-(--surface-2)"
-            )}
-            style={{ marginLeft: r === 7 ? 0 : -2 }}
-          >
-            {rangeLabel[r]}
-          </button>
-        ))}
+      <div ref={rangeMenuRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setIsRangeOpen((open) => !open)}
+          aria-label={`${tr.calendarAria}: ${rangeLabel[range]}`}
+          className="retro pixel-text-xs inline-flex cursor-pointer items-center gap-1.5 border-2 border-(--border) bg-white px-3 py-1.5 uppercase text-(--text) shadow-[2px_2px_0_0_var(--pixel-shadow)] transition-transform active:translate-x-px active:translate-y-px"
+          style={bodyFont}
+        >
+          <CalendarDays size={12} />
+          {rangeLabel[range]}
+        </button>
+
+        {isRangeOpen && (
+          <div className="absolute left-0 top-[calc(100%+6px)] z-30 min-w-full border-2 border-(--border) bg-white shadow-[2px_2px_0_0_var(--pixel-shadow)]">
+            <p
+              className="retro pixel-text-xs border-b-2 border-(--border) px-3 py-2 uppercase text-(--text-3)"
+              style={bodyFont}
+            >
+              {tr.calendarLabel}
+            </p>
+            {ranges.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => handleRangeSelect(r)}
+                className={cn(
+                  "retro pixel-text-xs block w-full cursor-pointer px-3 py-2 text-left uppercase transition-colors",
+                  r === range
+                    ? "bg-(--pixel-highlight) text-[#17110D]"
+                    : "text-(--text-3) hover:bg-(--surface-2)"
+                )}
+                style={bodyFont}
+              >
+                {rangeLabel[r]}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col items-end gap-2">

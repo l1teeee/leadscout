@@ -11,8 +11,8 @@ import { OnboardingTour } from "@/components/leadscout/onboarding-tour";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { RefreshButton } from "@/components/leadscout/refresh-button";
 import { DashboardQuickWins } from "@/components/leadscout/dashboard-quick-wins";
+import PriorityDistribution from "@/components/ui/priority-distribution";
 import type { KpiCardProps } from "@/types";
-import type { LeadPriority } from "@/lib/data";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -81,88 +81,6 @@ function KpiCard({
   );
 }
 
-
-function PriorityBar({
-  by_priority,
-  labels,
-  title,
-  className = "",
-}: {
-  by_priority: Record<string, number>;
-  labels: Record<string, string>;
-  title: string;
-  className?: string;
-}) {
-  const priorities: { key: LeadPriority; color: string }[] = [
-    { key: "alta", color: "#3FAE2A" },
-    { key: "media", color: "#F4A261" },
-    { key: "baja", color: "#9CA3AF" },
-  ];
-  const priorityTotal =
-    (by_priority.alta ?? 0) + (by_priority.media ?? 0) + (by_priority.baja ?? 0);
-
-  return (
-    <section className={`pixel-card-sm flex flex-col bg-white p-5 ${className}`}>
-      <h2
-        className="retro pixel-text-xs uppercase"
-        style={{ color: "var(--text)" }}
-      >
-        {title}
-      </h2>
-      <div className="mt-4 flex h-8 overflow-hidden border-2 border-(--border) bg-(--surface-2)">
-        {priorities.map((priority) => {
-          const count = by_priority[priority.key] ?? 0;
-          const width = priorityTotal > 0 ? (count / priorityTotal) * 100 : 0;
-          const label = labels[priority.key] ?? priority.key;
-
-          return (
-            <Link
-              key={priority.key}
-              href={`/leads?priority=${priority.key}`}
-              aria-label={`${title}: ${label}`}
-              className="h-full transition-opacity hover:opacity-80 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--border)"
-              style={{ width: `${width}%`, background: priority.color }}
-            />
-          );
-        })}
-      </div>
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {priorities.map((priority) => {
-          const count = by_priority[priority.key] ?? 0;
-          const label = labels[priority.key] ?? priority.key;
-
-          return (
-            <Link
-              key={priority.key}
-              href={`/leads?priority=${priority.key}`}
-              className="flex items-center gap-2 transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--border)"
-              aria-label={`${title}: ${label}`}
-            >
-              <span
-                className="h-3 w-3 shrink-0 border border-(--border)"
-                style={{ background: priority.color }}
-              />
-              <div>
-                <p
-                  className="retro pixel-text-xs tabular-nums"
-                  style={{ color: "var(--text)" }}
-                >
-                  {count}
-                </p>
-                <p
-                  className="text-xs font-medium"
-                  style={{ ...bodyTextStyle, color: "var(--text-3)" }}
-                >
-                  {label}
-                </p>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
 
 function CategoryUsagePanel({
   categories,
@@ -311,7 +229,8 @@ export async function Dashboard() {
             }}
           />
 
-          <PriorityBar
+          <PriorityDistribution
+            variant="horizontal"
             by_priority={summary.by_priority}
             labels={tr.dashboard.priority.labels}
             title={tr.dashboard.priority.title}

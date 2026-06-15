@@ -5,7 +5,8 @@ import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
 import { ChartBars } from "@/components/ui/8bit-chart-bars";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { ReportToolbar } from "@/components/leadscout/report-toolbar";
-import type { LeadPriority, LeadStatus } from "@/lib/data";
+import PriorityDistribution from "@/components/ui/priority-distribution";
+import type { LeadStatus } from "@/lib/data";
 import { getLang } from "@/lib/get-lang";
 import { translations } from "@/lib/i18n";
 
@@ -143,11 +144,6 @@ export async function Reportes() {
     color: STATUS_COLORS[status],
   }));
 
-  const priorityRows = (Object.keys(tr.priorityLabels) as LeadPriority[]).map((priority) => ({
-    label: tr.priorityLabels[priority],
-    value: summary.by_priority[priority] ?? 0,
-  }));
-
   const categoryRows = Object.entries(summary.by_category)
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => b.value - a.value);
@@ -255,7 +251,12 @@ export async function Reportes() {
             </div>
           </section>
 
-          <CompactList title={tr.sections.priority} rows={priorityRows} empty={tr.insufficientData} />
+          <PriorityDistribution
+            variant="vertical"
+            by_priority={summary.by_priority}
+            labels={tr.priorityLabels}
+            title={tr.sections.priority}
+          />
           <CompactList title={tr.sections.categories} rows={categoryRows} empty={tr.insufficientData} />
         </div>
       </div>

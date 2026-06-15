@@ -21,11 +21,121 @@ export interface BrowserLocationResult {
 
 export const BUSINESS_CATEGORIES: BusinessCategory[] = [
   { id: "all", label: "Todas", match: [] },
-  { id: "food", label: "Gastronomía", match: ["Gastronomía"] },
-  { id: "retail", label: "Retail", match: ["Retail", "Ferretería", "Moda", "Jardín"] },
-  { id: "services", label: "Servicios", match: ["Servicios", "Automotriz"] },
-  { id: "health", label: "Salud y estética", match: ["Salud", "Estética"] },
-  { id: "sports", label: "Deportes", match: ["Deportes"] },
+  {
+    id: "food",
+    label: "Gastronomía",
+    match: ["Gastronomía", "Restaurante", "Restaurantes", "Comida", "Cafetería", "Café", "Bar", "Panadería", "Pastelería", "Pizzería", "Taquería"],
+  },
+  {
+    id: "retail",
+    label: "Retail",
+    match: ["Retail", "Comercio", "Tienda", "Ferretería", "Supermercado", "Abarrotes", "Jardín", "Bazar"],
+  },
+  {
+    id: "services",
+    label: "Servicios",
+    match: ["Servicios", "Servicio", "Consultoría", "Reparación", "Mantenimiento", "Profesionales"],
+  },
+  {
+    id: "health",
+    label: "Salud y estética",
+    match: ["Salud", "Estética", "Clínica", "Clínicas", "Médico", "Doctor", "Dentista", "Odontología", "Spa", "Bienestar"],
+  },
+  {
+    id: "sports",
+    label: "Deportes",
+    match: ["Deportes", "Gimnasio", "Fitness", "Cancha", "Club deportivo", "Entrenamiento", "Yoga", "Pilates"],
+  },
+  {
+    id: "education",
+    label: "Educacion",
+    match: ["Educación", "Escuela", "Colegio", "Academia", "Universidad", "Instituto", "Cursos", "Capacitación", "Guardería"],
+  },
+  {
+    id: "technology",
+    label: "Tecnologia",
+    match: ["Tecnología", "Software", "Informática", "Computación", "Sistemas", "Internet", "Soporte técnico", "Electrónica", "Telecomunicaciones"],
+  },
+  {
+    id: "automotive",
+    label: "Automotriz",
+    match: ["Automotriz", "Taller", "Mecánica", "Mecánico", "Repuestos", "Autopartes", "Car wash", "Lavado de autos", "Llantera", "Vehículos", "Motos"],
+  },
+  {
+    id: "beauty",
+    label: "Belleza",
+    match: ["Belleza", "Salón", "Peluquería", "Barbería", "Manicure", "Pedicure", "Uñas", "Cosméticos", "Maquillaje", "Estética"],
+  },
+  {
+    id: "construction",
+    label: "Construccion",
+    match: ["Construcción", "Constructora", "Arquitectura", "Ingeniería", "Materiales de construcción", "Ferretería", "Remodelación", "Albañilería"],
+  },
+  {
+    id: "finance",
+    label: "Finanzas",
+    match: ["Finanzas", "Banco", "Cooperativa", "Crédito", "Préstamos", "Seguros", "Contabilidad", "Financiera", "Cambio de moneda"],
+  },
+  {
+    id: "entertainment",
+    label: "Entretenimiento",
+    match: ["Entretenimiento", "Cine", "Teatro", "Juegos", "Arcade", "Bar", "Discoteca", "Karaoke", "Recreación", "Diversión"],
+  },
+  {
+    id: "tourism",
+    label: "Turismo",
+    match: ["Turismo", "Hotel", "Hostal", "Alojamiento", "Agencia de viajes", "Tours", "Excursiones", "Guía turística", "Transporte turístico"],
+  },
+  {
+    id: "legal",
+    label: "Legal",
+    match: ["Legal", "Abogado", "Abogados", "Notario", "Notaría", "Bufete", "Asesoría legal", "Servicios legales"],
+  },
+  {
+    id: "real_estate",
+    label: "Bienes raices",
+    match: ["Bienes raíces", "Inmobiliaria", "Propiedades", "Alquiler", "Venta de casas", "Terrenos", "Corredor inmobiliario"],
+  },
+  {
+    id: "cleaning",
+    label: "Limpieza",
+    match: ["Limpieza", "Aseo", "Lavandería", "Tintorería", "Desinfección", "Fumigación", "Mantenimiento", "Servicios de limpieza"],
+  },
+  {
+    id: "events",
+    label: "Eventos",
+    match: ["Eventos", "Organización de eventos", "Banquetes", "Catering", "Fiestas", "Decoración", "Sonido", "Alquiler de mobiliario"],
+  },
+  {
+    id: "photography",
+    label: "Fotografia",
+    match: ["Fotografía", "Fotógrafo", "Video", "Videografía", "Estudio fotográfico", "Sesión de fotos", "Producción audiovisual"],
+  },
+  {
+    id: "veterinary",
+    label: "Veterinaria",
+    match: ["Veterinaria", "Veterinario", "Mascotas", "Clínica veterinaria", "Pet shop", "Animales", "Peluquería canina"],
+  },
+  {
+    id: "pharmacy",
+    label: "Farmacia",
+    match: ["Farmacia", "Droguería", "Medicamentos", "Botica", "Salud", "Productos farmacéuticos"],
+  },
+  {
+    id: "logistics",
+    label: "Logistica",
+    match: ["Logística", "Transporte", "Encomiendas", "Mensajería", "Courier", "Paquetería", "Distribución", "Mudanzas"],
+  },
+  {
+    id: "security",
+    label: "Seguridad",
+    match: ["Seguridad", "Vigilancia", "Alarmas", "Cámaras", "CCTV", "Guardias", "Monitoreo", "Control de acceso"],
+  },
+  {
+    id: "fashion",
+    label: "Moda y ropa",
+    match: ["Moda", "Ropa", "Vestimenta", "Boutique", "Zapatería", "Calzado", "Accesorios", "Textiles", "Confección"],
+  },
 ];
 
 export function getBusinessCategory(categoryId: string) {
