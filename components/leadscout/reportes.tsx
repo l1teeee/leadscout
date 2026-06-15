@@ -4,6 +4,7 @@ import { getLeads } from "@/lib/api/leads";
 import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
 import { ChartAreaStep } from "@/components/ui/8bit-chart-area-step";
 import { EmptyInsight } from "@/components/ui/empty-insight";
+import { ReportToolbar } from "@/components/leadscout/report-toolbar";
 import type { LeadPriority, LeadStatus } from "@/lib/data";
 import { getLang } from "@/lib/get-lang";
 import { translations } from "@/lib/i18n";
@@ -164,6 +165,8 @@ export async function Reportes() {
         <ReportMetric label={tr.kpi.conversion.label} value={`${conversion}%`} sub={tr.kpi.conversion.sub} icon={TrendingUp} />
         <ReportMetric label={tr.kpi.critical.label} value={highRisk} sub={tr.kpi.critical.sub} icon={CircleDot} />
       </div>
+
+      <ReportToolbar hasData={summary.total_leads > 0} />
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">

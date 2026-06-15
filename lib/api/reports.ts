@@ -27,3 +27,45 @@ export async function getReportSummary(token?: string): Promise<ReportSummary> {
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 }
+
+export interface TimelinePoint {
+  date: string;
+  leads: number;
+}
+
+export interface TimelineResponse {
+  days: number;
+  points: TimelinePoint[];
+}
+
+export async function getTimeline(days: 7 | 30 | 90, token?: string): Promise<TimelineResponse> {
+  return apiFetch<TimelineResponse>(`/api/reports/timeline?days=${days}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+}
+
+export async function downloadReport(format: "pdf" | "xlsx", days: number): Promise<void> {
+  const { getToken } = await import("@/lib/auth");
+  const token = getToken();
+  const res = await fetch(`/backend/api/reports/export?format=${format}&days=${days}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error("Export failed");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const today = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `scoutia-report-${today}.${format}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export async function emailReport(days: number): Promise<{ sent: boolean; to: string }> {
+  return apiFetch<{ sent: boolean; to: string }>("/api/reports/email", {
+    method: "POST",
+    body: JSON.stringify({ days }),
+  });
+}

@@ -83,6 +83,11 @@ function getSocialName(url?: string | null): string | null {
   }
 }
 
+function parsePriorityParam(value: string | null): LeadPriority | "" {
+  if (value === "alta" || value === "media" || value === "baja") return value;
+  return "";
+}
+
 type PaginationCopy = {
   page: (current: number, total: number) => string;
   prev: string;
@@ -480,6 +485,8 @@ export function Leads() {
   const { lang } = useLanguage();
   const tr = translations[lang];
   const searchParams = useSearchParams();
+  const qParam = searchParams.get("q") ?? "";
+  const priorityParam = parsePriorityParam(searchParams.get("priority"));
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [analysisLead, setAnalysisLead] = useState<Lead | null>(null);
   const [locallyViewed, setLocallyViewed] = useState<Set<string>>(new Set());
@@ -511,15 +518,21 @@ export function Leads() {
     hiddenLeads,
     hideLead,
     unhideLead,
-  } = useLeads();
-  const qParam = searchParams.get("q") ?? "";
-  const appliedQ = useRef<string | null>(null);
+  } = useLeads({ query: qParam, priority: priorityParam });
+  const appliedQ = useRef<string | null>(qParam);
+  const appliedPriority = useRef<LeadPriority | "" | null>(priorityParam);
 
   useEffect(() => {
     if (appliedQ.current === qParam) return;
     appliedQ.current = qParam;
     setQuery(qParam);
   }, [qParam, setQuery]);
+
+  useEffect(() => {
+    if (appliedPriority.current === priorityParam) return;
+    appliedPriority.current = priorityParam;
+    setPriority(priorityParam);
+  }, [priorityParam, setPriority]);
 
   const sortableHeaders: { label: string; field: SortField | null }[] = [
     { label: tr.leads.tableHeaders[0], field: "name" },

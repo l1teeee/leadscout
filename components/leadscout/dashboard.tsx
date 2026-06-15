@@ -12,6 +12,7 @@ import { EmptyInsight } from "@/components/ui/empty-insight";
 import { RefreshButton } from "@/components/leadscout/refresh-button";
 import { DashboardQuickWins } from "@/components/leadscout/dashboard-quick-wins";
 import type { KpiCardProps } from "@/types";
+import type { LeadPriority } from "@/lib/data";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -92,7 +93,7 @@ function PriorityBar({
   title: string;
   className?: string;
 }) {
-  const priorities = [
+  const priorities: { key: LeadPriority; color: string }[] = [
     { key: "alta", color: "#3FAE2A" },
     { key: "media", color: "#F4A261" },
     { key: "baja", color: "#9CA3AF" },
@@ -112,11 +113,14 @@ function PriorityBar({
         {priorities.map((priority) => {
           const count = by_priority[priority.key] ?? 0;
           const width = priorityTotal > 0 ? (count / priorityTotal) * 100 : 0;
+          const label = labels[priority.key] ?? priority.key;
 
           return (
-            <div
+            <Link
               key={priority.key}
-              className="h-full"
+              href={`/leads?priority=${priority.key}`}
+              aria-label={`${title}: ${label}`}
+              className="h-full transition-opacity hover:opacity-80 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--border)"
               style={{ width: `${width}%`, background: priority.color }}
             />
           );
@@ -125,9 +129,15 @@ function PriorityBar({
       <div className="mt-4 grid grid-cols-3 gap-2">
         {priorities.map((priority) => {
           const count = by_priority[priority.key] ?? 0;
+          const label = labels[priority.key] ?? priority.key;
 
           return (
-            <div key={priority.key} className="flex items-center gap-2">
+            <Link
+              key={priority.key}
+              href={`/leads?priority=${priority.key}`}
+              className="flex items-center gap-2 transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--border)"
+              aria-label={`${title}: ${label}`}
+            >
               <span
                 className="h-3 w-3 shrink-0 border border-(--border)"
                 style={{ background: priority.color }}
@@ -143,10 +153,10 @@ function PriorityBar({
                   className="text-xs font-medium"
                   style={{ ...bodyTextStyle, color: "var(--text-3)" }}
                 >
-                  {labels[priority.key] ?? priority.key}
+                  {label}
                 </p>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

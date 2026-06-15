@@ -764,6 +764,18 @@ export const translations = {
         title: "There is not enough data yet",
         description: "When you explore a zone, this report will start showing useful patterns.",
       },
+      toolbar: {
+        range7: "7 days",
+        range30: "30 days",
+        range90: "90 days",
+        exportPdf: "Export PDF",
+        exportExcel: "Export Excel",
+        sendEmail: "Send by email",
+        emailSent: "Report sent to your email",
+        emailError: "Could not send the email",
+        exportError: "Export failed. Try again.",
+        noData: "No data to export",
+      },
     },
     settings: {
       save: "Save changes",
@@ -2015,6 +2027,18 @@ export const translations = {
       insufficientData: {
         title: "Aún no hay datos suficientes",
         description: "Cuando explores una zona, este reporte empezará a mostrar patrones útiles.",
+      },
+      toolbar: {
+        range7: "7 días",
+        range30: "30 días",
+        range90: "90 días",
+        exportPdf: "Exportar PDF",
+        exportExcel: "Exportar Excel",
+        sendEmail: "Enviar por correo",
+        emailSent: "Reporte enviado a tu correo",
+        emailError: "No se pudo enviar el correo",
+        exportError: "Error al exportar. Intenta de nuevo.",
+        noData: "Sin datos para exportar",
       },
     },
     settings: {

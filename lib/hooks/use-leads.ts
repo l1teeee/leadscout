@@ -60,7 +60,15 @@ export interface UseLeadsReturn {
   unhideLead: (id: string) => void;
 }
 
-export function useLeads(): UseLeadsReturn {
+interface UseLeadsInitialFilters {
+  query?: string;
+  priority?: LeadPriority | "";
+}
+
+export function useLeads(initialFilters: UseLeadsInitialFilters = {}): UseLeadsReturn {
+  const initialQuery = initialFilters.query ?? "";
+  const initialPriority = initialFilters.priority ?? "";
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [hiddenRecords, setHiddenRecords] = useState<HiddenLeadRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,12 +109,12 @@ export function useLeads(): UseLeadsReturn {
   }
 
   // raw query (typed) vs debounced (sent to API)
-  const [query, setQueryState] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [query, setQueryState] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [status, setStatusState] = useState<LeadStatus | "">("");
-  const [priority, setPriorityState] = useState<LeadPriority | "">("");
+  const [priority, setPriorityState] = useState<LeadPriority | "">(initialPriority);
   const [viewedFilter, setViewedFilterState] = useState<boolean | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortField>("score");
