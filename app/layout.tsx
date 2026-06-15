@@ -4,6 +4,7 @@ import "./globals.css";
 import { LanguageProvider } from "@/contexts/language-context";
 import { getLang } from "@/lib/get-lang";
 import { translations } from "@/lib/i18n";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const bodyFont = Inter({
   subsets: ["latin"],
@@ -23,18 +24,23 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = translations[lang].seo;
 
   return {
-    metadataBase: new URL("https://scoutia.dev"),
+    metadataBase: new URL(SITE_URL),
+    applicationName: SITE_NAME,
     title: seo.title,
     description: seo.description,
-
-    alternates: {
-      canonical: "/",
+    robots: {
+      index: false,
+      follow: true,
     },
     openGraph: {
       title: seo.title,
       description: seo.description,
-      url: "https://scoutia.dev",
       siteName: seo.title,
+    },
+    twitter: {
+      card: "summary",
+      title: seo.title,
+      description: seo.description,
     },
   };
 }
