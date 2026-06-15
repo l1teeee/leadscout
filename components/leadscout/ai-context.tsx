@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import {
   Check,
   Clock,
@@ -12,6 +12,7 @@ import {
   Sparkles,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
@@ -93,10 +94,13 @@ export function AiContextPage() {
   const [clearing, setClearing] = useState(false);
   const [exampleSeed, setExampleSeed] = useState("");
   const [generatingExample, setGeneratingExample] = useState(false);
+  const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
+  const [isJsonDragging, setIsJsonDragging] = useState(false);
   const [jsonText, setJsonText] = useState("");
   const [jsonFileName, setJsonFileName] = useState("");
   const [analyzingJson, setAnalyzingJson] = useState(false);
   const [jsonImportNotice, setJsonImportNotice] = useState<string | null>(null);
+  const [jsonImportError, setJsonImportError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -140,6 +144,17 @@ export function AiContextPage() {
       .catch(() => undefined);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!isJsonModalOpen) return undefined;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !analyzingJson) setIsJsonModalOpen(false);
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [analyzingJson, isJsonModalOpen]);
 
   const currentValue = useMemo(
     () => ({
@@ -248,11 +263,11 @@ export function AiContextPage() {
   function getJsonPayload(): unknown | null {
     const trimmed = jsonText.trim();
     if (!trimmed) {
-      setError(copy.jsonImportEmpty);
+      setJsonImportError(copy.jsonImportEmpty);
       return null;
     }
     if (trimmed.length > JSON_IMPORT_MAX_CHARS) {
-      setError(copy.jsonImportTooLarge);
+      setJsonImportError(copy.jsonImportTooLarge);
       return null;
     }
 
@@ -260,7 +275,7 @@ export function AiContextPage() {
     try {
       payload = JSON.parse(trimmed);
     } catch {
-      setError(copy.jsonImportInvalid);
+      setJsonImportError(copy.jsonImportInvalid);
       return null;
     }
 
@@ -271,36 +286,42 @@ export function AiContextPage() {
       !Array.isArray(payload) &&
       Object.keys(payload as Record<string, unknown>).length === 0;
     if (typeof payload !== "object" || payload === null || isEmptyArray || isEmptyObject) {
-      setError(copy.jsonImportUnsupported);
+      setJsonImportError(copy.jsonImportUnsupported);
       return null;
     }
 
     return payload;
   }
 
-  async function handleJsonFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
-    if (!file) return;
-
+  async function readJsonFile(file: File): Promise<boolean> {
     if (file.size > JSON_IMPORT_MAX_CHARS * 4) {
-      setError(copy.jsonImportTooLarge);
-      event.currentTarget.value = "";
-      return;
+      setJsonImportError(copy.jsonImportTooLarge);
+      return false;
     }
 
     try {
       const text = await file.text();
       if (text.trim().length > JSON_IMPORT_MAX_CHARS) {
-        setError(copy.jsonImportTooLarge);
-        event.currentTarget.value = "";
-        return;
+        setJsonImportError(copy.jsonImportTooLarge);
+        return false;
       }
       setJsonText(text);
       setJsonFileName(file.name);
       setJsonImportNotice(null);
-      setError(null);
+      setJsonImportError(null);
+      return true;
     } catch {
-      setError(copy.jsonImportInvalid);
+      setJsonImportError(copy.jsonImportInvalid);
+      return false;
+    }
+  }
+
+  async function handleJsonFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+
+    const loaded = await readJsonFile(file);
+    if (!loaded) {
       event.currentTarget.value = "";
     }
   }
@@ -308,6 +329,7 @@ export function AiContextPage() {
   function handleJsonTextChange(value: string) {
     setJsonText(value);
     setJsonImportNotice(null);
+    setJsonImportError(null);
     if (!value.trim()) setJsonFileName("");
   }
 
@@ -315,7 +337,21 @@ export function AiContextPage() {
     setJsonText("");
     setJsonFileName("");
     setJsonImportNotice(null);
+    setJsonImportError(null);
     if (jsonFileInputRef.current) jsonFileInputRef.current.value = "";
+  }
+
+  function handleOpenJsonModal() {
+    setIsJsonModalOpen(true);
+    setJsonImportError(null);
+  }
+
+  async function handleJsonDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    setIsJsonDragging(false);
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+    await readJsonFile(file);
   }
 
   async function handleAnalyzeJson() {
@@ -323,7 +359,7 @@ export function AiContextPage() {
     if (!payload) return;
 
     setAnalyzingJson(true);
-    setError(null);
+    setJsonImportError(null);
     setJsonImportNotice(null);
     try {
       const data = await importAiContextJson({
@@ -335,8 +371,9 @@ export function AiContextPage() {
       setIsEditing(true);
       setSaved(false);
       setJsonImportNotice(copy.jsonImportApplied);
+      setIsJsonModalOpen(false);
     } catch {
-      setError(copy.jsonImportAnalyzeError);
+      setJsonImportError(copy.jsonImportAnalyzeError);
     } finally {
       setAnalyzingJson(false);
     }
@@ -381,7 +418,7 @@ export function AiContextPage() {
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                   <input
                     value={exampleSeed}
-                    onChange={(event) => setExampleSeed(sanitizeExampleSeed(event.target.value))}
+                    onChange={(event) => setExampleSeed(event.target.value)}
                     maxLength={EXAMPLE_SEED_MAX}
                     placeholder={copy.exampleSeedPlaceholder}
                     className="h-9 min-w-0 flex-1 rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-semibold text-[var(--text)] outline-none"
@@ -402,104 +439,6 @@ export function AiContextPage() {
                   {copy.exampleSeedHelper}
                 </p>
               </label>
-            </div>
-
-            <div className="pixel-inset p-3">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <FileText size={14} style={{ color: "var(--text-2)" }} />
-                      <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>
-                        {copy.jsonImportTitle}
-                      </p>
-                    </div>
-                    <p className="mt-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                      {copy.jsonImportHelper}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap gap-2">
-                    <input
-                      ref={jsonFileInputRef}
-                      type="file"
-                      accept=".json,application/json"
-                      className="hidden"
-                      onChange={handleJsonFileChange}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => jsonFileInputRef.current?.click()}
-                      className="inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-bold text-[var(--text)] shadow-[1px_1px_0_var(--pixel-shadow)] transition-colors hover:bg-[var(--pixel-highlight)]"
-                      style={bodyTextStyle}
-                    >
-                      <Upload size={13} />
-                      {copy.jsonImportUpload}
-                    </button>
-                    {jsonText && (
-                      <button
-                        type="button"
-                        onClick={handleClearJsonImport}
-                        className="inline-flex h-9 items-center justify-center gap-1.5 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)]"
-                        style={bodyTextStyle}
-                      >
-                        <Trash2 size={13} />
-                        {copy.jsonImportClear}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <label className="block">
-                  <span className="block text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
-                    {copy.jsonImportPasteLabel}
-                  </span>
-                  <textarea
-                    value={jsonText}
-                    onChange={(event) => handleJsonTextChange(event.target.value)}
-                    placeholder={copy.jsonImportPlaceholder}
-                    rows={4}
-                    className={`${textareaCls} mt-2 min-h-24`}
-                    style={bodyTextStyle}
-                  />
-                </label>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                      {jsonFileName ? `${copy.jsonImportFileLoaded}: ${jsonFileName}` : copy.jsonImportNoFile}
-                    </p>
-                    <p
-                      className="mt-1 text-xs font-semibold tabular-nums"
-                      style={{
-                        ...bodyTextStyle,
-                        color: jsonChars > JSON_IMPORT_MAX_CHARS ? "var(--c-hi)" : "var(--text-3)",
-                      }}
-                    >
-                      {jsonChars}/{JSON_IMPORT_MAX_CHARS}
-                    </p>
-                    {jsonImportNotice && (
-                      <p className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-mid)" }}>
-                        {jsonImportNotice}
-                      </p>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleAnalyzeJson}
-                    disabled={analyzingJson || jsonChars === 0}
-                    className="inline-flex h-9 w-full shrink-0 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-bold text-[var(--text)] shadow-[1px_1px_0_var(--pixel-shadow)] transition-colors hover:bg-[var(--pixel-highlight)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                    style={bodyTextStyle}
-                  >
-                    <Sparkles size={13} />
-                    {analyzingJson ? copy.jsonImportAnalyzing : copy.jsonImportAnalyze}
-                  </button>
-                </div>
-
-                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                  {copy.jsonImportPrivacy}
-                </p>
-              </div>
             </div>
 
             <label className="block">
@@ -559,6 +498,16 @@ export function AiContextPage() {
                 </button>
               )}
 
+              <button
+                type="button"
+                onClick={handleOpenJsonModal}
+                className="inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-bold text-[var(--text)] shadow-[1px_1px_0_var(--pixel-shadow)] transition-colors hover:bg-[var(--pixel-highlight)] active:translate-x-px active:translate-y-px active:shadow-none"
+                style={bodyTextStyle}
+              >
+                <FileText size={13} />
+                {copy.jsonImportButton}
+              </button>
+
               {hasDraft && (
                 <button
                   type="button"
@@ -570,6 +519,12 @@ export function AiContextPage() {
                   <Trash2 size={13} />
                   {clearing ? copy.clearing : copy.clear}
                 </button>
+              )}
+
+              {jsonImportNotice && (
+                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-mid)" }}>
+                  {jsonImportNotice}
+                </p>
               )}
 
               {!hasDraft && (
@@ -705,6 +660,162 @@ export function AiContextPage() {
           </section>
         </div>
       </div>
+
+      {isJsonModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(28,25,23,0.42)] p-4"
+          role="presentation"
+          onClick={() => {
+            if (!analyzingJson) setIsJsonModalOpen(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="json-import-title"
+            className="animate-scale-in max-h-[92vh] w-full max-w-2xl overflow-auto border-2 border-[var(--border)] bg-[var(--surface)] shadow-[4px_4px_0_var(--pixel-shadow)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b-2 border-[var(--border)] bg-[var(--surface-2)] p-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <FileText size={15} style={{ color: "var(--text-2)" }} />
+                  <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
+                    {copy.jsonImportTitle}
+                  </p>
+                </div>
+                <h2
+                  id="json-import-title"
+                  className="mt-1 text-lg font-black leading-tight"
+                  style={{ ...bodyTextStyle, color: "var(--text)" }}
+                >
+                  {copy.jsonImportModalTitle}
+                </h2>
+                <p className="mt-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                  {copy.jsonImportHelper}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsJsonModalOpen(false)}
+                disabled={analyzingJson}
+                aria-label={copy.jsonImportClose}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center border-2 border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-[1px_1px_0_var(--pixel-shadow)] transition-colors hover:bg-[var(--pixel-highlight)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="grid gap-4 p-4">
+              <label
+                className={cn(
+                  "flex min-h-32 cursor-pointer flex-col items-center justify-center border-2 border-dashed px-4 py-5 text-center transition-colors",
+                  isJsonDragging
+                    ? "border-[var(--text)] bg-[var(--pixel-highlight)]"
+                    : "border-[var(--border)] bg-[var(--surface-2)] hover:bg-[var(--pixel-highlight)]",
+                )}
+                onDragEnter={(event) => {
+                  event.preventDefault();
+                  setIsJsonDragging(true);
+                }}
+                onDragOver={(event) => event.preventDefault()}
+                onDragLeave={() => setIsJsonDragging(false)}
+                onDrop={handleJsonDrop}
+              >
+                <input
+                  ref={jsonFileInputRef}
+                  type="file"
+                  accept=".json,application/json"
+                  className="hidden"
+                  onChange={handleJsonFileChange}
+                />
+                <Upload size={20} style={{ color: "var(--text)" }} />
+                <span className="mt-2 text-sm font-black" style={{ ...bodyTextStyle, color: "var(--text)" }}>
+                  {copy.jsonImportDropTitle}
+                </span>
+                <span className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                  {copy.jsonImportDropHelper}
+                </span>
+              </label>
+
+              <label className="block">
+                <span className="block text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-2)" }}>
+                  {copy.jsonImportPasteLabel}
+                </span>
+                <textarea
+                  value={jsonText}
+                  onChange={(event) => handleJsonTextChange(event.target.value)}
+                  placeholder={copy.jsonImportPlaceholder}
+                  rows={8}
+                  className={`${textareaCls} mt-2 min-h-44 font-mono text-xs`}
+                  style={bodyTextStyle}
+                />
+              </label>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                    {jsonFileName ? `${copy.jsonImportFileLoaded}: ${jsonFileName}` : copy.jsonImportNoFile}
+                  </p>
+                  <p
+                    className="mt-1 text-xs font-semibold tabular-nums"
+                    style={{
+                      ...bodyTextStyle,
+                      color: jsonChars > JSON_IMPORT_MAX_CHARS ? "var(--c-hi)" : "var(--text-3)",
+                    }}
+                  >
+                    {jsonChars}/{JSON_IMPORT_MAX_CHARS}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+                    {copy.jsonImportPrivacy}
+                  </p>
+                </div>
+
+                {jsonText && (
+                  <button
+                    type="button"
+                    onClick={handleClearJsonImport}
+                    disabled={analyzingJson}
+                    className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] disabled:cursor-not-allowed disabled:opacity-50"
+                    style={bodyTextStyle}
+                  >
+                    <Trash2 size={13} />
+                    {copy.jsonImportClear}
+                  </button>
+                )}
+              </div>
+
+              {jsonImportError && (
+                <div className="flex items-start gap-2 border-2 border-[var(--c-hi)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--c-hi)" }}>
+                  <ShieldAlert size={14} className="mt-0.5 shrink-0" />
+                  <span>{jsonImportError}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col-reverse gap-2 border-t-2 border-[var(--border)] bg-[var(--surface-2)] p-4 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setIsJsonModalOpen(false)}
+                disabled={analyzingJson}
+                className="inline-flex h-9 items-center justify-center border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text-2)] transition-colors hover:bg-[var(--pixel-highlight)] disabled:cursor-not-allowed disabled:opacity-50"
+                style={bodyTextStyle}
+              >
+                {copy.jsonImportCancel}
+              </button>
+              <button
+                type="button"
+                onClick={handleAnalyzeJson}
+                disabled={analyzingJson || jsonChars === 0}
+                className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <Sparkles size={13} />
+                {analyzingJson ? copy.jsonImportAnalyzing : copy.jsonImportAnalyze}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
