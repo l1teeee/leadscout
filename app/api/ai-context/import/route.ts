@@ -4,10 +4,7 @@ import {
   BUSINESS_MAX,
   CONSTRAINTS_MAX,
   JSON_IMPORT_MAX_CHARS,
-  hasPromptInjectionText,
-  hasSensitiveText,
   sanitizeAiContextText,
-  validateAiContext,
 } from "@/lib/ai-context";
 import { SESSION_COOKIE_NAME } from "@/lib/auth";
 import { env } from "@/lib/env";
@@ -25,6 +22,50 @@ interface ImportRequest {
 interface AiContextImport {
   business_context: string;
   constraints: string;
+}
+
+// Inline substitution patterns — never reject, just scrub the offending text
+const INJECTION_SUBS: [RegExp, string][] = [
+  [/ignore\s+(all\s+)?(previous|prior|above)\s+instructions?/gi, "[removed]"],
+  [/jailbreak|prompt\s*injection/gi, "[removed]"],
+  [/act\s+as\s+(system|developer|admin|root)/gi, "[removed]"],
+  [/disable\s+(safety|guardrails?|filters?)/gi, "[removed]"],
+  [/reveal\s+(the\s+)?(prompt|instructions?|secrets?|api\s*keys?)/gi, "[removed]"],
+];
+
+const SENSITIVE_SUBS: [RegExp, string][] = [
+  [/\bsk-[A-Za-z0-9_-]{20,}\b/g, "[redacted]"],
+  [/\bAIza[0-9A-Za-z_-]{20,}\b/g, "[redacted]"],
+  [/-----BEGIN\s+(?:RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY-----[\s\S]*?-----END[^-]*KEY-----/gi, "[redacted]"],
+];
+
+function sanitizeString(s: string): string {
+  let out = s.slice(0, 2000);
+  for (const [re, replacement] of INJECTION_SUBS) out = out.replace(re, replacement);
+  for (const [re, replacement] of SENSITIVE_SUBS) out = out.replace(re, replacement);
+  return out;
+}
+
+function sanitizePayload(value: unknown, depth = 0): unknown {
+  if (depth > 8) return null;
+  if (typeof value === "string") return sanitizeString(value);
+  if (Array.isArray(value)) {
+    return value.slice(0, 200).map((item) => sanitizePayload(item, depth + 1));
+  }
+  if (value !== null && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>).slice(0, 100)) {
+      result[k.slice(0, 100)] = sanitizePayload(v, depth + 1);
+    }
+    return result;
+  }
+  return value;
+}
+
+function isValidPayload(value: unknown): boolean {
+  if (typeof value !== "object" || value === null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  return Object.keys(value as Record<string, unknown>).length > 0;
 }
 
 function parseJwtPayload(token: string): { sub?: string; exp?: number } | null {
@@ -65,16 +106,6 @@ function isRateLimited(key: string): boolean {
   return false;
 }
 
-function stringifyPayload(value: unknown): string | null {
-  if (typeof value !== "object" || value === null) return null;
-  if (!Array.isArray(value) && Object.keys(value as Record<string, unknown>).length === 0) return null;
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return null;
-  }
-}
-
 export async function POST(request: NextRequest) {
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
   if (!token || isTokenExpired(token)) {
@@ -92,20 +123,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ detail: "Invalid JSON" }, { status: 400 });
   }
 
-  const serializedJson = stringifyPayload(body.json_payload);
+  const raw_payload = body.json_payload;
   const lang = body.lang === "es" ? "es" : "en";
 
-  if (!serializedJson) {
+  if (!isValidPayload(raw_payload)) {
     return NextResponse.json({ detail: "JSON object or array is required" }, { status: 400 });
   }
-  if (serializedJson.length > JSON_IMPORT_MAX_CHARS) {
+
+  // Sanitize: scrub injection & sensitive strings inline instead of rejecting
+  const sanitized = sanitizePayload(raw_payload);
+
+  let serializedCheck: string;
+  try {
+    serializedCheck = JSON.stringify(sanitized);
+  } catch {
+    return NextResponse.json({ detail: "Could not serialize JSON" }, { status: 400 });
+  }
+  if (serializedCheck.length > JSON_IMPORT_MAX_CHARS) {
     return NextResponse.json({ detail: "Imported JSON is too large" }, { status: 413 });
   }
-  if (hasPromptInjectionText(serializedJson) || hasSensitiveText(serializedJson)) {
-    return NextResponse.json({ detail: "Unsafe JSON content" }, { status: 400 });
-  }
 
-  // Forward to FastAPI backend — OpenAI key lives there, not here
+  // Forward sanitized payload to FastAPI — OpenAI key lives there
   let backendRes: Response;
   try {
     backendRes = await fetch(`${env.apiUrl}/api/settings/ai-context/import`, {
@@ -114,38 +152,39 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ json_payload: body.json_payload, lang }),
+      body: JSON.stringify({ json_payload: sanitized, lang }),
     });
   } catch {
     return NextResponse.json({ detail: "Could not reach backend" }, { status: 502 });
   }
 
   if (!backendRes.ok) {
-    const status = backendRes.status === 503 ? 503 : 502;
-    return NextResponse.json({ detail: "Could not analyze JSON" }, { status });
+    let detail = "Could not analyze JSON";
+    try {
+      const errBody = await backendRes.json() as { detail?: unknown };
+      if (typeof errBody.detail === "string" && errBody.detail.length < 300) {
+        detail = errBody.detail;
+      }
+    } catch { /* keep generic message */ }
+    const status = backendRes.status >= 500 ? (backendRes.status === 503 ? 503 : 502) : backendRes.status;
+    return NextResponse.json({ detail }, { status });
   }
 
-  let raw: Partial<AiContextImport>;
+  let imported: Partial<AiContextImport>;
   try {
-    raw = await backendRes.json() as Partial<AiContextImport>;
+    imported = await backendRes.json() as Partial<AiContextImport>;
   } catch {
     return NextResponse.json({ detail: "Invalid backend response" }, { status: 502 });
   }
 
-  const imported: AiContextImport = {
-    business_context: sanitizeAiContextText(String(raw.business_context ?? ""), BUSINESS_MAX),
-    constraints: sanitizeAiContextText(String(raw.constraints ?? ""), CONSTRAINTS_MAX),
+  const result: AiContextImport = {
+    business_context: sanitizeAiContextText(String(imported.business_context ?? ""), BUSINESS_MAX),
+    constraints: sanitizeAiContextText(String(imported.constraints ?? ""), CONSTRAINTS_MAX),
   };
 
-  if (!imported.business_context || !imported.constraints) {
+  if (!result.business_context || !result.constraints) {
     return NextResponse.json({ detail: "Incomplete AI output" }, { status: 502 });
   }
 
-  // Final output safety gate before sending to client
-  const validation = validateAiContext(imported.business_context, imported.constraints);
-  if (validation.hasSensitiveData || validation.hasPromptInjection) {
-    return NextResponse.json({ detail: "Unsafe AI output" }, { status: 502 });
-  }
-
-  return NextResponse.json(imported);
+  return NextResponse.json(result);
 }
