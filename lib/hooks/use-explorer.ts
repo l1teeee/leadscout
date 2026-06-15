@@ -91,6 +91,7 @@ export function useExplorer() {
   const { lang } = useLanguage();
   const tr = translations[lang].explorer.errors;
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [lastSearchIds, setLastSearchIds] = useState<Set<string>>(new Set());
   const [isSearching, setIsSearching] = useState(false);
   const [searchStage, setSearchStage] = useState<ExplorerSearchStage | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -254,6 +255,13 @@ export function useExplorer() {
     );
   }, [scrapingPoints, selectedCategory]);
 
+  // Points visible on the "ubicacion" map: only from the last search, filtered by category
+  const visibleLastSearchPoints = useMemo(() => {
+    return scrapingPoints.filter(
+      (p) => lastSearchIds.has(p.id) && categoryMatchesLead(selectedCategory, p.category)
+    );
+  }, [scrapingPoints, lastSearchIds, selectedCategory]);
+
   const categoryCounts = useMemo(
     () =>
       BUSINESS_CATEGORIES.reduce<Record<string, number>>((acc, cat) => {
@@ -297,6 +305,21 @@ export function useExplorer() {
     if (l.status === "desvinculado") return false;
     if (cleanFilter && (isLowQuality(l) || junkIds.has(l.id))) return false;
     if (!zoneLeadIds.has(l.id)) return false;
+    const q = query.toLowerCase();
+    const matchQ =
+      !q ||
+      l.name.toLowerCase().includes(q) ||
+      l.category.toLowerCase().includes(q) ||
+      l.location.toLowerCase().includes(q);
+    const matchS = !filterStatus || l.status === filterStatus;
+    const matchC = categoryMatchesLead(selectedCategory, l.category);
+    return matchQ && matchS && matchC;
+  });
+
+  // All accumulated leads (no zone restriction) — for the "resultados" tab
+  const allFiltered = leads.filter((l) => {
+    if (l.status === "desvinculado") return false;
+    if (cleanFilter && (isLowQuality(l) || junkIds.has(l.id))) return false;
     const q = query.toLowerCase();
     const matchQ =
       !q ||
@@ -470,6 +493,8 @@ export function useExplorer() {
       });
       setSearchStage("refreshing");
       const { leads: fresh } = await getLeads({ limit: MAX_LEADS_LIMIT });
+      // Track which IDs came from this search (for "ubicacion" map)
+      setLastSearchIds(new Set(fresh.filter(l => l.status !== "desvinculado").map(l => l.id)));
       // Accumulate results: merge by ID, exclude desvinculados
       setLeads(prev => {
         const map = new Map(prev.map(l => [l.id, l]));
@@ -516,11 +541,13 @@ export function useExplorer() {
     selected,
     placeSuggestions,
     visibleScrapingPoints,
+    visibleLastSearchPoints,
     undiscoveredPoints: UNDISCOVERED_POINTS,
     activeSelectedPoint,
     activeSearchArea,
     searchBounds,
     filtered,
+    allFiltered,
     cleanFilter,
     setCleanFilter,
     isSearching,

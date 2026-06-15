@@ -47,8 +47,8 @@ export function Explorer() {
     selectedCategory, isCategoryModalOpen,
     selectedCategoryInfo, categoryCounts,
     selected,
-    placeSuggestions, visibleScrapingPoints,
-    activeSelectedPoint, activeSearchArea, filtered,
+    placeSuggestions, visibleScrapingPoints, visibleLastSearchPoints,
+    activeSelectedPoint, activeSearchArea, filtered, allFiltered,
     cleanFilter, setCleanFilter,
     isSearching, searchStage, searchError,
     selectScrapingPoint, selectPlace, selectCategory,
@@ -110,7 +110,7 @@ export function Explorer() {
               onLocationQueryChange={handleLocationQueryChange}
               selectedPlace={selectedPlace}
               selectedCategoryInfo={selectedCategoryInfo}
-              visiblePointsCount={visibleScrapingPoints.length}
+              visiblePointsCount={visibleLastSearchPoints.length}
               placeSuggestions={placeSuggestions}
               onCategoryOpen={openCategoryModal}
               onSelectPlace={selectPlace}
@@ -132,7 +132,7 @@ export function Explorer() {
               hasLocation={hasLocation}
               isEditingSearchArea={isEditingSearchArea}
               onToggleEditArea={toggleEditArea}
-              visibleScrapingPoints={visibleScrapingPoints}
+              visibleScrapingPoints={visibleLastSearchPoints}
               activeSelectedPoint={activeSelectedPoint}
               onMoveSearchArea={moveSearchArea}
               onPointSelect={selectScrapingPoint}
@@ -145,7 +145,7 @@ export function Explorer() {
 
         {activeTab === "resultados" && (
           <ExplorerResultsMap
-            leads={filtered}
+            leads={allFiltered}
             selected={selected}
             onSelectLead={selectLead}
           />
