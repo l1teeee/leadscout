@@ -424,72 +424,115 @@ export function Leads() {
                 </tr>
               </thead>
               <tbody>
-                {leads.map((lead) => {
-                  const isSelected = selected?.id === lead.id;
-                  return (
+                {showHidden ? (
+                  hiddenLeads.map((h) => (
                     <tr
-                      key={lead.id}
-                      onClick={() => {
-                        setSelectedId(lead.id);
-                        setSelectedLead(lead);
-                        if (!lead.is_viewed && !locallyViewed.has(lead.id)) {
-                          setLocallyViewed(prev => new Set(prev).add(lead.id));
-                          markLeadViewed(lead.id).catch(() => {});
-                        }
-                      }}
-                      className={cn(
-                        "cursor-pointer transition-colors",
-                        isSelected ? "bg-[var(--surface-2)]" : "bg-[var(--surface)] hover:bg-[var(--surface-2)]",
-                      )}
-                      style={{
-                        borderBottom: "1px solid #E4E4E7",
-                      }}
+                      key={h.id}
+                      className="bg-(--surface) transition-colors"
+                      style={{ borderBottom: "1px solid #E4E4E7" }}
                     >
                       <td className="px-4 py-3" style={{ maxWidth: "260px", overflow: "hidden" }}>
-                        <p className="font-bold truncate" style={{ color: "var(--text)" }}>
-                          {lead.name}
-                        </p>
-                        {!lead.is_viewed && !locallyViewed.has(lead.id) && (
-                          <span className="retro pixel-text-xs ml-1 border border-[var(--c-new)] px-1 py-0.5 uppercase" style={{ color: "var(--c-new)", fontSize: "8px" }}>
-                            {tr.leads.newBadge}
-                          </span>
-                        )}
+                        <p className="font-bold truncate" style={{ color: "var(--text)" }}>{h.name}</p>
                         <p className="mt-1 text-xs font-semibold truncate" style={{ color: "var(--text-3)" }}>
-                          {lead.category} / {lead.location}
+                          {h.category} / {h.location}
                         </p>
                       </td>
                       <td className="w-44 px-4 py-3">
-                        <ScoreBar score={lead.score} />
+                        <ScoreBar score={h.score} />
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={lead.status} />
+                        <span className="retro pixel-text-xs" style={{ color: "var(--text-3)" }}>—</span>
                       </td>
                       <td className="px-4 py-3">
-                        <PriorityBadge priority={lead.priority} />
+                        <PriorityBadge priority={h.priority as import("@/lib/data").LeadPriority} />
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            hideLead(lead);
-                            if (selectedLead?.id === lead.id) setSelectedLead(null);
-                          }}
-                          title={tr.leads.hide}
-                          aria-label={tr.leads.hide}
-                          className="inline-flex h-7 w-7 items-center justify-center border-2 border-(--border) bg-surface text-text transition-colors hover:bg-(--surface-2)"
+                          onClick={() => unhideLead(h.id)}
+                          title={tr.leads.hidden.restore}
+                          aria-label={tr.leads.hidden.restore}
+                          className="retro pixel-text-xs inline-flex items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-2.5 py-1.5 uppercase transition-transform active:translate-x-px active:translate-y-px"
+                          style={{ color: "var(--text)" }}
                         >
-                          <EyeOff size={13} />
+                          <Eye size={12} />
+                          {tr.leads.hidden.restore}
                         </button>
                       </td>
                     </tr>
-                  );
-                })}
+                  ))
+                ) : (
+                  leads.map((lead) => {
+                    const isSelected = selected?.id === lead.id;
+                    return (
+                      <tr
+                        key={lead.id}
+                        onClick={() => {
+                          setSelectedId(lead.id);
+                          setSelectedLead(lead);
+                          if (!lead.is_viewed && !locallyViewed.has(lead.id)) {
+                            setLocallyViewed(prev => new Set(prev).add(lead.id));
+                            markLeadViewed(lead.id).catch(() => {});
+                          }
+                        }}
+                        className={cn(
+                          "cursor-pointer transition-colors",
+                          isSelected ? "bg-[var(--surface-2)]" : "bg-[var(--surface)] hover:bg-[var(--surface-2)]",
+                        )}
+                        style={{ borderBottom: "1px solid #E4E4E7" }}
+                      >
+                        <td className="px-4 py-3" style={{ maxWidth: "260px", overflow: "hidden" }}>
+                          <p className="font-bold truncate" style={{ color: "var(--text)" }}>
+                            {lead.name}
+                          </p>
+                          {!lead.is_viewed && !locallyViewed.has(lead.id) && (
+                            <span className="retro pixel-text-xs ml-1 border border-[var(--c-new)] px-1 py-0.5 uppercase" style={{ color: "var(--c-new)", fontSize: "8px" }}>
+                              {tr.leads.newBadge}
+                            </span>
+                          )}
+                          <p className="mt-1 text-xs font-semibold truncate" style={{ color: "var(--text-3)" }}>
+                            {lead.category} / {lead.location}
+                          </p>
+                        </td>
+                        <td className="w-44 px-4 py-3">
+                          <ScoreBar score={lead.score} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusBadge status={lead.status} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <PriorityBadge priority={lead.priority} />
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              hideLead(lead);
+                              if (selectedLead?.id === lead.id) setSelectedLead(null);
+                            }}
+                            title={tr.leads.hide}
+                            aria-label={tr.leads.hide}
+                            className="inline-flex h-7 w-7 items-center justify-center border-2 border-(--border) bg-surface text-text transition-colors hover:bg-(--surface-2)"
+                          >
+                            <EyeOff size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
 
-          {!loading && leads.length === 0 && (
+          {showHidden && hiddenLeads.length === 0 && (
+            <div className="p-8">
+              <EmptyInsight title={tr.leads.hidden.empty} description="" compact />
+            </div>
+          )}
+
+          {!showHidden && !loading && leads.length === 0 && (
             <div className="p-8">
               <EmptyInsight
                 title={total === 0 ? tr.leads.emptyWorkspace.title : tr.leads.emptyFiltered.title}
@@ -504,7 +547,7 @@ export function Leads() {
             </div>
           )}
 
-          {loading && (
+          {!showHidden && loading && (
             <div className="p-8 text-center">
               <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
                 {tr.leads.loading}
@@ -513,7 +556,7 @@ export function Leads() {
           )}
 
           {/* Pagination */}
-          {!loading && total > PAGE_SIZE && (
+          {!showHidden && !loading && total > PAGE_SIZE && (
             <div className="flex items-center justify-between border-t-2 border-(--border) bg-(--surface-2) px-4 py-3">
               <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
                 {tr.leads.pagination.showing(
@@ -545,45 +588,6 @@ export function Leads() {
                   {tr.leads.pagination.next}
                 </button>
               </div>
-            </div>
-          )}
-          {showHidden && (
-            <div className="border-t-2 border-(--border) bg-(--surface-2) p-4">
-              <p className="retro pixel-text-xs uppercase mb-3" style={{ color: "var(--text-3)" }}>
-                {tr.leads.hidden.title}
-              </p>
-              {hiddenLeads.length === 0 ? (
-                <p className="text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
-                  {tr.leads.hidden.empty}
-                </p>
-              ) : (
-                <div className="grid gap-2">
-                  {hiddenLeads.map((h) => (
-                    <div
-                      key={h.id}
-                      className="flex items-center justify-between gap-3 border-2 border-(--border) bg-surface px-3 py-2"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold" style={{ ...bodyTextStyle, color: "var(--text)" }}>
-                          {h.name}
-                        </p>
-                        <p className="truncate text-xs font-semibold" style={{ color: "var(--text-3)" }}>
-                          {h.category} / {h.location}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => unhideLead(h.id)}
-                        className="retro pixel-text-xs flex shrink-0 items-center gap-1.5 border-2 border-(--border) bg-(--pixel-highlight) px-2.5 py-1.5 uppercase transition-transform active:translate-x-px active:translate-y-px"
-                        style={{ color: "var(--text)" }}
-                      >
-                        <Eye size={12} />
-                        {tr.leads.hidden.restore}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </section>

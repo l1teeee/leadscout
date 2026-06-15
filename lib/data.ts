@@ -18,7 +18,7 @@ export interface Lead {
   latitude?: number;
   longitude?: number;
   ai_analysis?: string;
-  social_profiles?: Array<{ platform: string; url: string }>;
+  social_profiles?: Array<{ platform: string; url: string; contacted?: boolean }>;
   is_viewed: boolean;
 }
 

@@ -37,6 +37,7 @@ export interface ExplorerSearchResponse {
 export interface SocialProfile {
   platform: string;
   url: string;
+  contacted?: boolean;
 }
 
 export interface LeadAnalyzeRequest {

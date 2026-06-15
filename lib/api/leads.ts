@@ -22,6 +22,7 @@ interface ApiLead {
   source: string;
   last_contact: string | null;
   ai_analysis: string | null;
+  social_profiles: Array<{ platform: string; url: string }> | null;
   is_viewed: boolean;
   created_at: string | null;
   updated_at: string | null;
@@ -49,6 +50,7 @@ function adapt(a: ApiLead): Lead {
     website: a.website ?? undefined,
     lastContact: a.last_contact ?? undefined,
     ai_analysis: a.ai_analysis ?? undefined,
+    social_profiles: a.social_profiles ?? undefined,
     is_viewed: a.is_viewed,
   };
 }
@@ -114,5 +116,15 @@ export async function markLeadViewed(id: string): Promise<void> {
   await apiFetch(`/api/leads/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ is_viewed: true }),
+  });
+}
+
+export async function updateLeadSocialProfiles(
+  id: string,
+  profiles: Array<{ platform: string; url: string }>
+): Promise<void> {
+  await apiFetch(`/api/leads/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ social_profiles: profiles }),
   });
 }
