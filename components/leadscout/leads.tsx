@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff, Filter, Globe2, Phone, Plus, RefreshCcw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useLeads, PAGE_SIZE, type SortField } from "@/lib/hooks/use-leads";
@@ -195,7 +196,7 @@ function CreateLeadModal({
     });
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4" role="presentation" onClick={onClose}>
       <form
         role="dialog"
@@ -347,7 +348,8 @@ function CreateLeadModal({
           </div>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 }
 

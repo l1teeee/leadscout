@@ -24,7 +24,7 @@ interface WorkspaceStats {
   avg_score: number;
 }
 
-export const PAGE_SIZE = 8;
+export const PAGE_SIZE = 7;
 
 export type SortField = "name" | "score" | "status" | "priority" | "created_at";
 
@@ -208,7 +208,7 @@ export function useLeads(): UseLeadsReturn {
   const selected = paginatedVisibleLeads.find((l) => l.id === selectedId) ?? paginatedVisibleLeads[0] ?? null;
 
   const highPriorityCount = wsStats.total > 0 ? wsStats.high_priority_count : leads.filter((l) => l.priority === "alta").length;
-  const noContactCount = wsStats.total > 0 ? wsStats.no_contact_count : leads.filter((l) => !l.lastContact).length;
+  const noContactCount = visibleLeads.filter((l) => l.status === "nuevo").length;
   const avgScore = wsStats.total > 0 ? wsStats.avg_score : (leads.length ? Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length) : 0);
 
   const createLead = useCallback(async (input: CreateLeadInput) => {

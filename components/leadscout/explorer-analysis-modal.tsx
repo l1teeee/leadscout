@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   Check,
@@ -250,7 +251,7 @@ export function ExplorerAnalysisModal({
     }
   }
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="presentation"
@@ -639,6 +640,7 @@ export function ExplorerAnalysisModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

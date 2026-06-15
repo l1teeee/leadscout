@@ -132,16 +132,21 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile sidebar overlay */}
-      {isMobileNavOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
+      <div className={cn("fixed inset-0 z-50 flex md:hidden", isMobileNavOpen ? "pointer-events-auto" : "pointer-events-none")}>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/50"
+            className={cn(
+              "fixed inset-0 bg-black/50 transition-opacity duration-300",
+              isMobileNavOpen ? "opacity-100" : "opacity-0"
+            )}
             onClick={() => setIsMobileNavOpen(false)}
           />
           {/* Drawer */}
           <aside
-            className="relative z-10 flex h-full w-[232px] flex-col overflow-hidden"
+            className={cn(
+              "relative z-10 flex h-full w-[232px] flex-col overflow-hidden transition-transform duration-300 ease-in-out",
+              isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
+            )}
             style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
           >
             {/* Close button in header area */}
@@ -217,13 +222,12 @@ export function Sidebar() {
               </button>
             </div>
           </aside>
-        </div>
-      )}
+      </div>
 
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden md:flex shrink-0 flex-col h-full overflow-hidden transition-[width] duration-200 ease-out",
+          "hidden md:flex shrink-0 flex-col h-full overflow-hidden transition-[width] duration-200 ease-out relative z-[45]",
           isExpanded ? "w-[232px]" : "w-[58px]"
         )}
         style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
