@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { BarChart3, CheckCircle2, CircleDot, Clock3, TrendingUp } from "lucide-react";
 import { getLeads } from "@/lib/api/leads";
 import { getReportSummary, EMPTY_SUMMARY } from "@/lib/api/reports";
-import { ChartAreaStep } from "@/components/ui/8bit-chart-area-step";
+import { ChartBars } from "@/components/ui/8bit-chart-bars";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { ReportToolbar } from "@/components/leadscout/report-toolbar";
 import type { LeadPriority, LeadStatus } from "@/lib/data";
@@ -60,13 +60,13 @@ function ReportMetric({
 }
 
 function FunnelRow({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
-  const width = percent(value, total);
+  const width = Math.min(100, percent(value, total));
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between gap-3 text-xs font-semibold" style={bodyTextStyle}>
         <span style={{ color: "var(--text-2)" }}>{label}</span>
         <span className="tabular-nums" style={{ color: "var(--text)" }}>
-          {value} / {width}%
+          {value} — {width}%
         </span>
       </div>
       <div className="h-5 border-2 border-[var(--border)] bg-[var(--surface)] p-[2px]">
@@ -131,7 +131,7 @@ export async function Reportes() {
     getReportSummary(token).catch(() => EMPTY_SUMMARY),
   ]);
 
-  const leadTotal = leads.length;
+  const leadTotal = summary.total_leads;
   const qualified = summary.by_status["calificado"] ?? 0;
   const contacted = (summary.by_status["contactado"] ?? 0) + qualified;
   const highRisk = leads.filter((l) => l.score >= 80).length;
@@ -170,7 +170,7 @@ export async function Reportes() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
-          <ChartAreaStep title={tr.chart.title} eyebrow={tr.chart.eyebrow} data={chartData} />
+          <ChartBars title={tr.chart.title} eyebrow={tr.chart.eyebrow} data={chartData} />
 
           <section className="pixel-card-sm bg-white p-5">
             <div className="flex items-start justify-between gap-4">
