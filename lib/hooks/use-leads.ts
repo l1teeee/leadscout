@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { apiFetch } from "@/lib/api/client";
-import { getLeads } from "@/lib/api/leads";
+import {
+  createLead as createLeadRequest,
+  getLeads,
+  MAX_LEADS_LIMIT,
+  type CreateLeadInput,
+} from "@/lib/api/leads";
 import { parseApiError } from "@/lib/api/errors";
 import type { Lead, LeadStatus, LeadPriority } from "@/lib/data";
 import {
@@ -19,7 +24,7 @@ interface WorkspaceStats {
   avg_score: number;
 }
 
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 8;
 
 export type SortField = "name" | "score" | "status" | "priority" | "created_at";
 
@@ -49,6 +54,7 @@ export interface UseLeadsReturn {
   noContactCount: number;
   avgScore: number;
   refresh: () => void;
+  createLead: (input: CreateLeadInput) => Promise<Lead>;
   hiddenLeads: HiddenLeadRecord[];
   hideLead: (lead: Lead) => void;
   unhideLead: (id: string) => void;
@@ -57,14 +63,17 @@ export interface UseLeadsReturn {
 export function useLeads(): UseLeadsReturn {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [hiddenRecords, setHiddenRecords] = useState<HiddenLeadRecord[]>([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wsStats, setWsStats] = useState<WorkspaceStats>({ total: 0, high_priority_count: 0, no_contact_count: 0, avg_score: 0 });
 
-  useEffect(() => {
+  const refreshStats = useCallback(() => {
     apiFetch<WorkspaceStats>("/api/leads/stats").then(setWsStats).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    refreshStats();
+  }, [refreshStats]);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -160,13 +169,12 @@ export function useLeads(): UseLeadsReturn {
         is_viewed: viewedFilter ?? undefined,
         sort_by: sortBy,
         sort_order: sortOrder,
-        limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
+        limit: MAX_LEADS_LIMIT,
+        offset: 0,
       }, controller.signal);
       if (controller.signal.aborted) return;
       setLeads(result.leads);
-      setTotal(result.total);
-      // keep selection if it's still on this page, else select first
+      // Keep selection if it still exists in the fetched result, else select the first result.
       setSelectedId((prev) =>
         result.leads.find((l) => l.id === prev)?.id ?? result.leads[0]?.id ?? null,
       );
@@ -176,24 +184,51 @@ export function useLeads(): UseLeadsReturn {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [debouncedQuery, status, priority, viewedFilter, sortBy, sortOrder, page]);
+  }, [debouncedQuery, status, priority, viewedFilter, sortBy, sortOrder]);
 
-  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (active) void fetchLeads();
+    });
+    return () => {
+      active = false;
+    };
+  }, [fetchLeads]);
 
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
   }, []);
 
   const visibleLeads = leads.filter((l) => !hiddenIds.has(l.id));
-  const selected = visibleLeads.find((l) => l.id === selectedId) ?? visibleLeads[0] ?? null;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const visibleTotal = visibleLeads.length;
+  const totalPages = Math.max(1, Math.ceil(visibleTotal / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paginatedVisibleLeads = visibleLeads.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+  const selected = paginatedVisibleLeads.find((l) => l.id === selectedId) ?? paginatedVisibleLeads[0] ?? null;
 
   const highPriorityCount = wsStats.total > 0 ? wsStats.high_priority_count : leads.filter((l) => l.priority === "alta").length;
   const noContactCount = wsStats.total > 0 ? wsStats.no_contact_count : leads.filter((l) => !l.lastContact).length;
   const avgScore = wsStats.total > 0 ? wsStats.avg_score : (leads.length ? Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length) : 0);
 
+  const createLead = useCallback(async (input: CreateLeadInput) => {
+    const created = await createLeadRequest(input);
+    setQueryState("");
+    setDebouncedQuery("");
+    setStatusState("");
+    setPriorityState("");
+    setViewedFilterState(null);
+    setSortBy("created_at");
+    setSortOrder("desc");
+    setPageState(0);
+    setSelectedId(created.id);
+    setLeads((current) => [created, ...current.filter((lead) => lead.id !== created.id)]);
+    refreshStats();
+    return created;
+  }, [refreshStats]);
+
   return {
-    leads: visibleLeads,
+    leads: paginatedVisibleLeads,
     selected,
     loading,
     error,
@@ -210,14 +245,15 @@ export function useLeads(): UseLeadsReturn {
     sortBy,
     sortOrder,
     toggleSort,
-    page,
+    page: safePage,
     setPage,
-    total,
+    total: visibleTotal,
     totalPages,
     highPriorityCount,
     noContactCount,
     avgScore,
     refresh: fetchLeads,
+    createLead,
     hiddenLeads: hiddenRecords,
     hideLead,
     unhideLead,

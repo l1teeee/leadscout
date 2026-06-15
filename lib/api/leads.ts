@@ -33,6 +33,8 @@ interface LeadListResponse {
   total: number;
 }
 
+type LeadCreateResponse = ApiLead | { data: ApiLead };
+
 function adapt(a: ApiLead): Lead {
   return {
     id: a.id,
@@ -74,6 +76,18 @@ export interface LeadListResult {
   total: number;
 }
 
+export interface CreateLeadInput {
+  name: string;
+  category: string;
+  location: string;
+  phone?: string;
+  website?: string;
+  status?: LeadStatus;
+  priority?: LeadPriority;
+  score?: number;
+  issues?: string[];
+}
+
 export async function getLeads(filters: LeadFilters = {}, signal?: AbortSignal, token?: string): Promise<LeadListResult> {
   const params = new URLSearchParams();
   if (filters.q) params.set("q", filters.q);
@@ -96,6 +110,32 @@ export async function getLeads(filters: LeadFilters = {}, signal?: AbortSignal, 
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   return { leads: res.data.map(adapt), total: res.total };
+}
+
+function nullableText(value?: string): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+export async function createLead(input: CreateLeadInput): Promise<Lead> {
+  const payload = {
+    name: input.name.trim(),
+    category: input.category.trim(),
+    location: input.location.trim(),
+    phone: nullableText(input.phone),
+    website: nullableText(input.website),
+    status: input.status ?? "nuevo",
+    priority: input.priority ?? "media",
+    score: input.score ?? 0,
+    issues: input.issues ?? [],
+    source: "manual",
+  };
+
+  const res = await apiFetch<LeadCreateResponse>("/api/leads", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return adapt("data" in res ? res.data : res);
 }
 
 export async function updateLeadStatus(id: string, status: LeadStatus): Promise<void> {

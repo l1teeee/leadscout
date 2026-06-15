@@ -9,7 +9,7 @@ vi.mock('@/lib/auth', () => ({
   setToken: vi.fn(),
 }))
 
-import { getLeads, markLeadViewed, updateLead } from '@/lib/api/leads'
+import { createLead, getLeads, markLeadViewed, updateLead } from '@/lib/api/leads'
 import { apiFetch } from '@/lib/api/client'
 
 const mockApiFetch = vi.mocked(apiFetch)
@@ -106,6 +106,52 @@ describe('getLeads', () => {
     mockApiFetch.mockResolvedValue({ data: [], total: 42 })
     const { total } = await getLeads()
     expect(total).toBe(42)
+  })
+})
+
+describe('createLead', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('hace POST con payload manual y retorna el lead creado', async () => {
+    mockApiFetch.mockResolvedValue(makeApiLead({
+      id: 'lead-new',
+      name: 'Nuevo negocio',
+      category: 'Restaurante',
+      location: 'Soyapango',
+      score: 65,
+      priority: 'alta',
+      source: 'manual',
+    }))
+
+    const lead = await createLead({
+      name: ' Nuevo negocio ',
+      category: ' Restaurante ',
+      location: ' Soyapango ',
+      phone: '',
+      website: 'https://example.com',
+      score: 65,
+      priority: 'alta',
+    })
+
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      '/api/leads',
+      expect.objectContaining({ method: 'POST' }),
+    )
+    const body = JSON.parse(mockApiFetch.mock.calls[0][1]?.body as string)
+    expect(body).toMatchObject({
+      name: 'Nuevo negocio',
+      category: 'Restaurante',
+      location: 'Soyapango',
+      phone: null,
+      website: 'https://example.com',
+      status: 'nuevo',
+      priority: 'alta',
+      score: 65,
+      issues: [],
+      source: 'manual',
+    })
+    expect(lead.id).toBe('lead-new')
+    expect(lead.name).toBe('Nuevo negocio')
   })
 })
 
