@@ -28,12 +28,22 @@ export async function getReportSummary(token?: string): Promise<ReportSummary> {
   });
 }
 
-export interface TimelineResponse {
-  points: Array<{ date: string; count: number }>;
+export interface TimelinePoint {
+  date: string;
+  leads: number;
 }
 
-export async function getTimeline(range: number): Promise<TimelineResponse> {
-  return apiFetch<TimelineResponse>(`/api/reports/timeline?range=${range}`);
+export interface TimelineResponse {
+  days: number | null;
+  points: TimelinePoint[];
+}
+
+export async function getTimeline(days: number): Promise<TimelineResponse> {
+  return apiFetch<TimelineResponse>(`/api/reports/timeline?days=${days}`);
+}
+
+export async function getTimelineAll(): Promise<TimelineResponse> {
+  return apiFetch<TimelineResponse>(`/api/reports/timeline?all=true`);
 }
 
 export async function downloadReport(format: "pdf" | "xlsx", days: number): Promise<void> {

@@ -798,6 +798,7 @@ export const translations = {
       range7: "7 days",
       range30: "30 days",
       range90: "90 days",
+      rangeAll: "All time",
       noData: {
         title: "No activity recorded yet",
         description: "Run your first search in Explorer and the timeline will fill up with captured leads.",
@@ -2112,6 +2113,7 @@ export const translations = {
       range7: "7 días",
       range30: "30 días",
       range90: "90 días",
+      rangeAll: "Todo el tiempo",
       noData: {
         title: "Todavía no hay actividad registrada",
         description: "Ejecutá tu primera búsqueda en Explorer y la cronología se irá llenando con los leads capturados.",

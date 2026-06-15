@@ -3,20 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Download, FileSpreadsheet, Mail } from "lucide-react";
-import { getTimeline, downloadReport, emailReport, type TimelineResponse } from "@/lib/api/reports";
+import { getTimeline, getTimelineAll, downloadReport, emailReport, type TimelineResponse, type TimelinePoint } from "@/lib/api/reports";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 
-type Range = 7 | 30 | 90;
+type Range = 7 | 30 | 90 | "all";
 type ExportBusy = "pdf" | "xlsx" | "email" | null;
-type TimelinePoint = TimelineResponse["points"][number];
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
 };
 
-const ranges: Range[] = [7, 30, 90];
+const ranges: Range[] = [7, 30, 90, "all"];
 
 function toDate(value: string) {
   return new Date(value + "T12:00:00");
@@ -54,7 +53,7 @@ export default function TimelineView() {
   const tr = translations[lang].timeline;
   const trToolbar = translations[lang].reportes.toolbar;
   const common = translations[lang].common;
-  const [range, setRange] = useState<Range>(90);
+  const [range, setRange] = useState<Range>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TimelineResponse | null>(null);
@@ -64,12 +63,14 @@ export default function TimelineView() {
     7: tr.range7,
     30: tr.range30,
     90: tr.range90,
+    all: tr.rangeAll,
   };
 
   useEffect(() => {
     let active = true;
 
-    getTimeline(range)
+    const fetch = range === "all" ? getTimelineAll() : getTimeline(range);
+    fetch
       .then((response) => {
         if (!active) return;
         setData(response);
@@ -101,10 +102,12 @@ export default function TimelineView() {
     setTimeout(() => setExportMsg(null), 3000);
   }
 
+  const exportDays = range === "all" ? 90 : range;
+
   async function handlePdf() {
     if (exportBusy) return;
     setExportBusy("pdf");
-    try { await downloadReport("pdf", range); }
+    try { await downloadReport("pdf", exportDays); }
     catch { showExportMsg(trToolbar.exportError, false); }
     finally { setExportBusy(null); }
   }
@@ -112,7 +115,7 @@ export default function TimelineView() {
   async function handleExcel() {
     if (exportBusy) return;
     setExportBusy("xlsx");
-    try { await downloadReport("xlsx", range); }
+    try { await downloadReport("xlsx", exportDays); }
     catch { showExportMsg(trToolbar.exportError, false); }
     finally { setExportBusy(null); }
   }
@@ -121,24 +124,24 @@ export default function TimelineView() {
     if (exportBusy) return;
     setExportBusy("email");
     try {
-      await emailReport(range);
+      await emailReport(exportDays);
       showExportMsg(trToolbar.emailSent, true);
     } catch { showExportMsg(trToolbar.emailError, false); }
     finally { setExportBusy(null); }
   }
 
   const points = data?.points ?? [];
-  const total = points.reduce((sum, point) => sum + point.count, 0);
-  const maxCount = Math.max(1, ...points.map((point) => point.count));
-  const positivePoints = points.filter((point) => point.count > 0);
+  const total = points.reduce((sum, point) => sum + point.leads, 0);
+  const maxCount = Math.max(1, ...points.map((point) => point.leads));
+  const positivePoints = points.filter((point) => point.leads > 0);
   const peakPoint = positivePoints.reduce<TimelinePoint | null>(
-    (peak, point) => (!peak || point.count > peak.count ? point : peak),
+    (peak, point) => (!peak || point.leads > peak.leads ? point : peak),
     null
   );
   const peakDay = peakPoint ? formatDayMonth(toDate(peakPoint.date)) : "--";
   const average = points.length > 0 ? total / points.length : 0;
   const hasData = total > 0;
-  const labelStep = range === 7 ? 1 : range === 30 ? 3 : 7;
+  const labelStep = range === 7 ? 1 : range === 30 ? 3 : range === 90 ? 7 : Math.max(7, Math.ceil((points.length || 1) / 12));
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
@@ -241,7 +244,7 @@ export default function TimelineView() {
             <div className="flex h-48 w-full items-end gap-px">
               {points.map((point, index) => {
                 const date = toDate(point.date);
-                const barHeight = point.count > 0 ? Math.max(4, Math.round((point.count / maxCount) * 100)) : 0;
+                const barHeight = point.leads > 0 ? Math.max(4, Math.round((point.leads / maxCount) * 100)) : 0;
                 const label = index % labelStep === 0 ? formatPointLabel(date, range, lang) : "";
 
                 return (
@@ -249,14 +252,14 @@ export default function TimelineView() {
                     <div className="group relative flex min-h-0 w-full flex-1 items-end">
                       <div
                         className="w-full bg-[var(--border)] transition-colors group-hover:bg-[#3FAE2A]"
-                        style={{ height: point.count > 0 ? `${barHeight}%` : 2 }}
-                        title={`${formatDayMonth(date)}: ${point.count}`}
+                        style={{ height: point.leads > 0 ? `${barHeight}%` : 2 }}
+                        title={`${formatDayMonth(date)}: ${point.leads}`}
                       />
                       <div
                         className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap border-2 border-[var(--border)] bg-white px-2 py-1 text-[10px] font-bold shadow-[2px_2px_0_0_var(--pixel-shadow)] group-hover:block"
                         style={{ ...bodyTextStyle, color: "var(--text)" }}
                       >
-                        {formatDayMonth(date)}: {point.count}
+                        {formatDayMonth(date)}: {point.leads}
                       </div>
                     </div>
                     <span
@@ -283,7 +286,7 @@ export default function TimelineView() {
                       {formatDayMonth(date)}
                     </span>
                     <span className="retro pixel-text-xs tabular-nums" style={{ color: "var(--text)" }}>
-                      {point.count}
+                      {point.leads}
                     </span>
                   </div>
                 );
