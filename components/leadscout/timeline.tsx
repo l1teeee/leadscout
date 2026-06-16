@@ -141,7 +141,7 @@ export default function TimelineView() {
   const peakDay = peakPoint ? formatDayMonth(toDate(peakPoint.date)) : "--";
   const average = points.length > 0 ? total / points.length : 0;
   const hasData = total > 0;
-  const labelStep = range === 7 ? 1 : range === 30 ? 3 : range === 90 ? 7 : Math.max(7, Math.ceil((points.length || 1) / 12));
+  const labelStep = range === 7 ? 1 : range === 30 ? 3 : range === 90 ? 7 : Math.max(1, Math.ceil((points.length || 1) / 12));
 
   return (
     <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
