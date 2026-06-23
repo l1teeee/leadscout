@@ -6,10 +6,10 @@ export function NavProgress() {
   const { isNavigating } = useNavigation();
   const [width, setWidth] = useState(0);
   const [visible, setVisible] = useState(false);
-  const t1 = useRef<ReturnType<typeof setTimeout>>();
-  const t2 = useRef<ReturnType<typeof setTimeout>>();
-  const t3 = useRef<ReturnType<typeof setTimeout>>();
-  const t4 = useRef<ReturnType<typeof setTimeout>>();
+  const t1 = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const t2 = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const t3 = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const t4 = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     clearTimeout(t1.current);
