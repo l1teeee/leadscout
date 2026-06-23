@@ -204,7 +204,7 @@ export async function Dashboard() {
   const maxCategoryCount = Math.max(...topCategories.map(([, count]) => count), 0);
 
   return (
-    <div className="w-full animate-fade-up p-4 sm:p-6 lg:p-8">
+    <div className="w-full overflow-x-hidden animate-fade-up p-4 sm:p-6 lg:p-8">
       <OnboardingTour />
 
       <div data-tour="dashboard-kpis" data-stagger className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -246,13 +246,15 @@ export async function Dashboard() {
             className="min-h-[150px]"
           />
 
-          <ChartAreaStep
-            title={tr.dashboard.chart.title}
-            eyebrow={tr.dashboard.chart.eyebrow}
-            data={chartData}
-            className="min-h-[420px]"
-            data-tour="dashboard-chart"
-          />
+          <div className="overflow-hidden">
+            <ChartAreaStep
+              title={tr.dashboard.chart.title}
+              eyebrow={tr.dashboard.chart.eyebrow}
+              data={chartData}
+              className="min-h-[420px]"
+              data-tour="dashboard-chart"
+            />
+          </div>
         </div>
       </div>
 

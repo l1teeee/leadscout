@@ -89,7 +89,7 @@ export default function PriorityDistribution({
           );
         })}
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid grid-cols-3 gap-1 sm:gap-2">
         {priorities.map((priority) => {
           const count = by_priority[priority.key] ?? 0;
           const label = labels[priority.key] ?? priority.key;
@@ -105,12 +105,12 @@ export default function PriorityDistribution({
                 className="h-3 w-3 shrink-0 border border-(--border)"
                 style={{ background: priority.color }}
               />
-              <div>
+              <div className="min-w-0">
                 <p className="retro pixel-text-xs tabular-nums" style={{ color: "var(--text)" }}>
                   {count}
                 </p>
                 <p
-                  className="text-xs font-medium"
+                  className="text-xs font-medium truncate"
                   style={{ ...bodyTextStyle, color: "var(--text-3)" }}
                 >
                   {label}

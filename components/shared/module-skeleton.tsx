@@ -27,7 +27,7 @@ export function SkeletonBlock({
 
 export function SkeletonKpiRow({ count = 4 }: { count?: number }) {
   return (
-    <div className="mb-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
+    <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {Array.from({ length: count }).map((_, i) => (
         <PixelSkeleton key={i} height="h-[88px]" />
       ))}
@@ -130,21 +130,23 @@ export function SkeletonDashboard() {
             style={{ borderBottom: "2px solid var(--border)" }}
           />
           <div className="h-8 pixel-skeleton opacity-60" style={{ borderBottom: "2px solid var(--border)" }} />
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 px-5 py-3"
-              style={{ borderBottom: i < 4 ? "2px solid #E4E4E7" : undefined, background: "var(--surface)" }}
-            >
-              <div className="flex-1 space-y-1.5">
-                <PixelSkeleton height="h-3" className="w-2/3" />
-                <PixelSkeleton height="h-2.5" className="w-1/3" />
+          <div className="overflow-x-auto">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 px-5 py-3 min-w-[480px]"
+                style={{ borderBottom: i < 4 ? "2px solid #E4E4E7" : undefined, background: "var(--surface)" }}
+              >
+                <div className="flex-1 space-y-1.5">
+                  <PixelSkeleton height="h-3" className="w-2/3" />
+                  <PixelSkeleton height="h-2.5" className="w-1/3" />
+                </div>
+                <PixelSkeleton height="h-3" className="w-24" />
+                <PixelSkeleton height="h-2" className="w-28" />
+                <PixelSkeleton height="h-5" className="w-16" />
               </div>
-              <PixelSkeleton height="h-3" className="w-24" />
-              <PixelSkeleton height="h-2" className="w-28" />
-              <PixelSkeleton height="h-5" className="w-16" />
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         <div

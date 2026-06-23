@@ -32,7 +32,7 @@ export function DashboardQuickWins({ leads, priorityLabels, copy }: Props) {
 
   return (
     <>
-      <section className="pixel-card-sm flex min-h-[420px] flex-col bg-white p-5">
+      <section className="pixel-card-sm flex min-h-[300px] sm:min-h-[420px] flex-col bg-white p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="retro pixel-text-xs uppercase" style={{ color: "var(--text)" }}>
