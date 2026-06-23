@@ -110,7 +110,7 @@ export function ChartAreaStep({
         </div>
 
         {active && (
-          <div className="pixel-inset min-w-24 bg-white px-3 py-2 text-right">
+          <div className="pixel-inset min-w-16 shrink-0 bg-white px-3 py-2 text-right sm:min-w-24">
             <span className="block text-xs font-medium" style={{ color: "var(--text-3)" }}>
               {active.label}
             </span>

@@ -26,7 +26,7 @@ export function ChartBars({ title, eyebrow, data }: ChartBarsProps) {
             {title}
           </h2>
         </div>
-        <div className="pixel-inset min-w-16 bg-white px-3 py-2 text-right">
+        <div className="pixel-inset min-w-16 shrink-0 bg-white px-3 py-2 text-right">
           <span className="block text-xs font-medium" style={{ color: "var(--text-3)" }}>
             {tr.leadsLabel}
           </span>
@@ -44,7 +44,7 @@ export function ChartBars({ title, eyebrow, data }: ChartBarsProps) {
         </div>
       ) : (
         <>
-          <div className="flex items-end gap-[2px]" style={{ height: "80px" }}>
+          <div className="flex h-20 items-end gap-[2px] sm:h-24">
             {data.map((d) => {
               const barH = Math.max(2, Math.round((d.value / max) * 76));
               return (
