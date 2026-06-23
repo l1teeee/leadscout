@@ -58,6 +58,7 @@ export interface UseLeadsReturn {
   hiddenLeads: HiddenLeadRecord[];
   hideLead: (lead: Lead) => void;
   unhideLead: (id: string) => void;
+  selectById: (id: string) => boolean;
 }
 
 interface UseLeadsInitialFilters {
@@ -219,6 +220,14 @@ export function useLeads(initialFilters: UseLeadsInitialFilters = {}): UseLeadsR
   const noContactCount = wsStats.total > 0 ? wsStats.no_contact_count : visibleLeads.filter((l) => l.status === "nuevo").length;
   const avgScore = wsStats.total > 0 ? wsStats.avg_score : (leads.length ? Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length) : 0);
 
+  const selectById = useCallback((id: string): boolean => {
+    const idx = visibleLeads.findIndex((l) => l.id === id);
+    if (idx === -1) return false;
+    setPageState(Math.floor(idx / PAGE_SIZE));
+    setSelectedId(id);
+    return true;
+  }, [visibleLeads]);
+
   const createLead = useCallback(async (input: CreateLeadInput) => {
     const created = await createLeadRequest(input);
     setQueryState("");
@@ -265,5 +274,6 @@ export function useLeads(initialFilters: UseLeadsInitialFilters = {}): UseLeadsR
     hiddenLeads: hiddenRecords,
     hideLead,
     unhideLead,
+    selectById,
   };
 }

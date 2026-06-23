@@ -63,7 +63,7 @@ export function DashboardQuickWins({ leads, priorityLabels, copy }: Props) {
               </span>
               <div className="min-w-0 flex-1">
                 <button
-                  onClick={() => router.push(`/leads?q=${encodeURIComponent(lead.name)}`)}
+                  onClick={() => router.push(`/leads?id=${lead.id}`)}
                   className="truncate font-bold text-left w-full cursor-pointer hover:underline underline-offset-2"
                   style={{ ...bodyTextStyle, color: "var(--text)" }}
                 >

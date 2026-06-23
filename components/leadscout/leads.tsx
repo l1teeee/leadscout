@@ -487,6 +487,7 @@ export function Leads() {
   const searchParams = useSearchParams();
   const qParam = searchParams.get("q") ?? "";
   const priorityParam = parsePriorityParam(searchParams.get("priority"));
+  const idParam = searchParams.get("id") ?? "";
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [analysisLead, setAnalysisLead] = useState<Lead | null>(null);
   const [locallyViewed, setLocallyViewed] = useState<Set<string>>(new Set());
@@ -518,9 +519,11 @@ export function Leads() {
     hiddenLeads,
     hideLead,
     unhideLead,
+    selectById,
   } = useLeads({ query: qParam, priority: priorityParam });
   const appliedQ = useRef<string | null>(qParam);
   const appliedPriority = useRef<LeadPriority | "" | null>(priorityParam);
+  const appliedId = useRef<string>("");
 
   useEffect(() => {
     if (appliedQ.current === qParam) return;
@@ -533,6 +536,21 @@ export function Leads() {
     appliedPriority.current = priorityParam;
     setPriority(priorityParam);
   }, [priorityParam, setPriority]);
+
+  useEffect(() => {
+    if (!idParam || appliedId.current === idParam || loading) return;
+    const isHidden = hiddenLeads.some((h) => h.id === idParam);
+    if (isHidden) {
+      setQuery("");
+      setStatus("");
+      setPriority("");
+      setViewedFilter(null);
+      unhideLead(idParam);
+      return;
+    }
+    appliedId.current = idParam;
+    selectById(idParam);
+  }, [idParam, hiddenLeads, loading, unhideLead, selectById, setQuery, setStatus, setPriority, setViewedFilter]);
 
   const sortableHeaders: { label: string; field: SortField | null }[] = [
     { label: tr.leads.tableHeaders[0], field: "name" },
