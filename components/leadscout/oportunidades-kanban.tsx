@@ -14,13 +14,13 @@ import {
   type DragStartEvent,
   type Modifier,
 } from "@dnd-kit/core";
-import { ArrowUpDown, Search, Trash2, X } from "lucide-react";
+import { ArrowUpDown, Loader2, Search, Trash2, X } from "lucide-react";
 import { PriorityBadge, Tag } from "@/components/ui/badge";
 import { EmptyInsight } from "@/components/ui/empty-insight";
 import { ScoreBar } from "@/components/ui/score-bar";
 import { ExplorerLeadDetail } from "@/components/leadscout/explorer-lead-detail";
 import { useLanguage } from "@/contexts/language-context";
-import { checkLeadQuality, updateLeadStatus, type LeadQualityItem } from "@/lib/api/leads";
+import { checkLeadQuality, getLeads, updateLeadStatus, type LeadQualityItem } from "@/lib/api/leads";
 import { hideLead as persistHideLead, getHiddenIds } from "@/lib/hidden-leads";
 import { applyStatusOverrides, clearStatusOverride, setStatusOverride } from "@/lib/lead-status-cache";
 import { addJunkIds, clearJunkIds, getJunkIds, isLowQuality } from "@/lib/lead-quality";
@@ -48,6 +48,7 @@ function sortLeads(leads: Lead[], sort: SortKey): Lead[] {
 
 interface OportunidadesKanbanProps {
   initialLeads: Lead[];
+  total: number;
 }
 
 function LeadDetailPortal({
@@ -301,16 +302,45 @@ function KanbanColumn({ col, leads, sort, onSortChange, onLeadClick, tr }: Kanba
   );
 }
 
-export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) {
+export function OportunidadesKanban({ initialLeads, total }: OportunidadesKanbanProps) {
   const { lang } = useLanguage();
   const tr = translations[lang].oportunidades;
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
+  const [rawOffset, setRawOffset] = useState(initialLeads.length);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const hasMore = rawOffset < total;
+
   useEffect(() => {
     const hiddenIds = getHiddenIds();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLeads(applyStatusOverrides(initialLeads).filter((l) => !hiddenIds.has(l.id)));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function loadMore() {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const { leads: more } = await getLeads({
+        limit: 10,
+        offset: rawOffset,
+        sort_by: "score",
+        sort_order: "desc",
+      });
+      setRawOffset((prev) => prev + more.length);
+      const hiddenIds = getHiddenIds();
+      const processed = applyStatusOverrides(more).filter((l) => !hiddenIds.has(l.id));
+      setLeads((prev) => {
+        const existing = new Set(prev.map((l) => l.id));
+        return [...prev, ...processed.filter((l) => !existing.has(l.id))];
+      });
+    } catch {
+      // silent
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [query, setQuery] = useState("");
@@ -459,7 +489,7 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
             <p className="mt-2 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
               {filteredLeads.length === 0
                 ? tr.noResults
-                : `${filteredLeads.length} lead${filteredLeads.length !== 1 ? "s" : ""}`}
+                : `${filteredLeads.length} de ${total} lead${total !== 1 ? "s" : ""}`}
             </p>
           )}
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -498,6 +528,23 @@ export function OportunidadesKanban({ initialLeads }: OportunidadesKanbanProps) 
             />
           ))}
         </div>
+
+        {hasMore && (
+          <div className="flex justify-center pt-6 pb-2">
+            <button
+              type="button"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="retro inline-flex h-9 cursor-pointer items-center gap-2 rounded-none border-2 px-4 pixel-text-xs uppercase transition-transform active:translate-x-px active:translate-y-px disabled:opacity-60"
+              style={{ background: "var(--surface)", color: "var(--text-2)", borderColor: "var(--border)", boxShadow: "2px 2px 0 var(--pixel-shadow, #18181B)" }}
+            >
+              {loadingMore && <Loader2 size={12} className="animate-spin" />}
+              {loadingMore
+                ? (lang === "es" ? "Cargando..." : "Loading...")
+                : (lang === "es" ? `Cargar 10 más (${total - rawOffset} restantes)` : `Load 10 more (${total - rawOffset} remaining)`)}
+            </button>
+          </div>
+        )}
       </div>
 
       <DragOverlay
