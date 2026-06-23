@@ -11,7 +11,7 @@ import { COUNTRY_DATA, sanitizeText, sanitizePhone, sanitizeUrl } from "@/lib/pr
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const inputCls =
-  "h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] transition-[border-color,box-shadow] duration-150 focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none";
+  "h-11 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] transition-[border-color,box-shadow] duration-150 focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none";
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -190,7 +190,7 @@ export default function OnboardingForm() {
           <StepIndicator current={step} total={2} />
         </div>
 
-        <form onSubmit={nextStep} className="px-6 pb-6 pt-5 space-y-5">
+        <form onSubmit={nextStep} className="px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-5 space-y-5">
           {/* Step title */}
           <div className="animate-fade-up" style={{ animationDelay: "40ms" }}>
             <div className="mb-1 flex items-center gap-2">
@@ -277,7 +277,7 @@ export default function OnboardingForm() {
               </div>
 
               {/* Country + City */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <FieldLabel>{tr.country}</FieldLabel>
                   <select
@@ -344,13 +344,13 @@ export default function OnboardingForm() {
               </div>
 
               {/* Phone + Website */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <FieldLabel>{tr.phone}</FieldLabel>
                   <div className="flex">
                     {currentDialCode && (
                       <div
-                        className="flex h-9 shrink-0 items-center px-2 border-2 border-r-0 border-[var(--border)] bg-[var(--surface-2)] select-none"
+                        className="flex h-11 shrink-0 items-center px-2 border-2 border-r-0 border-[var(--border)] bg-[var(--surface-2)] select-none"
                         title={tr.phoneCodeTitle}
                       >
                         <span
@@ -402,7 +402,7 @@ export default function OnboardingForm() {
             <button
               type="submit"
               disabled={isSubmitting || (step === 0 ? !step0Valid : !step1Valid)}
-              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-11 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}
             >
               {isSubmitting ? tr.submitting : step === 0 ? tr.next : tr.finish}

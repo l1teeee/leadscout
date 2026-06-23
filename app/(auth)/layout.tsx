@@ -37,7 +37,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <button
           type="button"
           onClick={() => setLang(lang === "en" ? "es" : "en")}
-          className="absolute right-4 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center border-2 border-[#000] bg-[#FFFFFF] text-[10px] font-bold text-[#17110D] shadow-[2px_2px_0_0_#000] active:translate-x-px active:translate-y-[calc(-50%+1px)]"
+          className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-2 border-[#000] bg-[#FFFFFF] text-[10px] font-bold text-[#17110D] shadow-[2px_2px_0_0_#000] active:translate-x-px active:translate-y-[calc(-50%+1px)]"
           title={tr.langToggle.nextTitle}
           aria-label={tr.langToggle.label}
         >
@@ -46,8 +46,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </header>
 
       {/* Page content */}
-      <div className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full max-w-sm">{children}</div>
+      <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
+        <div className="min-w-0 w-full max-w-sm">{children}</div>
       </div>
     </div>
   );

@@ -146,7 +146,7 @@ export function Sidebar() {
           {/* Drawer */}
           <aside
             className={cn(
-              "relative z-10 flex h-full w-[232px] flex-col overflow-hidden transition-transform duration-300 ease-in-out",
+              "relative z-10 flex h-full w-[min(232px,85vw)] flex-col overflow-hidden transition-transform duration-300 ease-in-out",
               isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
             )}
             style={{ background: "var(--sidebar)", borderRight: "2px solid var(--border)" }}
@@ -175,7 +175,7 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={() => setIsMobileNavOpen(false)}
-                className="flex h-8 w-8 items-center justify-center"
+                className="flex h-11 w-11 items-center justify-center"
                 style={{ color: "#D4D4D8" }}
                 aria-label="Cerrar menu"
               >
@@ -202,7 +202,7 @@ export function Sidebar() {
                 data-tour="sidebar-settings"
                 title={tr.nav.items.settings}
                 aria-label={tr.nav.items.settings}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer"
+                className="w-full flex items-center gap-2.5 px-2.5 py-3 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer"
                 style={
                   pathname === "/settings"
                     ? { ...bodyFont, background: "var(--pixel-highlight)", border: "2px solid #1C1917", boxShadow: "2px 2px 0 0 #000", color: "#17110D" }
@@ -216,7 +216,7 @@ export function Sidebar() {
                 onClick={handleSidebarLogout}
                 title={tr.topbar.signOut}
                 aria-label={tr.topbar.signOut}
-                className="mt-0.5 w-full flex items-center gap-2.5 px-2.5 py-2 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer"
+                className="mt-0.5 w-full flex items-center gap-2.5 px-2.5 py-3 rounded-none text-[13px] font-semibold leading-5 tracking-normal transition-colors duration-150 text-left cursor-pointer"
                 style={{ ...bodyFont, color: "#E63946", border: "2px solid transparent" }}
               >
                 <LogOut size={15} strokeWidth={2} />
