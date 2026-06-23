@@ -216,7 +216,7 @@ export function useLeads(initialFilters: UseLeadsInitialFilters = {}): UseLeadsR
   const selected = paginatedVisibleLeads.find((l) => l.id === selectedId) ?? paginatedVisibleLeads[0] ?? null;
 
   const highPriorityCount = wsStats.total > 0 ? wsStats.high_priority_count : leads.filter((l) => l.priority === "alta").length;
-  const noContactCount = visibleLeads.filter((l) => l.status === "nuevo").length;
+  const noContactCount = wsStats.total > 0 ? wsStats.no_contact_count : visibleLeads.filter((l) => l.status === "nuevo").length;
   const avgScore = wsStats.total > 0 ? wsStats.avg_score : (leads.length ? Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length) : 0);
 
   const createLead = useCallback(async (input: CreateLeadInput) => {

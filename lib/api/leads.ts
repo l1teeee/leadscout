@@ -1,7 +1,7 @@
 import { apiFetch } from "./client";
 import type { Lead, LeadStatus, LeadPriority } from "@/lib/data";
 
-export const MAX_LEADS_LIMIT = 200;
+export const MAX_LEADS_LIMIT = 1000;
 
 interface ApiLead {
   id: string;
