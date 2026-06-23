@@ -64,7 +64,7 @@ export function Explorer() {
 
       <div
         className={cn(
-          "flex h-full min-h-0 flex-col overflow-hidden p-5 gap-4",
+          "flex h-full min-h-0 flex-col overflow-hidden p-2 sm:p-5 gap-4",
           selected ? "md:w-[calc(100%-384px)]" : "",
           "w-full"
         )}

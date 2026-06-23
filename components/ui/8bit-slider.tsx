@@ -58,7 +58,7 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         )}
         {...props}
       >
-        <div className="relative flex h-5 w-full touch-none select-none items-center">
+        <div className="relative flex h-6 sm:h-5 w-full touch-none select-none items-center">
           <div className="relative h-2 w-full grow overflow-hidden border border-[var(--border)] bg-[var(--surface-2)]">
             <div
               className="absolute left-0 top-0 h-full bg-[var(--text)] transition-[width,background-color] duration-[var(--motion-fast)] ease-[var(--ease-out)]"
@@ -80,7 +80,7 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
           />
 
           <div
-            className="motion-retro-thumb pointer-events-none absolute block size-4 border-2 border-[var(--border)] bg-[var(--pixel-highlight)] shadow-[1px_1px_0_var(--pixel-shadow)]"
+            className="motion-retro-thumb pointer-events-none absolute block size-5 sm:size-4 border-2 border-[var(--border)] bg-[var(--pixel-highlight)] shadow-[1px_1px_0_var(--pixel-shadow)]"
             style={{ left: `calc(${pct}% - 8px)` }}
             aria-hidden="true"
           />
