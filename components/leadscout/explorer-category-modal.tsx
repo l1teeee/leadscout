@@ -52,7 +52,7 @@ export function ExplorerCategoryModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="category-dialog-title"
-        className="pixel-card-sm w-full max-w-xl animate-fade-up bg-white"
+        className="pixel-card-sm w-full max-w-xl animate-fade-up bg-white max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between border-b-2 border-[var(--border)] bg-[var(--surface-2)] px-5 py-4">
@@ -78,7 +78,7 @@ export function ExplorerCategoryModal({
           </button>
         </div>
 
-        <div className="p-5">
+        <div className="p-5 overflow-y-auto flex-1">
           <div className="mb-4 flex items-center gap-2">
             <Search size={15} className="shrink-0 text-[var(--text-3)]" />
             <input

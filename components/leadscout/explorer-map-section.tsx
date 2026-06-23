@@ -37,13 +37,13 @@ export function ExplorerMapSection({
     : activeStage?.description ?? tr.searchingDescription;
 
   return (
-    <section data-tour="explorer-map" className="pixel-card-sm flex h-full min-h-0 flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between border-b-2 border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+    <section data-tour="explorer-map" className="pixel-card-sm flex h-full min-h-[300px] flex-col overflow-hidden bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
         <div>
           <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
             {tr.eyebrow}
           </p>
-          <h2 className="text-sm font-bold" style={{ color: "var(--text)" }}>
+          <h2 className="truncate min-w-0 text-sm font-bold" style={{ color: "var(--text)" }}>
             {hasLocation
               ? tr.activeZone(activeSearchArea.label ?? translations[lang].explorer.location.activeZone)
               : tr.noLocationTitle}

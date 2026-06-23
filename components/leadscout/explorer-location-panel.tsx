@@ -80,7 +80,7 @@ export function ExplorerLocationPanel({
     : tr.allCategories;
 
   return (
-    <section className="pixel-card-sm min-h-0 overflow-auto bg-white p-4 xl:h-fit xl:max-h-full">
+    <section className="pixel-card-sm min-h-0 overflow-auto max-h-[50vh] xl:max-h-full bg-white p-4 xl:h-fit">
       <div className="mb-4 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center border-2 border-(--border) bg-(--surface-2)">
           <MapPin size={15} />

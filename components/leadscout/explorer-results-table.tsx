@@ -68,7 +68,7 @@ export function ExplorerResultsTable({
         </div>
       </div>
 
-      <div className="shrink-0 p-3 flex items-center gap-3">
+      <div className="shrink-0 p-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <div data-tour="explorer-results-search" className="relative flex-1 max-w-sm">
           <Search
             size={14}
@@ -85,7 +85,7 @@ export function ExplorerResultsTable({
           />
         </div>
 
-        <div data-tour="explorer-results-filters" className="flex items-center gap-2">
+        <div data-tour="explorer-results-filters" className="flex flex-wrap items-center gap-2">
           {statusFilters.map((s) => (
             <button
               key={s.value}
@@ -133,21 +133,18 @@ export function ExplorerResultsTable({
           <table className="pixel-table w-full text-sm" style={bodyTextStyle}>
           <thead className="sticky top-0 z-10">
             <tr style={{ background: "var(--surface-2)" }}>
-              {tr.headers.map((h) => (
-                <th
-                  key={h}
-                  className="retro px-5 py-3 text-left font-bold uppercase pixel-text-xs"
-                  style={{ color: "var(--text)" }}
-                >
-                  {h}
-                </th>
-              ))}
+              <th className="retro px-2 py-2 sm:px-5 sm:py-3 text-left font-bold uppercase pixel-text-xs" style={{ color: "var(--text)" }}>{tr.headers[0]}</th>
+              <th className="retro px-2 py-2 sm:px-5 sm:py-3 text-left font-bold uppercase pixel-text-xs hidden sm:table-cell" style={{ color: "var(--text)" }}>{tr.headers[1]}</th>
+              <th className="retro px-2 py-2 sm:px-5 sm:py-3 text-left font-bold uppercase pixel-text-xs" style={{ color: "var(--text)" }}>{tr.headers[2]}</th>
+              <th className="retro px-2 py-2 sm:px-5 sm:py-3 text-left font-bold uppercase pixel-text-xs hidden sm:table-cell" style={{ color: "var(--text)" }}>{tr.headers[3]}</th>
+              <th className="retro px-2 py-2 sm:px-5 sm:py-3 text-left font-bold uppercase pixel-text-xs" style={{ color: "var(--text)" }}>{tr.headers[4]}</th>
+              <th className="retro px-2 py-2 sm:px-5 sm:py-3 text-left font-bold uppercase pixel-text-xs" style={{ color: "var(--text)" }}>{tr.headers[5]}</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-12 text-center">
+                <td colSpan={6} className="px-2 py-12 sm:px-5 text-center">
                   <EmptyInsight
                     title={tr.empty.title}
                     description={tr.empty.description}
@@ -168,26 +165,26 @@ export function ExplorerResultsTable({
                     : "hover:bg-[var(--surface-2)]",
                 )}
               >
-                <td className="px-5 py-3" style={{ maxWidth: "200px", overflow: "hidden" }}>
+                <td className="px-2 py-2 sm:px-5 sm:py-3" style={{ maxWidth: "200px", overflow: "hidden" }}>
                   <p className="font-semibold leading-snug truncate" style={{ color: "var(--text)" }}>
                     {lead.name}
                   </p>
                 </td>
-                <td className="px-5 py-3" style={{ maxWidth: "140px", overflow: "hidden", color: "var(--text-2)" }}>
+                <td className="px-2 py-2 sm:px-5 sm:py-3 hidden sm:table-cell" style={{ maxWidth: "140px", overflow: "hidden", color: "var(--text-2)" }}>
                   <span className="block truncate">{lead.category}</span>
                 </td>
-                <td className="px-5 py-3" style={{ maxWidth: "140px", overflow: "hidden", color: "var(--text-2)" }}>
+                <td className="px-2 py-2 sm:px-5 sm:py-3" style={{ maxWidth: "140px", overflow: "hidden", color: "var(--text-2)" }}>
                   <span className="block truncate">{SCRAPING_ZONES[lead.id] ?? lead.location}</span>
                 </td>
-                <td className="px-5 py-3 w-36">
+                <td className="px-2 py-2 sm:px-5 sm:py-3 w-36 hidden sm:table-cell">
                   <div className="pixel-inset px-2 py-1">
                     <ScoreBar score={lead.score} />
                   </div>
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-2 py-2 sm:px-5 sm:py-3">
                   <PriorityBadge priority={lead.priority} className={pixelBadgeClass} />
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-2 py-2 sm:px-5 sm:py-3">
                   <StatusBadge status={lead.status} className={pixelBadgeClass} />
                 </td>
               </tr>
