@@ -180,7 +180,7 @@ export default function VerifyOtpForm({ email }: { email: string }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-6 gap-2" aria-label={tr.title}>
+          <div className="grid grid-cols-6 gap-1.5 sm:gap-2" aria-label={tr.title}>
             {digits.map((digit, index) => (
               <input
                 key={index}
@@ -209,7 +209,7 @@ export default function VerifyOtpForm({ email }: { email: string }) {
           <button
             type="submit"
             disabled={code.length !== DIGIT_COUNT || isSubmitting}
-            className="retro pixel-text-sm motion-retro-control inline-flex h-10 w-full items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
+            className="retro pixel-text-sm motion-retro-control inline-flex h-11 w-full items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}
           >
             {tr.submit}
@@ -220,7 +220,7 @@ export default function VerifyOtpForm({ email }: { email: string }) {
             type="button"
             onClick={handleResend}
             disabled={cooldown > 0 || isResending}
-            className="retro pixel-text-xs inline-flex h-9 w-full items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 font-bold text-[var(--text-2)] active:translate-x-px active:translate-y-px disabled:opacity-45 disabled:cursor-not-allowed"
+            className="retro pixel-text-xs inline-flex h-11 w-full items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--surface)] px-3 font-bold text-[var(--text-2)] active:translate-x-px active:translate-y-px disabled:opacity-45 disabled:cursor-not-allowed"
           >
             <RotateCcw size={12} />
             {cooldown > 0 ? translations[lang].auth.forgot.resendIn(cooldown) : translations[lang].auth.forgot.resend}

@@ -10,7 +10,7 @@ import { translations } from "@/lib/i18n";
 
 const body = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 const inputCls =
-  "h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] transition-[border-color,box-shadow] duration-150 focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none";
+  "h-11 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] transition-[border-color,box-shadow] duration-150 focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -143,7 +143,7 @@ export default function LoginForm() {
 
           <div className="animate-fade-up flex items-center gap-2" style={{ animationDelay: "210ms" }}>
             <button type="button" role="checkbox" aria-checked={rememberMe} onClick={() => setRememberMe((v) => !v)}
-              className="h-4 w-4 shrink-0 border-2 border-[var(--border)] flex items-center justify-center"
+              className="h-6 w-6 shrink-0 border-2 border-[var(--border)] flex items-center justify-center"
               style={{ background: rememberMe ? "var(--border)" : "var(--surface)", boxShadow: "1px 1px 0 var(--pixel-shadow)" }}>
               {rememberMe && <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="var(--pixel-highlight)" strokeWidth="1.5" strokeLinecap="square" /></svg>}
             </button>
@@ -174,14 +174,14 @@ export default function LoginForm() {
 
           <div className="animate-fade-up" style={{ animationDelay: "240ms" }}>
             <button type="submit" disabled={isDisabled}
-              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-11 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] active:shadow-[1px_1px_0_var(--pixel-shadow)] disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}>
               {isLoading ? tr.submitting : tr.submit}
               {!isLoading && <ArrowRight size={13} />}
             </button>
           </div>
 
-          <p className="animate-fade-up text-center text-xs mt-6" style={{ ...body, color: "var(--text-3)" }}>
+          <p className="animate-fade-up text-center text-xs mt-4 sm:mt-6" style={{ ...body, color: "var(--text-3)" }}>
             {tr.noAccount}{" "}
             <Link href="/register" className="font-semibold underline underline-offset-2 hover:text-[var(--text)]" style={{ color: "var(--text-2)" }}>{tr.register}</Link>
           </p>

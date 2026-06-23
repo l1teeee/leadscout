@@ -56,7 +56,7 @@ export default function ForgotPasswordForm() {
             <label htmlFor="fp-email" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{translations[lang].common.email}</label>
             <input id="fp-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="m@example.com" required autoComplete="email"
-              className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
+              className="h-11 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
               style={body} />
           </div>
 
@@ -66,7 +66,7 @@ export default function ForgotPasswordForm() {
 
           <div className="animate-fade-up" style={{ animationDelay: "180ms" }}>
             <button type="submit" disabled={!email || isLoading}
-              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
+              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-11 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}>
               {isLoading ? tr.submitting : tr.submit}
               {!isLoading && <ArrowRight size={13} />}

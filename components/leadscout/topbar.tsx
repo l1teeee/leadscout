@@ -56,10 +56,10 @@ export function Topbar({ initialEmail }: { initialEmail?: string }) {
   return (
     <>
       <header
-        className="h-14.5 shrink-0 flex items-center justify-between px-3 md:px-8"
+        className="h-[58px] shrink-0 flex items-center justify-between px-3 md:px-8"
         style={{ background: "var(--surface)", borderBottom: "2px solid var(--border)" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={() => setIsMobileNavOpen(true)}
@@ -69,12 +69,12 @@ export function Topbar({ initialEmail }: { initialEmail?: string }) {
           >
             <Menu size={16} />
           </button>
-          <h1 className="text-sm font-semibold tracking-normal" style={{ ...bodyFont, color: "var(--text)" }}>
+          <h1 className="truncate text-sm font-semibold tracking-normal" style={{ ...bodyFont, color: "var(--text)" }}>
             {title}
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={() => {
               setLang(lang === "en" ? "es" : "en");

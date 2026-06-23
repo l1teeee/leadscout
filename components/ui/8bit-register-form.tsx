@@ -83,7 +83,7 @@ export default function RegisterForm({ className }: { className?: string }) {
             <label htmlFor="reg-email" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{translations[lang].common.email}</label>
             <input id="reg-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="m@example.com" required autoComplete="email"
-              className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
+              className="h-11 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
               style={body} />
           </div>
 
@@ -92,7 +92,7 @@ export default function RegisterForm({ className }: { className?: string }) {
             <div className="relative">
               <input {...secureInputProps} id="reg-password" type={showPassword ? "text" : "password"} value={password}
                 onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required
-                className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 pr-10 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
+                className="h-11 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 pr-10 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
                 style={body} />
               <button type="button" tabIndex={-1} onClick={() => setShowPassword((v) => !v)}
                 className="absolute inset-y-0 right-0 flex w-10 items-center justify-center" style={{ color: "var(--text-3)" }}>
@@ -123,7 +123,7 @@ export default function RegisterForm({ className }: { className?: string }) {
             <label htmlFor="reg-confirm" className="retro pixel-text-xs uppercase" style={{ color: "var(--text-2)" }}>{tr.confirmPassword}</label>
             <input {...secureInputProps} id="reg-confirm" type={showPassword ? "text" : "password"} value={confirm}
               onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" required
-              className="h-9 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
+              className="h-11 w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:shadow-[0_0_0_3px_rgba(28,25,23,0.12)] focus:outline-none"
               style={body} />
           </div>
 
@@ -140,7 +140,7 @@ export default function RegisterForm({ className }: { className?: string }) {
 
           <div className="animate-fade-up" style={{ animationDelay: "240ms" }}>
             <button type="submit" disabled={!email || !password || !confirm || isLoading}
-              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-10 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
+              className="retro pixel-text-sm motion-retro-control inline-flex w-full h-11 items-center justify-center gap-2 border-2 border-[var(--border)] font-bold shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "var(--border)", color: "var(--pixel-highlight)" }}>
               {isLoading ? tr.submitting : tr.submit}
               {!isLoading && <ArrowRight size={13} />}

@@ -33,7 +33,7 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button
-          className="ml-1 flex h-8 items-center gap-2 rounded-none border-2 border-[var(--border)] bg-[var(--pixel-highlight)] px-2 shadow-[2px_2px_0_0_var(--pixel-shadow)] transition-transform active:translate-x-0.5 active:translate-y-0.5"
+          className="ml-1 flex h-8 min-h-[44px] items-center gap-2 rounded-none border-2 border-[var(--border)] bg-[var(--pixel-highlight)] px-2 shadow-[2px_2px_0_0_var(--pixel-shadow)] transition-transform active:translate-x-0.5 active:translate-y-0.5"
           aria-label={tr.topbar.userMenu}
         >
           <span className="text-xs font-extrabold tracking-normal text-[var(--text)]" style={bodyFont}>
@@ -74,7 +74,7 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
           <DropdownMenu.Item asChild>
             <Link
               href="/settings"
-              className="mt-2 flex cursor-pointer items-center gap-2 border-2 border-transparent px-3 py-2 text-sm font-semibold outline-none hover:border-[var(--border)] hover:bg-[var(--surface-2)]"
+              className="mt-2 flex cursor-pointer items-center gap-2 border-2 border-transparent px-3 py-3 text-sm font-semibold outline-none hover:border-[var(--border)] hover:bg-[var(--surface-2)]"
               style={{ color: "var(--text)" }}
             >
               <Settings size={14} />
@@ -82,7 +82,7 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
             </Link>
           </DropdownMenu.Item>
 
-          <DropdownMenu.Item className="flex cursor-default items-center gap-2 border-2 border-transparent px-3 py-2 text-sm font-semibold outline-none" style={{ color: "var(--text-3)" }}>
+          <DropdownMenu.Item className="flex cursor-default items-center gap-2 border-2 border-transparent px-3 py-3 text-sm font-semibold outline-none" style={{ color: "var(--text-3)" }}>
             <UserRound size={14} />
             ScoutIA
           </DropdownMenu.Item>
@@ -91,7 +91,7 @@ export function UserMenu({ initialEmail }: { initialEmail?: string }) {
 
           <DropdownMenu.Item
             onSelect={handleSignOut}
-            className="flex cursor-pointer items-center gap-2 border-2 border-transparent px-3 py-2 text-sm font-bold outline-none hover:border-[var(--border)] hover:bg-[var(--surface-2)]"
+            className="flex cursor-pointer items-center gap-2 border-2 border-transparent px-3 py-3 text-sm font-bold outline-none hover:border-[var(--border)] hover:bg-[var(--surface-2)]"
             style={{ color: "var(--c-hi)" }}
           >
             <LogOut size={14} />

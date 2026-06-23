@@ -122,7 +122,7 @@ export function TopbarSearch({ isOpen, onClose }: TopbarSearchProps) {
       <div
         role="dialog"
         aria-modal="true"
-        className="pixel-card-sm mx-4 w-full max-w-lg animate-fade-up bg-white"
+        className="pixel-card-sm w-full max-w-lg animate-fade-up bg-white"
         style={bodyFont}
         onClick={(event) => event.stopPropagation()}
       >
@@ -139,7 +139,7 @@ export function TopbarSearch({ isOpen, onClose }: TopbarSearchProps) {
           </div>
         </div>
 
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-[50dvh] overflow-y-auto">
           {normalizedQuery && !hasResults ? (
             <div className="px-4 py-8 text-center text-sm font-semibold text-[var(--text-3)]">
               {tr.topbar.searchOverlay.noResults} &quot;{query.trim()}&quot;
