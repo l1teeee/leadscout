@@ -6,6 +6,7 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   useDroppable,
@@ -359,6 +360,7 @@ export function OportunidadesKanban({ initialLeads, total }: OportunidadesKanban
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   );
 
   const activeLead = activeId ? leads.find((l) => l.id === activeId) : undefined;

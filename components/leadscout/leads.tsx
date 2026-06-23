@@ -586,7 +586,7 @@ export function Leads() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="pixel-card-sm min-w-0 overflow-hidden bg-white">
+        <section className="pixel-card-sm min-w-0 bg-white">
           <div className="border-b-2 border-(--border) bg-(--surface-2) p-4">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -695,7 +695,7 @@ export function Leads() {
                   </select>
                 </label>
 
-                <div className="flex h-9 items-stretch border-2 border-(--border) bg-surface">
+                <div className="flex h-9 w-full items-stretch border-2 border-(--border) bg-surface sm:w-auto">
                   {[
                     { label: tr.leads.filters.viewedAll, value: null },
                     { label: tr.leads.filters.viewedNew, value: false },
@@ -926,7 +926,7 @@ export function Leads() {
       {selectedLead && (
         <>
           <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" onClick={() => setSelectedLead(null)} />
-          <div className="fixed inset-y-0 right-0 z-50 flex">
+          <div className="fixed inset-y-0 right-0 z-50 flex w-full sm:w-auto">
             <ExplorerLeadDetail
               lead={selectedLead}
               onClose={() => setSelectedLead(null)}
