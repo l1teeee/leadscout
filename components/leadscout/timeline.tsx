@@ -158,8 +158,8 @@ export default function TimelineView() {
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex gap-0">
+        <div className="flex min-w-0 w-full flex-col items-end gap-2 sm:w-auto">
+          <div className="flex flex-wrap gap-0">
             {ranges.map((days) => (
               <button
                 key={days}
@@ -176,7 +176,7 @@ export default function TimelineView() {
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={handlePdf}

@@ -44,7 +44,7 @@ export default function Timeline2({
   className,
 }: Timeline2Props) {
   return (
-    <section className={cn("w-full px-4 py-16", className)}>
+    <section className={cn("w-full px-4 py-8 sm:py-16", className)}>
       <div className="w-full">
         {(title || description) && (
           <div className="mb-10 text-center">

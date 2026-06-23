@@ -187,7 +187,7 @@ export async function Reportes() {
                   {tr.sections.conversionByStage}
                 </h2>
               </div>
-              <div className="pixel-inset bg-[var(--surface-2)] px-3 py-2 text-right">
+              <div className="pixel-inset shrink-0 bg-[var(--surface-2)] px-3 py-2 text-right">
                 <p className="retro pixel-text-xs uppercase" style={{ color: "var(--text-3)" }}>
                   {tr.sections.workspaceLeads}
                 </p>
