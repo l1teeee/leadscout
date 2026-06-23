@@ -1,7 +1,8 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useNavigation } from "@/contexts/navigation-context";
 import {
   BarChart3, Building2, Cable, CalendarDays, History, LayoutDashboard, LogOut, Search, Send, Sparkles, Target, Settings, Zap, X,
 } from "lucide-react";
@@ -47,12 +48,12 @@ function useSidebarSections(): SidebarSection[] {
 }
 
 function SidebarNavItem({ item, isActive, isExpanded, href }: SidebarNavItemProps) {
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const Icon = item.icon;
 
   return (
     <button
-      onClick={() => router.push(href)}
+      onClick={() => navigate(href)}
       title={item.label}
       aria-label={item.label}
       data-tour={`sidebar-${item.id}`}
@@ -104,7 +105,7 @@ function SidebarMenuSection({ section, pathname, isExpanded }: SidebarMenuSectio
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const expandTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const pathname = usePathname();
   const sections = useSidebarSections();
   const { lang } = useLanguage();
@@ -157,7 +158,7 @@ export function Sidebar() {
             >
               <button
                 type="button"
-                onClick={() => router.push("/landing")}
+                onClick={() => navigate("/landing")}
                 className="flex items-center gap-2.5"
                 aria-label={tr.nav.landingLabel}
               >
@@ -197,7 +198,7 @@ export function Sidebar() {
             {/* Bottom buttons - same as desktop */}
             <div className="px-2 pb-3 pt-3" style={{ borderTop: "2px solid #000" }}>
               <button
-                onClick={() => { router.push("/settings"); setIsMobileNavOpen(false); }}
+                onClick={() => { navigate("/settings"); setIsMobileNavOpen(false); }}
                 data-tour="sidebar-settings"
                 title={tr.nav.items.settings}
                 aria-label={tr.nav.items.settings}
@@ -241,7 +242,7 @@ export function Sidebar() {
       >
         <button
           type="button"
-          onClick={() => router.push("/landing")}
+          onClick={() => navigate("/landing")}
           className={cn("flex items-center rounded-none text-left", isExpanded ? "gap-2.5" : "justify-center")}
           aria-label={tr.nav.landingLabel}
           title="ScoutIA"
@@ -276,7 +277,7 @@ export function Sidebar() {
 
       <div className="px-2 pb-3 pt-3" style={{ borderTop: "2px solid #000" }}>
         <button
-          onClick={() => router.push("/settings")}
+          onClick={() => navigate("/settings")}
           data-tour="sidebar-settings"
           title={tr.nav.items.settings}
           aria-label={tr.nav.items.settings}

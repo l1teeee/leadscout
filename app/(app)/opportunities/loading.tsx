@@ -1,5 +1,5 @@
-import { PixelPageLoader } from "@/components/shared/pixel-loader";
+import { SkeletonKanban } from "@/components/shared/module-skeleton";
 
 export default function OpportunitiesLoading() {
-  return <PixelPageLoader />;
+  return <SkeletonKanban />;
 }

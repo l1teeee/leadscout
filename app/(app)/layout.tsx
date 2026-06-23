@@ -1,11 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PageTransition } from "@/components/leadscout/page-transition";
+import { NavProgress } from "@/components/leadscout/nav-progress";
 import { Sidebar } from "@/components/leadscout/sidebar";
 import { Topbar } from "@/components/leadscout/topbar";
 import { env } from "@/lib/env";
 import { AuthSessionGuard } from "@/components/shared/auth-session-guard";
 import { MobileNavProvider } from "@/contexts/mobile-nav-context";
+import { NavigationProvider } from "@/contexts/navigation-context";
 
 interface AuthUser {
   onboarded: boolean;
@@ -41,16 +43,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <MobileNavProvider>
-      <div className="flex h-full w-full overflow-hidden">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar initialEmail={user.email} />
-          <main className="flex-1 overflow-auto">
-            <PageTransition>{children}</PageTransition>
-          </main>
+      <NavigationProvider>
+        <NavProgress />
+        <div className="flex h-full w-full overflow-hidden">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Topbar initialEmail={user.email} />
+            <main className="flex-1 overflow-auto">
+              <PageTransition>{children}</PageTransition>
+            </main>
+          </div>
+          <AuthSessionGuard signature={user.user_signature} />
         </div>
-        <AuthSessionGuard signature={user.user_signature} />
-      </div>
+      </NavigationProvider>
     </MobileNavProvider>
   );
 }
