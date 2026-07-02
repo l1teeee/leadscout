@@ -140,12 +140,12 @@ export function LandingSupportModal({ isOpen, onClose }: LandingSupportModalProp
                 {status === "sending" ? tr.sending : tr.submit}
               </button>
               {status === "ok" && (
-                <span className="text-xs font-semibold" style={{ color: "var(--c-hi)" }}>
+                <span className="text-xs font-semibold" style={{ color: "var(--c-qualified)" }}>
                   {tr.sent}
                 </span>
               )}
               {status === "error" && (
-                <span className="text-xs font-semibold" style={{ color: "var(--c-lo)" }}>
+                <span className="text-xs font-semibold" style={{ color: "var(--c-hi)" }}>
                   {error ?? tr.error}
                 </span>
               )}

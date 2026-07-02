@@ -442,12 +442,12 @@ export function Configuracion() {
                   {supportStatus === "sending" ? settings.support.sending : settings.support.submit}
                 </button>
                 {supportStatus === "ok" && (
-                  <span className="text-xs font-semibold" style={{ color: "var(--c-hi)" }}>
+                  <span className="text-xs font-semibold" style={{ color: "var(--c-qualified)" }}>
                     {settings.support.sent}
                   </span>
                 )}
                 {supportStatus === "error" && (
-                  <span className="text-xs font-semibold" style={{ color: "var(--c-lo)" }}>
+                  <span className="text-xs font-semibold" style={{ color: "var(--c-hi)" }}>
                     {supportError ?? settings.support.error}
                   </span>
                 )}
