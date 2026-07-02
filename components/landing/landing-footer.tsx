@@ -1,15 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { LandingSupportModal } from "./landing-support-modal";
 
 const bodyFont = { fontFamily: "var(--font-body), system-ui, sans-serif" };
 
 export function LandingFooter() {
   const { lang } = useLanguage();
   const tr = translations[lang].landing.footer;
+  const [supportOpen, setSupportOpen] = useState(false);
 
   return (
     <footer
@@ -62,6 +65,14 @@ export function LandingFooter() {
           >
             {tr.terms}
           </Link>
+          <button
+            type="button"
+            onClick={() => setSupportOpen(true)}
+            className="text-xs font-bold underline-offset-2 hover:underline"
+            style={{ ...bodyFont, color: "#A1A1AA" }}
+          >
+            {tr.help}
+          </button>
         </nav>
 
         {/* Dev credit */}
@@ -77,6 +88,8 @@ export function LandingFooter() {
           </a>
         </p>
       </div>
+
+      <LandingSupportModal isOpen={supportOpen} onClose={() => setSupportOpen(false)} />
     </footer>
   );
 }

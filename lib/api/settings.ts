@@ -186,6 +186,20 @@ export async function sendSupportRequest(payload: SupportRequestPayload): Promis
   });
 }
 
+export interface PublicSupportRequestPayload {
+  name?: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export async function sendPublicSupportRequest(payload: PublicSupportRequestPayload): Promise<void> {
+  await apiFetch("/api/support", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export interface AiContextJsonImportData {
   business_context: string;
   constraints: string;
