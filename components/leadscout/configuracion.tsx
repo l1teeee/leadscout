@@ -8,6 +8,7 @@ import {
   CreditCard,
   Globe2,
   KeyRound,
+  LifeBuoy,
   MapPin,
   Search,
   ShieldCheck,
@@ -26,8 +27,13 @@ import {
 } from "@/lib/settings-data";
 import { useSettings } from "@/lib/hooks/use-settings";
 import { useSettingsPanels } from "@/lib/hooks/use-settings-panels";
+import { useSupport } from "@/lib/hooks/use-support";
 import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
+const inputCls =
+  "w-full rounded-none border-2 border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] placeholder:text-[var(--text-3)] focus:border-[var(--text)] focus:outline-none";
 
 const bodyTextStyle = {
   fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -163,6 +169,12 @@ export function Configuracion() {
   } = useSettings();
 
   const { team, usage, audit, loading } = useSettingsPanels();
+
+  const {
+    subject: supportSubject, setSubject: setSupportSubject,
+    message: supportMessage, setMessage: setSupportMessage,
+    status: supportStatus, error: supportError, submit: submitSupport,
+  } = useSupport();
 
   const planLabel = usage
     ? tr.settingsEnums.plan[usage.plan as keyof typeof tr.settingsEnums.plan] ?? usage.plan
@@ -386,6 +398,62 @@ export function Configuracion() {
               </div>
             </section>
           </ComingSoon>
+
+          <section className="pixel-card-sm bg-white p-5">
+            <SectionHeader eyebrow={settings.sections.help} title={settings.sections.contactSupport} icon={LifeBuoy} />
+            <p className="mb-3 text-xs font-semibold" style={{ ...bodyTextStyle, color: "var(--text-3)" }}>
+              {settings.support.subtitle}
+            </p>
+            <div className="space-y-3">
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
+                  {settings.support.subjectLabel}
+                </span>
+                <input
+                  value={supportSubject}
+                  onChange={(e) => setSupportSubject(e.target.value)}
+                  maxLength={150}
+                  placeholder={settings.support.subjectPlaceholder}
+                  className={cn(inputCls, "h-9")}
+                  style={bodyTextStyle}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold" style={{ color: "var(--text-2)" }}>
+                  {settings.support.messageLabel}
+                </span>
+                <textarea
+                  value={supportMessage}
+                  onChange={(e) => setSupportMessage(e.target.value)}
+                  maxLength={4000}
+                  rows={4}
+                  placeholder={settings.support.messagePlaceholder}
+                  className={cn(inputCls, "resize-none py-2")}
+                  style={bodyTextStyle}
+                />
+              </label>
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={submitSupport}
+                  disabled={supportStatus === "sending" || supportSubject.trim().length < 3 || supportMessage.trim().length < 10}
+                  className="retro pixel-text-sm inline-flex h-9 items-center justify-center gap-2 border-2 border-[var(--border)] bg-[var(--border)] px-3 font-bold text-[var(--pixel-highlight)] shadow-[2px_2px_0_var(--pixel-shadow)] active:translate-x-px active:translate-y-px active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {supportStatus === "sending" ? settings.support.sending : settings.support.submit}
+                </button>
+                {supportStatus === "ok" && (
+                  <span className="text-xs font-semibold" style={{ color: "var(--c-hi)" }}>
+                    {settings.support.sent}
+                  </span>
+                )}
+                {supportStatus === "error" && (
+                  <span className="text-xs font-semibold" style={{ color: "var(--c-lo)" }}>
+                    {supportError ?? settings.support.error}
+                  </span>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>

@@ -174,6 +174,18 @@ export async function generateAiContextExample(body: {
   return res.json() as Promise<AiContextExampleData>;
 }
 
+export interface SupportRequestPayload {
+  subject: string;
+  message: string;
+}
+
+export async function sendSupportRequest(payload: SupportRequestPayload): Promise<void> {
+  await apiFetch("/api/settings/support", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export interface AiContextJsonImportData {
   business_context: string;
   constraints: string;
